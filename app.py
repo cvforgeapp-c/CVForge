@@ -439,18 +439,34 @@ body {
 h1 {
     text-align: center;
     color: #0d4f4f;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #777;
+    margin-bottom: 20px;
+}
+
+.preview-box {
+    width: 100%;
+    background: #dfe7e7;
+    padding: 10px;
+    border-radius: 12px;
 }
 
 .preview {
     width: 100%;
-    height: 700px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
+    height: 900px;
+    display: block;
+    border: none;
+    border-radius: 6px;
+    background: white;
 }
 
 .buttons {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     margin-top: 20px;
 }
 
@@ -458,9 +474,10 @@ a {
     flex: 1;
     text-align: center;
     text-decoration: none;
-    padding: 14px;
+    padding: 15px;
     border-radius: 10px;
     font-weight: bold;
+    font-size: 16px;
 }
 
 .edit {
@@ -474,37 +491,72 @@ a {
 }
 
 @media(max-width:600px) {
-    .buttons {
-        flex-direction: column;
+
+    .container {
+        padding: 8px;
+    }
+
+    .card {
+        padding: 12px;
+    }
+
+    .preview-box {
+        padding: 5px;
     }
 
     .preview {
-        height: 600px;
+        height: 750px;
+    }
+
+    .buttons {
+        flex-direction: column;
     }
 }
+
 </style>
 </head>
 
 <body>
 
 <div class="container">
+
 <div class="card">
 
 <h1>Your CV Preview</h1>
 
+<div class="subtitle">
+Your professional CV is ready
+</div>
+
+<div class="preview-box">
+
 <iframe
-class="preview"
-src="data:application/pdf;base64,{{ pdf_data }}">
+    class="preview"
+    src="data:application/pdf;base64,{{ pdf_data }}">
 </iframe>
 
+</div>
+
 <div class="buttons">
-<a class="edit" href="/">← Edit CV</a>
-<a class="download" href="/download/{{ token }}">
-DOWNLOAD CV
+
+<a
+    class="edit"
+    href="/"
+>
+← Edit CV
 </a>
+
+<a
+    class="download"
+    href="/download/{{ token }}"
+>
+⬇ DOWNLOAD CV
+</a>
+
 </div>
 
 </div>
+
 </div>
 
 </body>
