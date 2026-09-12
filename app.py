@@ -940,7 +940,10 @@ def draw_footer(c):
         page_width / 2,
         7 * mm,
         "Created with CVForge"
-      def generate_modern(c, data):
+    )
+
+
+def generate_modern(c, data):
     page_width, page_height = A4
 
     sidebar_width = 63 * mm
