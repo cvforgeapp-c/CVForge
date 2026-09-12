@@ -1,1081 +1,542 @@
-from flask import Flask, request, render_template_string, send_file
+from flask import Flask, request, render_template_string, send_file, redirect, url_for
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
-from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.lib.utils import ImageReader
 import os
 import tempfile
 import base64
-
+import uuid
 
 app = Flask(__name__)
-
-
-# ============================================================
-# HTML FORM
-# ============================================================
 
 HTML = """
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>CVForge - Professional CV Builder</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CVForge - Professional CV Builder</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+<style>
+* {
+    box-sizing: border-box;
+}
 
-        body {
-            margin: 0;
-            padding: 15px;
-            background: #eef1f2;
-            font-family: Arial, sans-serif;
-            color: #222;
-        }
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f7f7;
+    color: #173f3f;
+}
 
-        .box {
-            max-width: 760px;
-            margin: auto;
-            background: white;
-            padding: 22px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        }
+.container {
+    max-width: 760px;
+    margin: auto;
+    padding: 20px;
+}
 
-        h1 {
-            margin: 0;
-            color: #173f49;
-            font-size: 34px;
-        }
+.card {
+    background: white;
+    border-radius: 18px;
+    padding: 25px;
+    box-shadow: 0 5px 25px rgba(0,0,0,.08);
+}
 
-        .subtitle {
-            color: #777;
-            margin-top: 5px;
-            margin-bottom: 22px;
-        }
+.logo {
+    text-align: center;
+    font-size: 30px;
+    font-weight: bold;
+    color: #0d4f4f;
+    margin-bottom: 5px;
+}
 
-        /* PROGRESS */
+.subtitle {
+    text-align: center;
+    color: #777;
+    margin-bottom: 25px;
+}
 
-        .progress-area {
-            margin-bottom: 25px;
-        }
+.step {
+    display: none;
+}
 
-        .progress-text {
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
-            color: #173f49;
-            margin-bottom: 8px;
-        }
+.step.active {
+    display: block;
+}
 
-        .progress-bg {
-            height: 8px;
-            background: #e2e6e7;
-            border-radius: 20px;
-            overflow: hidden;
-        }
+.progress {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 25px;
+}
 
-        .progress-bar {
-            height: 100%;
-            width: 10%;
-            background: #d6aa4c;
-            border-radius: 20px;
-            transition: width 0.3s;
-        }
+.progress div {
+    flex: 1;
+    height: 6px;
+    background: #d9e3e3;
+    border-radius: 10px;
+}
 
-        /* STEPS */
+.progress div.active {
+    background: #c9a227;
+}
 
-        .step {
-            display: none;
-        }
+h2 {
+    margin-top: 0;
+    color: #0d4f4f;
+}
 
-        .step.active {
-            display: block;
-        }
+label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
 
-        .step-title {
-            color: #173f49;
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #ccd8d8;
+    border-radius: 10px;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+}
 
-        .step-description {
-            color: #777;
-            margin-bottom: 22px;
-            line-height: 1.5;
-        }
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
 
-        label {
-            display: block;
-            font-weight: bold;
-            margin-top: 16px;
-            color: #333;
-        }
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: #0d4f4f;
+}
 
-        input,
-        textarea {
-            width: 100%;
-            padding: 13px;
-            margin-top: 7px;
-            border: 1px solid #ccc;
-            border-radius: 9px;
-            font-size: 16px;
-            font-family: Arial, sans-serif;
-        }
+.buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+}
 
-        input:focus,
-        textarea:focus {
-            outline: none;
-            border-color: #173f49;
-        }
+button {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
 
-        textarea {
-            min-height: 140px;
-            resize: vertical;
-        }
+.next {
+    background: #0d4f4f;
+    color: white;
+}
 
-        small {
-            display: block;
-            color: #777;
-            margin-top: 6px;
-            line-height: 1.4;
-        }
+.back {
+    background: #e7eeee;
+    color: #173f3f;
+}
 
-        .example {
-            background: #f5f7f7;
-            border-left: 4px solid #d6aa4c;
-            padding: 12px;
-            border-radius: 7px;
-            margin-top: 12px;
-            color: #555;
-            font-size: 14px;
-            line-height: 1.5;
-        }
+.generate {
+    background: #c9a227;
+    color: white;
+}
 
-        /* NAVIGATION */
+.small {
+    color: #777;
+    font-size: 13px;
+    margin-top: 5px;
+}
 
-        .navigation {
-            display: flex;
-            gap: 10px;
-            margin-top: 28px;
-        }
+@media(max-width:600px) {
+    .container {
+        padding: 10px;
+    }
 
-        .nav-button {
-            flex: 1;
-            padding: 14px;
-            border: none;
-            border-radius: 9px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+    .card {
+        padding: 18px;
+    }
 
-        .back-button {
-            background: #e5e8e9;
-            color: #173f49;
-        }
-
-        .next-button {
-            background: #173f49;
-            color: white;
-        }
-
-        .generate-button {
-            width: 100%;
-            padding: 17px;
-            border: none;
-            border-radius: 10px;
-            background: #d6aa4c;
-            color: #173f49;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-
-        /* TEMPLATE CARDS */
-
-        .templates {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 14px;
-            margin-top: 20px;
-        }
-
-        .template-card {
-            border: 2px solid #ddd;
-            border-radius: 12px;
-            padding: 18px;
-            cursor: pointer;
-            background: white;
-        }
-
-        .template-card:hover {
-            border-color: #d6aa4c;
-        }
-
-        .template-card.selected {
-            border-color: #173f49;
-            background: #f2f6f7;
-        }
-
-        .template-card h3 {
-            margin: 0 0 7px 0;
-            color: #173f49;
-        }
-
-        .template-card p {
-            margin: 0;
-            color: #777;
-            line-height: 1.4;
-        }
-
-        .template-badge {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 5px 9px;
-            border-radius: 20px;
-            background: #d6aa4c;
-            color: #173f49;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .success-box {
-            text-align: center;
-            padding: 25px 10px;
-        }
-
-        .success-icon {
-            font-size: 55px;
-        }
-
-        .success-box h2 {
-            color: #173f49;
-            font-size: 27px;
-        }
-
-        @media (max-width: 500px) {
-            body {
-                padding: 8px;
-            }
-
-            .box {
-                padding: 18px;
-            }
-
-            h1 {
-                font-size: 30px;
-            }
-
-            .step-title {
-                font-size: 22px;
-            }
-        }
-    </style>
+    .buttons {
+        flex-direction: column;
+    }
+}
+</style>
 </head>
 
 <body>
 
-<div class="box">
-
-    <h1>CVForge</h1>
-
-    <div class="subtitle">
-        Build your professional CV step by step.
-    </div>
-
-    <div class="progress-area">
-        <div class="progress-text">
-            <span id="stepLabel">Step 1 of 10</span>
-            <span id="stepName">Personal Information</span>
-        </div>
-
-        <div class="progress-bg">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-    </div>
-
-
-    <form method="post"
-          action="/generate"
-          enctype="multipart/form-data"
-          id="cvForm">
-
-
-        <!-- ================================================= -->
-        <!-- STEP 1 -->
-        <!-- ================================================= -->
-
-        <div class="step active">
-
-            <div class="step-title">
-                1. Personal Information
-            </div>
-
-            <div class="step-description">
-                Tell us about yourself and how employers can contact you.
-            </div>
-
-            <label>Full Name *</label>
-            <input
-                name="name"
-                placeholder="John Doe"
-                required>
-
-            <label>Professional Title</label>
-            <input
-                name="title"
-                placeholder="Medical Doctor">
-
-            <label>Profile Photo</label>
-            <input
-                type="file"
-                name="photo"
-                accept="image/*">
-
-            <small>
-                Optional. JPG, PNG or another common image format.
-            </small>
-
-            <label>Phone</label>
-            <input
-                name="phone"
-                placeholder="+251 9XX XXX XXX">
-
-            <label>Email</label>
-            <input
-                name="email"
-                type="email"
-                placeholder="you@example.com">
-
-            <label>Location</label>
-            <input
-                name="location"
-                placeholder="Addis Ababa, Ethiopia">
-
-            <label>LinkedIn</label>
-            <input
-                name="linkedin"
-                placeholder="linkedin.com/in/yourname">
-
-            <label>Website / Portfolio</label>
-            <input
-                name="website"
-                placeholder="www.example.com">
-
-        </div>
-
-
-        <!-- ================================================= -->
-        <!-- STEP 2 -->
-        <!-- ================================================= -->
-
-        <div class="step">
-
-            <div class="step-title">
-                2. Professional Summary
-            </div>
-
-            <div class="step-description">
-                Write a short introduction that shows your experience,
-                strengths and career goals.
-            </div>
-
-            <label>Professional Summary</label>
-
-            <textarea
-                name="summary"
-                placeholder="Medical doctor with experience in patient care, clinical assessment, diagnosis and emergency medicine. Dedicated to providing high-quality patient-centered care."></textarea>
-
-            <div class="example">
-                <strong>Tip:</strong>
-                Keep your summary around 3–5 sentences.
-                Focus on your strongest professional qualities.
-            </div>
-
-        </div>
-
-
-        <!-- ================================================= -->
-        <!-- STEP 3 -->
-        <!-- ================================================= -->
-
-        <div class="step">
-
-            <div class="step-title">
-                3. Experience
-            </div>
-
-            <div class="step-description">
-                Add your professional work experience, starting with
-                your most recent position.
-            </div>
-
-            <label>Work Experience</label>
-
-            <textarea
-                name="experience"
-                style="min-height:260px"
-                placeholder="Medical Doctor | ABC General Hospital | Addis Ababa | 2023 - Present
-Provided clinical assessment, diagnosis and treatment for patients.
-Managed emergency cases and coordinated patient follow-up.
-Worked collaboratively with nurses and other healthcare professionals.
-
-Intern Doctor | XYZ Teaching Hospital | Addis Ababa | 2022 - 2023
-Assisted with patient assessment and clinical procedures.
-Participated in emergency care and medical documentation."></textarea>
-
-            <div class="example">
-                <strong>Format:</strong><br>
-                Job Title | Company | Location | Dates<br>
-                Then write your responsibilities and achievements below.
-            </div>
-
-        </div>
-
-
-        <!-- ================================================= -->
-        <!-- STEP 4 -->
-        <!-- ================================================= -->
-
-        <div class="step">
-
-            <div class="step-title">
-                4. Education
-            </div>
-
-            <div class="step-description">
-                Add your academic qualifications.
-            </div>
-
-            <label>Education</label>
-
-            <textarea
-                name="education"
-                placeholder="Doctor of Medicine (MD) | XYZ University | 2022
-High School Diploma | ABC School | 2016"></textarea>
-
-            <div class="example">
-                <strong>Format:</strong><br>
-                Degree | Institution | Graduation Year
-            </div>
-
-        </div>
-
-
-        <!-- ================================================= -->
-        <!-- STEP 5 -->
-        <!-- ================================================= -->
-
-        <div class="step">
-
-            <div class="step-title">
-                5. Skills
-            </div>
-
-            <div class="step-description">
-                Add the skills that best match your profession and target job.
-            </div>
-
-            <label>Skills</label>
-
-            <input
-                name="skills"
-                placeholder="Patient Care, Clinical Assessment, Diagnosis, Leadership, Communication">
-
-            <small>
-                Separate each skill with a comma.
-            </small>
-
-            <div class="example">
-                Example: Leadership, Communication, Teamwork,
-                Microsoft Office, Patient Care
-            </div>
-
-        </div>
-
-
-        <!-- ================================================= -->
-        <!-- STEP 6 -->
-        <!-- ================================================= -->
-
-        <div class="step">
-
-            <div class="step-title">
-                6. Certificates
-            </div>
-
-            <div class="step-description">
-                Add professional certificates, training and courses.
-            </div>
-
-            <label>Certificates & Training</label>
-
-            <textarea
-                name="certificates"
-                placeholder="Basic Life Support (BLS) | 2023
-Advanced Cardiac Life Support (ACLS) | 2024
-First Aid Training | 2023"></textarea>
-
-            <div class="example">
-                <strong>Format:</strong><br>
-                Certificate Name | Year
-            </div>
-
-        </div>
-
-
-        <!-- ================================================= -->
-        <!-- STEP 7 -->
-        <!-- ================================================= -->
-
-        <div class="step">
-
-            <div class="step-title">
-                7. Languages
-            </div>
-
-            <div class="step-description">
-                List the languages you speak and your proficiency level.
-            </div>
-
-            <label>Languages</label>
-
-            <textarea
-                name="languages"
-                placeholder="English | Fluent
-Amharic | Native
-Afaan Oromo | Native"></textarea>
-
-            <div class="example">
-                <strong>Format:</strong><br>
-                Language | Proficiency Level
-            </div>
-
-        </div>
-
-
-        <!-- ================================================= -->
-        <!-- STEP 8 -->
-        <!-- ================================================= -->
-
-        <div class="step">
-
-            <div class="step-title">
-                8. References
-            </div>
-
-            <div class="step-description">
-                Add professional references or choose to provide them later.
-            </div>
-
-            <label>References</label>
-
-            <textarea
-                name="references"
-                placeholder="Dr. John Smith | ABC Hospital | john@example.com | +251 9XX XXX XXX
-Dr. Jane Doe | XYZ University | jane@example.com | +251 9XX XXX XXX"></textarea>
-
-            <div class="example">
-                <strong>Format:</strong><br>
-                Name | Organization | Email | Phone
-                <br><br>
-                You may also write:
-                <strong>References available upon request.</strong>
-            </div>
-
-        </div>
-
-
-        <!-- ================================================= -->
-        <!-- STEP 9 -->
-        <!-- ================================================= -->
-
-        <div class="step">
-
-            <div class="step-title">
-                9. Choose Template
-            </div>
-
-            <div class="step-description">
-                Choose the style you want for your CV.
-            </div>
-
-            <div class="templates">
-
-                <div class="template-card selected"
-                     onclick="selectTemplate(this, 'modern')">
-
-                    <h3>Modern Professional</h3>
-
-                    <p>
-                        Dark teal and gold design with profile photo,
-                        sidebar and professional sections.
-                    </p>
-
-                    <span class="template-badge">
-                        CURRENT DESIGN
-                    </span>
-
-                </div>
-
-
-                <div class="template-card"
-                     onclick="selectTemplate(this, 'classic')">
-
-                    <h3>Classic Professional</h3>
-
-                    <p>
-                        Clean and traditional layout suitable for
-                        corporate and professional applications.
-                    </p>
-
-                    <span class="template-badge">
-                        COMING SOON
-                    </span>
-
-                </div>
-
-
-                <div class="template-card"
-                     onclick="selectTemplate(this, 'ats')">
-
-                    <h3>ATS Friendly</h3>
-
-                    <p>
-                        Simple professional layout designed for
-                        applicant tracking systems.
-                    </p>
-
-                    <span class="template-badge">
-                        COMING SOON
-                    </span>
-
-                </div>
-
-            </div>
-
-            <input
-                type="hidden"
-                name="template"
-                id="template"
-                value="modern">
-
-            <input
-                type="hidden"
-                name="hobbies"
-                id="hobbies"
-                value="">
-
-        </div>
-
-
-        <!-- ================================================= -->
-        <!-- STEP 10 -->
-        <!-- ================================================= -->
-
-        <div class="step">
-
-            <div class="success-box">
-
-                <div class="success-icon">
-                    📄
-                </div>
-
-                <div class="step-title">
-                    10. Generate Your CV
-                </div>
-
-                <div class="step-description">
-                    Your information is ready.
-                    Click the button below to generate your professional PDF CV.
-                </div>
-
-                <button
-                    class="generate-button"
-                    type="submit">
-
-                    GENERATE PROFESSIONAL CV
-
-                </button>
-
-            </div>
-
-        </div>
-
-
-        <!-- NAVIGATION -->
-
-        <div class="navigation">
-
-            <button
-                type="button"
-                class="nav-button back-button"
-                id="backButton"
-                onclick="previousStep()">
-
-                ← Back
-
-            </button>
-
-            <button
-                type="button"
-                class="nav-button next-button"
-                id="nextButton"
-                onclick="nextStep()">
-
-                Next →
-
-            </button>
-
-        </div>
-
-    </form>
-
+<div class="container">
+<div class="card">
+
+<div class="logo">CVForge</div>
+<div class="subtitle">Build a professional CV in minutes</div>
+
+<div class="progress">
+<div class="p active"></div>
+<div class="p"></div>
+<div class="p"></div>
+<div class="p"></div>
+<div class="p"></div>
+<div class="p"></div>
+<div class="p"></div>
+<div class="p"></div>
+<div class="p"></div>
+<div class="p"></div>
+<div class="p"></div>
 </div>
 
+<form method="POST" action="/generate" enctype="multipart/form-data">
+
+<div class="step active">
+<h2>1. Personal Information</h2>
+
+<label>Full Name *</label>
+<input name="name" required>
+
+<label>Professional Title</label>
+<input name="title" placeholder="e.g. Software Developer">
+
+<label>Profile Photo</label>
+<input type="file" name="photo" accept="image/*">
+
+<label>Phone</label>
+<input name="phone">
+
+<label>Email</label>
+<input name="email">
+
+<label>Location</label>
+<input name="location" placeholder="City, Country">
+
+<label>LinkedIn</label>
+<input name="linkedin">
+
+<label>Website</label>
+<input name="website">
+
+<div class="buttons">
+<button type="button" class="next" onclick="nextStep()">Next →</button>
+</div>
+</div>
+
+<div class="step">
+<h2>2. Professional Summary</h2>
+
+<label>Summary</label>
+<textarea name="summary" placeholder="Write a short professional summary about yourself..."></textarea>
+
+<div class="buttons">
+<button type="button" class="back" onclick="prevStep()">← Back</button>
+<button type="button" class="next" onclick="nextStep()">Next →</button>
+</div>
+</div>
+
+<div class="step">
+<h2>3. Work Experience</h2>
+
+<label>Experience</label>
+<textarea name="experience" placeholder="Job Title - Company - Dates
+
+Describe your responsibilities and achievements.
+
+Add another position below if needed."></textarea>
+
+<div class="buttons">
+<button type="button" class="back" onclick="prevStep()">← Back</button>
+<button type="button" class="next" onclick="nextStep()">Next →</button>
+</div>
+</div>
+
+<div class="step">
+<h2>4. Education</h2>
+
+<label>Education</label>
+<textarea name="education" placeholder="Degree - Institution - Year
+
+Add your education history here."></textarea>
+
+<div class="buttons">
+<button type="button" class="back" onclick="prevStep()">← Back</button>
+<button type="button" class="next" onclick="nextStep()">Next →</button>
+</div>
+</div>
+
+<div class="step">
+<h2>5. Skills</h2>
+
+<label>Skills</label>
+<textarea name="skills" placeholder="Python
+Flask
+Microsoft Office
+Communication
+Leadership"></textarea>
+
+<div class="buttons">
+<button type="button" class="back" onclick="prevStep()">← Back</button>
+<button type="button" class="next" onclick="nextStep()">Next →</button>
+</div>
+</div>
+
+<div class="step">
+<h2>6. Certificates & Training</h2>
+
+<label>Certificates</label>
+<textarea name="certificates" placeholder="Certificate Name - Organization - Year"></textarea>
+
+<div class="buttons">
+<button type="button" class="back" onclick="prevStep()">← Back</button>
+<button type="button" class="next" onclick="nextStep()">Next →</button>
+</div>
+</div>
+
+<div class="step">
+<h2>7. Languages</h2>
+
+<label>Languages</label>
+<textarea name="languages" placeholder="English - Fluent
+Amharic - Native"></textarea>
+
+<div class="buttons">
+<button type="button" class="back" onclick="prevStep()">← Back</button>
+<button type="button" class="next" onclick="nextStep()">Next →</button>
+</div>
+</div>
+
+<div class="step">
+<h2>8. Interests</h2>
+
+<label>Interests & Hobbies</label>
+<textarea name="hobbies" placeholder="Technology
+Reading
+Travel
+Sports"></textarea>
+
+<div class="buttons">
+<button type="button" class="back" onclick="prevStep()">← Back</button>
+<button type="button" class="next" onclick="nextStep()">Next →</button>
+</div>
+</div>
+
+<div class="step">
+<h2>9. References</h2>
+
+<label>References</label>
+<textarea name="references" placeholder="Name - Position - Company
+Email / Phone"></textarea>
+
+<div class="buttons">
+<button type="button" class="back" onclick="prevStep()">← Back</button>
+<button type="button" class="next" onclick="nextStep()">Next →</button>
+</div>
+</div>
+
+<div class="step">
+<h2>10. Choose Template</h2>
+
+<label>CV Template</label>
+
+<select name="template">
+<option value="modern">Modern Professional</option>
+<option value="classic">Classic Professional</option>
+<option value="ats">ATS Friendly</option>
+</select>
+
+<p class="small">
+Choose the design that best matches your job application.
+</p>
+
+<div class="buttons">
+<button type="button" class="back" onclick="prevStep()">← Back</button>
+<button type="button" class="next" onclick="nextStep()">Next →</button>
+</div>
+</div>
+
+<div class="step">
+<h2>11. Generate Your CV</h2>
+
+<p>
+Your information is ready. Click the button below to create your professional CV.
+</p>
+
+<div class="buttons">
+<button type="button" class="back" onclick="prevStep()">← Back</button>
+<button type="submit" class="generate">GENERATE & PREVIEW CV</button>
+</div>
+</div>
+
+</form>
+
+</div>
+</div>
 
 <script>
+let currentStep = 0;
 
-    let currentStep = 0;
+const steps = document.querySelectorAll(".step");
+const progress = document.querySelectorAll(".progress .p");
 
-    const stepNames = [
-        "Personal Information",
-        "Professional Summary",
-        "Experience",
-        "Education",
-        "Skills",
-        "Certificates",
-        "Languages",
-        "References",
-        "Choose Template",
-        "Generate CV"
-    ];
+function showStep(index) {
+    steps.forEach((step, i) => {
+        step.classList.toggle("active", i === index);
+    });
 
-    const steps = document.querySelectorAll(".step");
+    progress.forEach((bar, i) => {
+        bar.classList.toggle("active", i <= index);
+    });
 
-    const progressBar =
-        document.getElementById("progressBar");
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
 
-    const stepLabel =
-        document.getElementById("stepLabel");
-
-    const stepName =
-        document.getElementById("stepName");
-
-    const backButton =
-        document.getElementById("backButton");
-
-    const nextButton =
-        document.getElementById("nextButton");
-
-
-    function showStep(index) {
-
-        steps.forEach(function(step, i) {
-
-            step.classList.toggle(
-                "active",
-                i === index
-            );
-
-        });
-
-        currentStep = index;
-
-        const number = index + 1;
-
-        const percentage =
-            (number / steps.length) * 100;
-
-        progressBar.style.width =
-            percentage + "%";
-
-        stepLabel.textContent =
-            "Step " + number + " of " + steps.length;
-
-        stepName.textContent =
-            stepNames[index];
-
-
-        if (index === 0) {
-
-            backButton.style.visibility =
-                "hidden";
-
-        } else {
-
-            backButton.style.visibility =
-                "visible";
-
-        }
-
-
-        if (index === steps.length - 1) {
-
-            nextButton.style.display =
-                "none";
-
-        } else {
-
-            nextButton.style.display =
-                "block";
-
-        }
-
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
+function nextStep() {
+    if (currentStep < steps.length - 1) {
+        currentStep++;
+        showStep(currentStep);
     }
+}
 
-
-    function validateCurrentStep() {
-
-        const current =
-            steps[currentStep];
-
-        const fields =
-            current.querySelectorAll(
-                "input[required], textarea[required]"
-            );
-
-        for (let field of fields) {
-
-            if (!field.checkValidity()) {
-
-                field.reportValidity();
-
-                return false;
-            }
-        }
-
-        return true;
+function prevStep() {
+    if (currentStep > 0) {
+        currentStep--;
+        showStep(currentStep);
     }
-
-
-    function nextStep() {
-
-        if (!validateCurrentStep()) {
-            return;
-        }
-
-        if (currentStep < steps.length - 1) {
-
-            showStep(currentStep + 1);
-
-        }
-    }
-
-
-    function previousStep() {
-
-        if (currentStep > 0) {
-
-            showStep(currentStep - 1);
-
-        }
-    }
-
-
-    function selectTemplate(card, templateName) {
-
-        document
-            .querySelectorAll(".template-card")
-            .forEach(function(item) {
-
-                item.classList.remove("selected");
-
-            });
-
-        card.classList.add("selected");
-
-        document.getElementById("template").value =
-            templateName;
-
-    }
-
-
-    document
-        .getElementById("cvForm")
-        .addEventListener("submit", function(event) {
-
-            if (!validateCurrentStep()) {
-
-                event.preventDefault();
-
-            }
-
-        });
-
-
-    showStep(0);
-
+}
 </script>
 
 </body>
 </html>
 """
+
 PREVIEW_HTML = """
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>CVForge - CV Preview</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CVForge Preview</title>
 
-    <style>
-        body {
-            margin: 0;
-            padding: 15px;
-            background: #eef1f2;
-            font-family: Arial, sans-serif;
-            color: #222;
-        }
+<style>
+body {
+    margin: 0;
+    background: #eef3f3;
+    font-family: Arial, sans-serif;
+    color: #173f3f;
+}
 
-        .box {
-            max-width: 900px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        }
+.container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+}
 
-        h1 {
-            color: #173f49;
-            margin-top: 0;
-        }
+.card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 5px 25px rgba(0,0,0,.08);
+}
 
-        .subtitle {
-            color: #777;
-            margin-bottom: 20px;
-        }
+h1 {
+    text-align: center;
+    color: #0d4f4f;
+}
 
-        .preview {
-            width: 100%;
-            height: 75vh;
-            min-height: 600px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            background: #eee;
-        }
+.preview {
+    width: 100%;
+    height: 700px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+}
 
-        .buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
+.buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
 
-        .button {
-            flex: 1;
-            padding: 15px;
-            border: none;
-            border-radius: 9px;
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-            text-decoration: none;
-            cursor: pointer;
-        }
+a {
+    flex: 1;
+    text-align: center;
+    text-decoration: none;
+    padding: 14px;
+    border-radius: 10px;
+    font-weight: bold;
+}
 
-        .download {
-            background: #d6aa4c;
-            color: #173f49;
-        }
+.edit {
+    background: #e7eeee;
+    color: #173f3f;
+}
 
-        .edit {
-            background: #e5e8e9;
-            color: #173f49;
-        }
+.download {
+    background: #c9a227;
+    color: white;
+}
 
-        @media (max-width: 600px) {
-            .buttons {
-                flex-direction: column;
-            }
+@media(max-width:600px) {
+    .buttons {
+        flex-direction: column;
+    }
 
-            .preview {
-                height: 70vh;
-                min-height: 500px;
-            }
-        }
-    </style>
+    .preview {
+        height: 600px;
+    }
+}
+</style>
 </head>
 
 <body>
 
-<div class="box">
+<div class="container">
+<div class="card">
 
-    <h1>CVForge</h1>
+<h1>Your CV Preview</h1>
 
-    <div class="subtitle">
-        Your CV is ready. Review it before downloading.
-    </div>
+<iframe
+class="preview"
+src="data:application/pdf;base64,{{ pdf_data }}">
+</iframe>
 
-    <iframe
-        class="preview"
-        src="data:application/pdf;base64,{{ pdf_data }}">
-    </iframe>
+<div class="buttons">
+<a class="edit" href="/">← Edit CV</a>
+<a class="download" href="/download/{{ token }}">DOWNLOAD CV</a>
+</div>
 
-    <div class="buttons">
-
-        <a
-            class="button edit"
-            href="/">
-            ← Edit CV
-        </a>
-
-        <a
-            class="button download"
-            href="data:application/pdf;base64,{{ pdf_data }}"
-            download="CVForge_Professional_CV.pdf">
-            ⬇ Download CV
-        </a>
-
-    </div>
-
+</div>
 </div>
 
 </body>
 </html>
 """
-
-
-# ============================================================
-# HELPER FUNCTIONS
-# ============================================================
-
-def clean(value):
-    return (value or "").strip()
-
-
-def wrap_text(text, font_name, font_size, max_width):
-    """
-    Wrap text according to actual PDF width.
-    """
-
+def clean(text):
     if not text:
-        return []
+        return ""
+    return str(text).strip()
 
-    words = text.split()
+
+def wrap_text(c, text, font, size, max_width):
+    words = clean(text).split()
     lines = []
     current = ""
 
-    for word in words:
+    c.setFont(font, size)
 
+    for word in words:
         test = word if not current else current + " " + word
 
-        if stringWidth(test, font_name, font_size) <= max_width:
+        if c.stringWidth(test, font, size) <= max_width:
             current = test
-
         else:
             if current:
                 lines.append(current)
-
             current = word
 
     if current:
@@ -1084,1191 +545,1013 @@ def wrap_text(text, font_name, font_size, max_width):
     return lines
 
 
-def draw_wrapped(
-    c,
-    text,
-    x,
-    y,
-    max_width,
-    font="Helvetica",
-    size=10,
-    leading=5.2 * mm
-):
+def draw_wrapped(c, text, x, y, width,
+                 font="Helvetica",
+                 size=9,
+                 leading=12,
+                 color=colors.black):
 
+    c.setFillColor(color)
+
+    for line in wrap_text(c, text, font, size, width):
+        c.setFont(font, size)
+        c.drawString(x, y, line)
+        y -= leading
+
+    return y
+
+
+def draw_section_title(c, title, x, y, width):
+    c.setFillColor(colors.HexColor("#0D4F4F"))
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(x, y, title.upper())
+
+    c.setStrokeColor(colors.HexColor("#C9A227"))
+    c.setLineWidth(1)
+    c.line(x, y - 4, x + width, y - 4)
+
+    return y - 20
+
+
+def draw_sidebar_title(c, title, x, y):
+    c.setFillColor(colors.HexColor("#C9A227"))
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(x, y, title.upper())
+
+    return y - 15
+
+
+def draw_sidebar_list(c, text, x, y, width):
     if not text:
         return y
 
-    c.setFont(font, size)
+    items = [
+        item.strip()
+        for item in text.replace(",", "\n").splitlines()
+        if item.strip()
+    ]
 
-    paragraphs = text.splitlines()
+    c.setFillColor(colors.white)
+    c.setFont("Helvetica", 8.5)
 
-    for paragraph in paragraphs:
-
-        paragraph = paragraph.strip()
-
-        if not paragraph:
-            y -= leading
-            continue
-
+    for item in items:
         lines = wrap_text(
-            paragraph,
-            font,
-            size,
-            max_width
+            c,
+            "• " + item,
+            "Helvetica",
+            8.5,
+            width
         )
 
         for line in lines:
-
-            if y < 25 * mm:
-                c.showPage()
-                y = A4[1] - 25 * mm
-                c.setFont(font, size)
-
             c.drawString(x, y, line)
+            y -= 12
 
-            y -= leading
-
-    return y
-
-
-def draw_sidebar_title(c, title, x, y, width):
-
-    c.setStrokeColor(colors.HexColor("#D6AA4C"))
-    c.setLineWidth(1.5)
-
-    c.roundRect(
-        x,
-        y - 5 * mm,
-        width,
-        9 * mm,
-        4 * mm,
-        stroke=1,
-        fill=0
-    )
-
-    c.setFillColor(colors.white)
-    c.setFont("Helvetica-Bold", 10.5)
-
-    c.drawCentredString(
-        x + width / 2,
-        y - 1.5 * mm,
-        title.upper()
-    )
-
-    return y - 13 * mm
-
-
-def draw_sidebar_list(
-    c,
-    items,
-    x,
-    y,
-    width,
-    font_size=9.5
-):
-
-    c.setFont("Helvetica", font_size)
-    c.setFillColor(colors.white)
-
-    for item in items:
-
-        item = item.strip()
-
-        if not item:
-            continue
-
-        lines = wrap_text(
-            item,
-            "Helvetica",
-            font_size,
-            width - 7 * mm
-        )
-
-        for index, line in enumerate(lines):
-
-            if y < 25 * mm:
-                return y
-
-            if index == 0:
-                c.drawString(
-                    x,
-                    y,
-                    "- " + line
-                )
-            else:
-                c.drawString(
-                    x + 4 * mm,
-                    y,
-                    line
-                )
-
-            y -= 5 * mm
-
-        y -= 1.5 * mm
+        y -= 3
 
     return y
 
 
-def draw_section_title(
-    c,
-    title,
-    x,
-    y,
-    width
-):
+def draw_header(c, data, sidebar_width):
+    page_width, page_height = A4
 
-    c.setFillColor(colors.HexColor("#173F49"))
-    c.setFont("Helvetica-Bold", 14)
+    header_height = 55 * mm
 
-    c.drawString(
-        x,
-        y,
-        title.upper()
-    )
-
-    y -= 2.5 * mm
-
-    c.setStrokeColor(colors.HexColor("#D8D8D8"))
-    c.setLineWidth(0.6)
-
-    c.line(
-        x,
-        y,
-        x + width,
-        y
-    )
-
-    return y - 7 * mm
-
-
-def draw_header(
-    c,
-    data,
-    page_width,
-    page_height,
-    sidebar_width
-):
-
-    # Header background
-
-    c.setFillColor(colors.HexColor("#173F49"))
-
+    c.setFillColor(colors.HexColor("#0D4F4F"))
     c.rect(
         0,
-        page_height - 58 * mm,
+        page_height - header_height,
         page_width,
-        58 * mm,
-        stroke=0,
-        fill=1
+        header_height,
+        fill=1,
+        stroke=0
     )
 
-    # Gold accent
-
-    c.setFillColor(colors.HexColor("#D6AA4C"))
-
+    c.setFillColor(colors.HexColor("#C9A227"))
     c.rect(
         0,
-        page_height - 59 * mm,
-        page_width,
-        1.5 * mm,
-        stroke=0,
-        fill=1
+        page_height - header_height,
+        7 * mm,
+        header_height,
+        fill=1,
+        stroke=0
     )
 
-    # Photo
+    name = clean(data.get("name")) or "Your Name"
+    title = clean(data.get("title"))
 
-    photo = data.get("photo")
-
-    photo_x = 17 * mm
-    photo_y = page_height - 47 * mm
-    photo_size = 35 * mm
-
-    if photo and os.path.exists(photo):
-
-        try:
-
-            image = ImageReader(photo)
-
-            iw, ih = image.getSize()
-
-            scale = max(
-                photo_size / iw,
-                photo_size / ih
-            )
-
-            dw = iw * scale
-            dh = ih * scale
-
-            dx = photo_x + (photo_size - dw) / 2
-            dy = photo_y + (photo_size - dh) / 2
-
-            c.saveState()
-
-            path = c.beginPath()
-
-            path.circle(
-                photo_x + photo_size / 2,
-                photo_y + photo_size / 2,
-                photo_size / 2
-            )
-
-            c.clipPath(
-                path,
-                stroke=0,
-                fill=0
-            )
-
-            c.drawImage(
-                image,
-                dx,
-                dy,
-                width=dw,
-                height=dh,
-                preserveAspectRatio=True,
-                mask="auto"
-            )
-
-            c.restoreState()
-
-            c.setStrokeColor(colors.HexColor("#D6AA4C"))
-            c.setLineWidth(1.2)
-
-            c.circle(
-                photo_x + photo_size / 2,
-                photo_y + photo_size / 2,
-                photo_size / 2,
-                stroke=1,
-                fill=0
-            )
-
-        except Exception:
-            pass
-
-    # Header text
-
-    text_x = 60 * mm
-
-    c.setFillColor(colors.HexColor("#D6AA4C"))
-    c.setFont("Helvetica-Bold", 23)
-
-    c.drawString(
-        text_x,
-        page_height - 25 * mm,
-        data["name"][:35]
-    )
+    x = sidebar_width + 12 * mm
 
     c.setFillColor(colors.white)
-    c.setFont("Helvetica", 11)
+    c.setFont("Helvetica-Bold", 24)
+    c.drawString(x, page_height - 23 * mm, name)
 
-    if data["title"]:
+    if title:
+        c.setFont("Helvetica", 12)
+        c.setFillColor(colors.HexColor("#E6EEEE"))
+        c.drawString(x, page_height - 32 * mm, title)
 
-        c.drawString(
-            text_x,
-            page_height - 33 * mm,
-            data["title"][:60]
-        )
-
-    # Summary in header
-
-    summary = data["summary"]
+    summary = clean(data.get("summary"))
 
     if summary:
-
-        summary_lines = wrap_text(
+        draw_wrapped(
+            c,
             summary,
+            x,
+            page_height - 39 * mm,
+            page_width - x - 12 * mm,
             "Helvetica",
             8.5,
-            page_width - text_x - 15 * mm
+            11,
+            colors.HexColor("#E6EEEE")
         )
 
-        c.setFillColor(colors.HexColor("#E8EEEE"))
-        c.setFont("Helvetica", 8.5)
 
-        sy = page_height - 40 * mm
+def draw_sidebar(c, data, sidebar_width):
+    page_width, page_height = A4
 
-        for line in summary_lines[:3]:
-
-            c.drawString(
-                text_x,
-                sy,
-                line
-            )
-
-            sy -= 4 * mm
-
-
-# ============================================================
-# SIDEBAR
-# ============================================================
-
-def draw_sidebar(
-    c,
-    data,
-    page_width,
-    page_height
-):
-
-    sidebar_width = 63 * mm
-
-    # Sidebar
-
-    c.setFillColor(colors.HexColor("#173F49"))
-
+    c.setFillColor(colors.HexColor("#123E3E"))
     c.rect(
         0,
         0,
         sidebar_width,
-        page_height - 59.5 * mm,
-        stroke=0,
-        fill=1
+        page_height,
+        fill=1,
+        stroke=0
     )
 
-    x = 10 * mm
-    content_width = sidebar_width - 20 * mm
+    x = 9 * mm
+    width = sidebar_width - 18 * mm
 
-    y = page_height - 70 * mm
+    y = page_height - 68 * mm
 
-    # CONTACT
+    c.setFillColor(colors.HexColor("#C9A227"))
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(x, y, "CONTACT")
 
-    y = draw_sidebar_title(
-        c,
-        "CONTACT",
-        x,
-        y,
-        content_width
-    )
+    y -= 15
 
-    c.setFillColor(colors.white)
-    c.setFont("Helvetica", 8.8)
-
-    contacts = [
-        data["phone"],
-        data["email"],
-        data["location"],
-        data["linkedin"],
-        data["website"]
+    contact_items = [
+        data.get("phone"),
+        data.get("email"),
+        data.get("location"),
+        data.get("linkedin"),
+        data.get("website")
     ]
 
-    for contact in contacts:
+    c.setFillColor(colors.white)
+    c.setFont("Helvetica", 8)
 
-        if not contact:
+    for item in contact_items:
+        item = clean(item)
+
+        if not item:
             continue
 
-        lines = wrap_text(
-            contact,
+        for line in wrap_text(
+            c,
+            item,
             "Helvetica",
-            8.8,
-            content_width
+            8,
+            width
+        ):
+            c.drawString(x, y, line)
+            y -= 11
+
+        y -= 3
+
+    y -= 8
+
+    if clean(data.get("skills")):
+        y = draw_sidebar_title(
+            c,
+            "Skills",
+            x,
+            y
+        )
+
+        y = draw_sidebar_list(
+            c,
+            data.get("skills"),
+            x,
+            y,
+            width
+        )
+
+        y -= 8
+
+    if clean(data.get("languages")):
+        y = draw_sidebar_title(
+            c,
+            "Languages",
+            x,
+            y
+        )
+
+        y = draw_sidebar_list(
+            c,
+            data.get("languages"),
+            x,
+            y,
+            width
+        )
+
+        y -= 8
+
+    if clean(data.get("hobbies")):
+        y = draw_sidebar_title(
+            c,
+            "Interests",
+            x,
+            y
+        )
+
+        y = draw_sidebar_list(
+            c,
+            data.get("hobbies"),
+            x,
+            y,
+            width
+        )
+
+
+def draw_experience(c, text, x, y, width):
+    if not clean(text):
+        return y
+
+    blocks = [
+        block.strip()
+        for block in text.split("\n\n")
+        if block.strip()
+    ]
+
+    for block in blocks:
+        lines = block.splitlines()
+
+        if lines:
+            heading = clean(lines[0])
+
+            c.setFillColor(colors.HexColor("#173F3F"))
+            c.setFont("Helvetica-Bold", 10)
+
+            c.drawString(x, y, heading)
+            y -= 14
+
+            body = " ".join(
+                clean(line)
+                for line in lines[1:]
+                if clean(line)
+            )
+
+            if body:
+                y = draw_wrapped(
+                    c,
+                    body,
+                    x,
+                    y,
+                    width,
+                    "Helvetica",
+                    8.5,
+                    11,
+                    colors.HexColor("#333333")
+                )
+
+            y -= 9
+
+    return y
+
+
+def draw_education(c, text, x, y, width):
+    if not clean(text):
+        return y
+
+    blocks = [
+        block.strip()
+        for block in text.split("\n\n")
+        if block.strip()
+    ]
+
+    for block in blocks:
+        lines = block.splitlines()
+
+        if lines:
+            c.setFillColor(colors.HexColor("#173F3F"))
+            c.setFont("Helvetica-Bold", 10)
+
+            c.drawString(
+                x,
+                y,
+                clean(lines[0])
+            )
+
+            y -= 14
+
+            body = " ".join(
+                clean(line)
+                for line in lines[1:]
+                if clean(line)
+            )
+
+            if body:
+                y = draw_wrapped(
+                    c,
+                    body,
+                    x,
+                    y,
+                    width,
+                    "Helvetica",
+                    8.5,
+                    11,
+                    colors.HexColor("#333333")
+                )
+
+            y -= 9
+
+    return y
+
+
+def draw_certificates(c, text, x, y, width):
+    if not clean(text):
+        return y
+
+    items = [
+        item.strip()
+        for item in text.splitlines()
+        if item.strip()
+    ]
+
+    c.setFillColor(colors.HexColor("#333333"))
+    c.setFont("Helvetica", 8.5)
+
+    for item in items:
+        lines = wrap_text(
+            c,
+            "• " + item,
+            "Helvetica",
+            8.5,
+            width
         )
 
         for line in lines:
+            c.drawString(x, y, line)
+            y -= 11
 
-            c.drawString(
-                x,
-                y,
-                line
-            )
-
-            y -= 4.5 * mm
-
-        y -= 1.5 * mm
-
-    # SKILLS
-
-    if data["skills"]:
-
-        y -= 3 * mm
-
-        y = draw_sidebar_title(
-            c,
-            "SKILLS",
-            x,
-            y,
-            content_width
-        )
-
-        skills = [
-            item.strip()
-            for item in data["skills"].split(",")
-            if item.strip()
-        ]
-
-        y = draw_sidebar_list(
-            c,
-            skills,
-            x,
-            y,
-            content_width
-        )
-
-    # LANGUAGES
-
-    if data["languages"]:
-
-        y -= 3 * mm
-
-        y = draw_sidebar_title(
-            c,
-            "LANGUAGES",
-            x,
-            y,
-            content_width
-        )
-
-        languages = []
-
-        for line in data["languages"].splitlines():
-
-            line = line.strip()
-
-            if not line:
-                continue
-
-            parts = [
-                p.strip()
-                for p in line.split("|")
-            ]
-
-            if len(parts) >= 2:
-                languages.append(
-                    parts[0] + " - " + parts[1]
-                )
-            else:
-                languages.append(parts[0])
-
-        y = draw_sidebar_list(
-            c,
-            languages,
-            x,
-            y,
-            content_width
-        )
-
-    # HOBBIES
-
-    if data["hobbies"]:
-
-        y -= 3 * mm
-
-        y = draw_sidebar_title(
-            c,
-            "INTERESTS",
-            x,
-            y,
-            content_width
-        )
-
-        hobbies = [
-            item.strip()
-            for item in data["hobbies"].split(",")
-            if item.strip()
-        ]
-
-        y = draw_sidebar_list(
-            c,
-            hobbies,
-            x,
-            y,
-            content_width
-        )
-
-
-# ============================================================
-# EXPERIENCE
-# ============================================================
-
-def draw_experience(
-    c,
-    experience,
-    x,
-    y,
-    width,
-    page_height
-):
-
-    blocks = []
-
-    current = []
-
-    for line in experience.splitlines():
-
-        line = line.strip()
-
-        if not line:
-            if current:
-                blocks.append(current)
-                current = []
-        else:
-            current.append(line)
-
-    if current:
-        blocks.append(current)
-
-    for block in blocks:
-
-        if not block:
-            continue
-
-        header = block[0]
-
-        parts = [
-            p.strip()
-            for p in header.split("|")
-        ]
-
-        job_title = parts[0] if len(parts) >= 1 else ""
-        company = parts[1] if len(parts) >= 2 else ""
-        location = parts[2] if len(parts) >= 3 else ""
-        dates = parts[3] if len(parts) >= 4 else ""
-
-        if y < 45 * mm:
-
-            c.showPage()
-
-            y = page_height - 25 * mm
-
-        # Job title
-
-        c.setFillColor(colors.HexColor("#222222"))
-        c.setFont("Helvetica-Bold", 11.5)
-
-        c.drawString(
-            x,
-            y,
-            job_title[:70]
-        )
-
-        y -= 5.5 * mm
-
-        # Company/date
-
-        secondary = " | ".join(
-            item
-            for item in [
-                company,
-                location,
-                dates
-            ]
-            if item
-        )
-
-        if secondary:
-
-            c.setFillColor(colors.HexColor("#777777"))
-            c.setFont(
-                "Helvetica-Oblique",
-                9
-            )
-
-            c.drawString(
-                x,
-                y,
-                secondary[:105]
-            )
-
-            y -= 5.5 * mm
-
-        # Responsibilities
-
-        for description in block[1:]:
-
-            description = description.strip()
-
-            if not description:
-                continue
-
-            lines = wrap_text(
-                description,
-                "Helvetica",
-                9.5,
-                width - 8 * mm
-            )
-
-            for index, line in enumerate(lines):
-
-                if y < 28 * mm:
-
-                    c.showPage()
-
-                    y = page_height - 25 * mm
-
-                c.setFillColor(
-                    colors.HexColor("#444444")
-                )
-
-                c.setFont(
-                    "Helvetica",
-                    9.5
-                )
-
-                prefix = "- " if index == 0 else "  "
-
-                c.drawString(
-                    x + 3 * mm,
-                    y,
-                    prefix + line
-                )
-
-                y -= 4.8 * mm
-
-        y -= 4 * mm
+        y -= 3
 
     return y
 
 
-# ============================================================
-# EDUCATION
-# ============================================================
-
-def draw_education(
-    c,
-    education,
-    x,
-    y,
-    page_height
-):
-
-    for line in education.splitlines():
-
-        line = line.strip()
-
-        if not line:
-            continue
-
-        parts = [
-            p.strip()
-            for p in line.split("|")
-        ]
-
-        degree = parts[0] if len(parts) >= 1 else ""
-        institution = parts[1] if len(parts) >= 2 else ""
-        year = parts[2] if len(parts) >= 3 else ""
-
-        if y < 35 * mm:
-
-            c.showPage()
-
-            y = page_height - 25 * mm
-
-        c.setFillColor(colors.HexColor("#222222"))
-        c.setFont("Helvetica-Bold", 10.5)
-
-        c.drawString(
-            x,
-            y,
-            degree[:90]
-        )
-
-        y -= 5 * mm
-
-        secondary = " | ".join(
-            item
-            for item in [
-                institution,
-                year
-            ]
-            if item
-        )
-
-        if secondary:
-
-            c.setFillColor(colors.HexColor("#666666"))
-            c.setFont(
-                "Helvetica",
-                9
-            )
-
-            c.drawString(
-                x,
-                y,
-                secondary[:105]
-            )
-
-            y -= 5 * mm
-
-        y -= 3 * mm
-
-    return y
-
-
-# ============================================================
-# CERTIFICATES
-# ============================================================
-
-def draw_certificates(
-    c,
-    certificates,
-    x,
-    y,
-    page_height
-):
-
-    for line in certificates.splitlines():
-
-        line = line.strip()
-
-        if not line:
-            continue
-
-        parts = [
-            p.strip()
-            for p in line.split("|")
-        ]
-
-        certificate = parts[0] if len(parts) >= 1 else ""
-        year = parts[1] if len(parts) >= 2 else ""
-
-        if y < 35 * mm:
-
-            c.showPage()
-
-            y = page_height - 25 * mm
-
-        c.setFillColor(colors.HexColor("#222222"))
-        c.setFont(
-            "Helvetica-Bold",
-            10.5
-        )
-
-        c.drawString(
-            x,
-            y,
-            certificate[:90]
-        )
-
-        y -= 5 * mm
-
-        if year:
-
-            c.setFillColor(
-                colors.HexColor("#666666")
-            )
-
-            c.setFont(
-                "Helvetica",
-                9
-            )
-
-            c.drawString(
-                x,
-                y,
-                year
-            )
-
-            y -= 5 * mm
-
-        y -= 3 * mm
-
-    return y
-
-
-# ============================================================
-# REFERENCES
-# ============================================================
-
-def draw_references(
-    c,
-    references,
-    x,
-    y,
-    width,
-    page_height
-):
-
-    for line in references.splitlines():
-
-        line = line.strip()
-
-        if not line:
-            continue
-
-        parts = [
-            p.strip()
-            for p in line.split("|")
-        ]
-
-        name = parts[0] if len(parts) >= 1 else ""
-        organization = parts[1] if len(parts) >= 2 else ""
-        email = parts[2] if len(parts) >= 3 else ""
-        phone = parts[3] if len(parts) >= 4 else ""
-
-        if y < 35 * mm:
-
-            c.showPage()
-
-            y = page_height - 25 * mm
-
-        c.setFillColor(
-            colors.HexColor("#222222")
-        )
-
-        c.setFont(
-            "Helvetica-Bold",
-            10
-        )
-
-        c.drawString(
-            x,
-            y,
-            name[:80]
-        )
-
-        y -= 4.5 * mm
-
-        secondary = " | ".join(
-            item
-            for item in [
-                organization,
-                email,
-                phone
-            ]
-            if item
-        )
-
-        if secondary:
-
-            y = draw_wrapped(
-                c,
-                secondary,
-                x,
-                y,
-                width,
-                "Helvetica",
-                8.8,
-                4.5 * mm
-            )
-
-        y -= 3 * mm
-
-    return y
-
-
-# ============================================================
-# FOOTER
-# ============================================================
-
-def draw_footer(
-    c,
-    page_width
-):
-
-    c.setStrokeColor(
-        colors.HexColor("#D6AA4C")
+def draw_references(c, text, x, y, width):
+    if not clean(text):
+        return y
+
+    y = draw_wrapped(
+        c,
+        text,
+        x,
+        y,
+        width,
+        "Helvetica",
+        8.5,
+        11,
+        colors.HexColor("#333333")
     )
 
-    c.setLineWidth(1)
+    return y
+
+
+def draw_footer(c):
+    page_width, page_height = A4
+
+    c.setStrokeColor(colors.HexColor("#D9E3E3"))
+    c.setLineWidth(0.5)
 
     c.line(
-        15 * mm,
+        20 * mm,
         12 * mm,
-        page_width - 15 * mm,
+        page_width - 20 * mm,
         12 * mm
     )
 
-    c.setFillColor(
-        colors.HexColor("#888888")
+    c.setFillColor(colors.HexColor("#777777"))
+    c.setFont("Helvetica", 7)
+
+    c.drawCentredString(
+        page_width / 2,
+        7 * mm,
+        "Created with CVForge"
+        )
+    def generate_modern(c, data):
+    page_width, page_height = A4
+
+    sidebar_width = 63 * mm
+    content_x = sidebar_width + 12 * mm
+    content_width = page_width - content_x - 12 * mm
+
+    draw_sidebar(c, data, sidebar_width)
+    draw_header(c, data, sidebar_width)
+
+    y = page_height - 68 * mm
+
+    if clean(data.get("experience")):
+        y = draw_section_title(
+            c,
+            "Experience",
+            content_x,
+            y,
+            content_width
+        )
+
+        y = draw_experience(
+            c,
+            data.get("experience"),
+            content_x,
+            y,
+            content_width
+        )
+
+    if clean(data.get("education")):
+        y -= 5
+
+        y = draw_section_title(
+            c,
+            "Education",
+            content_x,
+            y,
+            content_width
+        )
+
+        y = draw_education(
+            c,
+            data.get("education"),
+            content_x,
+            y,
+            content_width
+        )
+
+    if clean(data.get("certificates")):
+        y -= 5
+
+        y = draw_section_title(
+            c,
+            "Certificates & Training",
+            content_x,
+            y,
+            content_width
+        )
+
+        y = draw_certificates(
+            c,
+            data.get("certificates"),
+            content_x,
+            y,
+            content_width
+        )
+
+    if clean(data.get("references")):
+        y -= 5
+
+        y = draw_section_title(
+            c,
+            "References",
+            content_x,
+            y,
+            content_width
+        )
+
+        draw_references(
+            c,
+            data.get("references"),
+            content_x,
+            y,
+            content_width
+        )
+
+    draw_footer(c)
+
+
+def generate_classic(c, data):
+    page_width, page_height = A4
+
+    margin = 18 * mm
+    content_width = page_width - 2 * margin
+
+    c.setFillColor(colors.HexColor("#173F3F"))
+    c.rect(
+        0,
+        page_height - 42 * mm,
+        page_width,
+        42 * mm,
+        fill=1,
+        stroke=0
     )
 
-    c.setFont(
-        "Helvetica",
-        7.5
+    name = clean(data.get("name")) or "Your Name"
+    title = clean(data.get("title"))
+
+    c.setFillColor(colors.white)
+    c.setFont("Helvetica-Bold", 22)
+    c.drawString(
+        margin,
+        page_height - 18 * mm,
+        name
     )
+
+    if title:
+        c.setFont("Helvetica", 11)
+        c.drawString(
+            margin,
+            page_height - 27 * mm,
+            title
+        )
+
+    contact = " • ".join([
+        clean(data.get("phone")),
+        clean(data.get("email")),
+        clean(data.get("location"))
+    ])
+
+    contact = contact.strip(" •")
+
+    if contact:
+        c.setFont("Helvetica", 8)
+        c.setFillColor(colors.HexColor("#E6EEEE"))
+        c.drawString(
+            margin,
+            page_height - 35 * mm,
+            contact
+        )
+
+    y = page_height - 53 * mm
+
+    summary = clean(data.get("summary"))
+
+    if summary:
+        y = draw_section_title(
+            c,
+            "Professional Summary",
+            margin,
+            y,
+            content_width
+        )
+
+        y = draw_wrapped(
+            c,
+            summary,
+            margin,
+            y,
+            content_width,
+            "Helvetica",
+            9,
+            12,
+            colors.HexColor("#333333")
+        )
+
+        y -= 10
+
+    if clean(data.get("experience")):
+        y = draw_section_title(
+            c,
+            "Professional Experience",
+            margin,
+            y,
+            content_width
+        )
+
+        y = draw_experience(
+            c,
+            data.get("experience"),
+            margin,
+            y,
+            content_width
+        )
+
+    if clean(data.get("education")):
+        y -= 5
+
+        y = draw_section_title(
+            c,
+            "Education",
+            margin,
+            y,
+            content_width
+        )
+
+        y = draw_education(
+            c,
+            data.get("education"),
+            margin,
+            y,
+            content_width
+        )
+
+    if clean(data.get("skills")):
+        y -= 5
+
+        y = draw_section_title(
+            c,
+            "Skills",
+            margin,
+            y,
+            content_width
+        )
+
+        y = draw_wrapped(
+            c,
+            data.get("skills"),
+            margin,
+            y,
+            content_width,
+            "Helvetica",
+            9,
+            12,
+            colors.HexColor("#333333")
+        )
+
+    if clean(data.get("certificates")):
+        y -= 5
+
+        y = draw_section_title(
+            c,
+            "Certificates & Training",
+            margin,
+            y,
+            content_width
+        )
+
+        y = draw_certificates(
+            c,
+            data.get("certificates"),
+            margin,
+            y,
+            content_width
+        )
+
+    if clean(data.get("languages")):
+        y -= 5
+
+        y = draw_section_title(
+            c,
+            "Languages",
+            margin,
+            y,
+            content_width
+        )
+
+        y = draw_wrapped(
+            c,
+            data.get("languages"),
+            margin,
+            y,
+            content_width,
+            "Helvetica",
+            9,
+            12,
+            colors.HexColor("#333333")
+        )
+
+    if clean(data.get("hobbies")):
+        y -= 5
+
+        y = draw_section_title(
+            c,
+            "Interests",
+            margin,
+            y,
+            content_width
+        )
+
+        y = draw_wrapped(
+            c,
+            data.get("hobbies"),
+            margin,
+            y,
+            content_width,
+            "Helvetica",
+            9,
+            12,
+            colors.HexColor("#333333")
+        )
+
+    if clean(data.get("references")):
+        y -= 5
+
+        y = draw_section_title(
+            c,
+            "References",
+            margin,
+            y,
+            content_width
+        )
+
+        draw_references(
+            c,
+            data.get("references"),
+            margin,
+            y,
+            content_width
+        )
+
+    draw_footer(c)
+
+
+def generate_ats(c, data):
+    page_width, page_height = A4
+
+    margin = 18 * mm
+    content_width = page_width - 2 * margin
+
+    y = page_height - margin
+
+    name = clean(data.get("name")) or "Your Name"
+    title = clean(data.get("title"))
+
+    c.setFillColor(colors.black)
+    c.setFont("Helvetica-Bold", 22)
 
     c.drawString(
-        15 * mm,
+        margin,
+        y,
+        name
+    )
+
+    y -= 10 * mm
+
+    if title:
+        c.setFont("Helvetica-Bold", 11)
+
+        c.drawString(
+            margin,
+            y,
+            title
+        )
+
+        y -= 7 * mm
+
+    contact = " | ".join([
+        clean(data.get("phone")),
+        clean(data.get("email")),
+        clean(data.get("location")),
+        clean(data.get("linkedin")),
+        clean(data.get("website"))
+    ])
+
+    contact = contact.strip(" |")
+
+    if contact:
+        c.setFont("Helvetica", 8.5)
+
+        y = draw_wrapped(
+            c,
+            contact,
+            margin,
+            y,
+            content_width,
+            "Helvetica",
+            8.5,
+            11,
+            colors.black
+        )
+
+        y -= 5
+
+    summary = clean(data.get("summary"))
+
+    if summary:
+        y = draw_section_title(
+            c,
+            "Professional Summary",
+            margin,
+            y,
+            content_width
+        )
+
+        y = draw_wrapped(
+            c,
+            summary,
+            margin,
+            y,
+            content_width,
+            "Helvetica",
+            9,
+            12,
+            colors.black
+        )
+
+        y -= 8
+
+    if clean(data.get("experience")):
+        y = draw_section_title(
+            c,
+            "Experience",
+            margin,
+            y,
+            content_width
+        )
+
+        y = draw_experience(
+            c,
+            data.get("experience"),
+            margin,
+            y,
+            content_width
+        )
+
+    if clean(data.get("education")):
+        y -= 5
+
+        y = draw_section_title(
+            c,
+            "Education",
+            margin,
+            y,
+            content_width
+        )
+
+        y = draw_education(
+            c,
+            data.get("education"),
+            margin,
+            y,
+            content_width
+        )
+
+    if clean(data.get("skills")):
+        y -= 5
+
+        y = draw_section_title(
+            c,
+            "Skills",
+            margin,
+            y,
+            content_width
+        )
+
+        y = draw_wrapped(
+            c,
+            data.get("skills"),
+            margin,
+            y,
+            content_width,
+            "Helvetica",
+            9,
+            12,
+            colors.black
+        )
+
+    if clean(data.get("certificates")):
+        y -= 5
+
+        y = draw_section_title(
+            c,
+            "Certificates & Training",
+            margin,
+            y,
+            content_width
+        )
+
+        y = draw_certificates(
+            c,
+            data.get("certificates"),
+            margin,
+            y,
+            content_width
+        )
+
+    if clean(data.get("languages")):
+        y -= 5
+
+        y = draw_section_title(
+            c,
+            "Languages",
+            margin,
+            y,
+            content_width
+        )
+
+        y = draw_wrapped(
+            c,
+            data.get("languages"),
+            margin,
+            y,
+            content_width,
+            "Helvetica",
+            9,
+            12,
+            colors.black
+        )
+
+    if clean(data.get("hobbies")):
+        y -= 5
+
+        y = draw_section_title(
+            c,
+            "Interests",
+            margin,
+            y,
+            content_width
+        )
+
+        y = draw_wrapped(
+            c,
+            data.get("hobbies"),
+            margin,
+            y,
+            content_width,
+            "Helvetica",
+            9,
+            12,
+            colors.black
+        )
+
+    if clean(data.get("references")):
+        y -= 5
+
+        y = draw_section_title(
+            c,
+            "References",
+            margin,
+            y,
+            content_width
+        )
+
+        draw_references(
+            c,
+            data.get("references"),
+            margin,
+            y,
+            content_width
+        )
+
+    c.setFillColor(colors.HexColor("#555555"))
+    c.setFont("Helvetica", 7)
+
+    c.drawCentredString(
+        page_width / 2,
         7 * mm,
         "Created with CVForge"
     )
 
 
-# ============================================================
-# PDF GENERATOR
-# ============================================================
-
 def generate_pdf(data, filename):
-
-    page_width, page_height = A4
-
-    sidebar_width = 63 * mm
-
-    right_x = sidebar_width + 12 * mm
-
-    right_width = (
-        page_width
-        - sidebar_width
-        - 24 * mm
-    )
-
     c = canvas.Canvas(
         filename,
         pagesize=A4
     )
 
-    c.setTitle(
-        "CV - " + data["name"]
-    )
+    template = clean(
+        data.get("template")
+    ).lower()
 
-    # HEADER
+    if template == "classic":
+        generate_classic(c, data)
 
-    draw_header(
-        c,
-        data,
-        page_width,
-        page_height,
-        sidebar_width
-    )
+    elif template == "ats":
+        generate_ats(c, data)
 
-    # SIDEBAR
-
-    draw_sidebar(
-        c,
-        data,
-        page_width,
-        page_height
-    )
-
-    # MAIN CONTENT
-
-    y = page_height - 72 * mm
-
-    # EXPERIENCE
-
-    if data["experience"]:
-
-        y = draw_section_title(
-            c,
-            "Experience",
-            right_x,
-            y,
-            right_width
-        )
-
-        y = draw_experience(
-            c,
-            data["experience"],
-            right_x,
-            y,
-            right_width,
-            page_height
-        )
-
-    # EDUCATION
-
-    if data["education"]:
-
-        y -= 2 * mm
-
-        y = draw_section_title(
-            c,
-            "Education",
-            right_x,
-            y,
-            right_width
-        )
-
-        y = draw_education(
-            c,
-            data["education"],
-            right_x,
-            y,
-            page_height
-        )
-
-    # CERTIFICATES
-
-    if data["certificates"]:
-
-        y -= 2 * mm
-
-        y = draw_section_title(
-            c,
-            "Certificates & Training",
-            right_x,
-            y,
-            right_width
-        )
-
-        y = draw_certificates(
-            c,
-            data["certificates"],
-            right_x,
-            y,
-            page_height
-        )
-
-    # REFERENCES
-
-    if data["references"]:
-
-        y -= 2 * mm
-
-        y = draw_section_title(
-            c,
-            "References",
-            right_x,
-            y,
-            right_width
-        )
-
-        y = draw_references(
-            c,
-            data["references"],
-            right_x,
-            y,
-            right_width,
-            page_height
-        )
-
-    # FOOTER
-
-    draw_footer(
-        c,
-        page_width
-    )
+    else:
+        generate_modern(c, data)
 
     c.save()
-
-
-# ============================================================
-# HOME PAGE
-# ============================================================
-
-@app.route("/", methods=["GET"])
+    @app.route("/")
 def home():
-
-    return render_template_string(
-        HTML
-    )
+    return render_template_string(HTML)
 
 
-# ============================================================
-# GENERATE ROUTE
-# ============================================================
-
-@app.route(
-    "/generate",
-    methods=["POST"]
-)
+@app.route("/generate", methods=["POST"])
 def generate():
-
-    # --------------------------------------------------------
-    # PHOTO
-    # --------------------------------------------------------
-
-    photo_path = ""
+    data = {
+        "name": request.form.get("name", ""),
+        "title": request.form.get("title", ""),
+        "phone": request.form.get("phone", ""),
+        "email": request.form.get("email", ""),
+        "location": request.form.get("location", ""),
+        "linkedin": request.form.get("linkedin", ""),
+        "website": request.form.get("website", ""),
+        "summary": request.form.get("summary", ""),
+        "experience": request.form.get("experience", ""),
+        "education": request.form.get("education", ""),
+        "skills": request.form.get("skills", ""),
+        "certificates": request.form.get("certificates", ""),
+        "languages": request.form.get("languages", ""),
+        "hobbies": request.form.get("hobbies", ""),
+        "references": request.form.get("references", ""),
+        "template": request.form.get("template", "modern")
+    }
 
     photo = request.files.get("photo")
 
     if photo and photo.filename:
-
-        extension = os.path.splitext(
-            photo.filename
-        )[1].lower()
-
-        if extension not in [
-            ".jpg",
-            ".jpeg",
-            ".png",
-            ".webp"
-        ]:
-
-            extension = ".jpg"
-
         photo_path = os.path.join(
             tempfile.gettempdir(),
-            "cvforge_photo" + extension
+            "CVForge_" + photo.filename
         )
 
         photo.save(photo_path)
+        data["photo"] = photo_path
 
-    # --------------------------------------------------------
-    # DATA
-    # --------------------------------------------------------
-
-    data = {
-
-        "name":
-            clean(
-                request.form.get("name")
-            ) or "My CV",
-
-        "title":
-            clean(
-                request.form.get("title")
-            ),
-
-        "phone":
-            clean(
-                request.form.get("phone")
-            ),
-
-        "email":
-            clean(
-                request.form.get("email")
-            ),
-
-        "location":
-            clean(
-                request.form.get("location")
-            ),
-
-        "linkedin":
-            clean(
-                request.form.get("linkedin")
-            ),
-
-        "website":
-            clean(
-                request.form.get("website")
-            ),
-
-        "summary":
-            clean(
-                request.form.get("summary")
-            ),
-
-        "skills":
-            clean(
-                request.form.get("skills")
-            ),
-
-        "languages":
-            clean(
-                request.form.get("languages")
-            ),
-
-        "experience":
-            clean(
-                request.form.get("experience")
-            ),
-
-        "education":
-            clean(
-                request.form.get("education")
-            ),
-
-        "certificates":
-            clean(
-                request.form.get("certificates")
-            ),
-
-        "hobbies":
-            clean(
-                request.form.get("hobbies")
-            ),
-
-        "references":
-            clean(
-                request.form.get("references")
-            ),
-
-        "photo":
-            photo_path
-    }
-
-    # --------------------------------------------------------
-    # PDF
-    # --------------------------------------------------------
+    else:
+        data["photo"] = ""
 
     filename = os.path.join(
         tempfile.gettempdir(),
@@ -2281,24 +1564,65 @@ def generate():
     )
 
     with open(filename, "rb") as pdf_file:
-    pdf_data = base64.b64encode(
-        pdf_file.read()
-    ).decode("utf-8")
+        pdf_data = base64.b64encode(
+            pdf_file.read()
+        ).decode("utf-8")
 
-return render_template_string(
-    PREVIEW_HTML,
-    pdf_data=pdf_data
-)
+    token = str(uuid.uuid4())
+
+    preview_file = os.path.join(
+        tempfile.gettempdir(),
+        "CVForge_" + token + ".pdf"
+    )
+
+    with open(preview_file, "wb") as output:
+        with open(filename, "rb") as source:
+            output.write(source.read())
+
+    return render_template_string(
+        PREVIEW_HTML,
+        pdf_data=pdf_data,
+        token=token
+    )
 
 
-# ============================================================
-# START SERVER
-# ============================================================
+@app.route("/pdf/<token>")
+def view_pdf(token):
+    filename = os.path.join(
+        tempfile.gettempdir(),
+        "CVForge_" + token + ".pdf"
+    )
+
+    if not os.path.exists(filename):
+        return "CV not found.", 404
+
+    return send_file(
+        filename,
+        mimetype="application/pdf"
+    )
+
+
+@app.route("/download/<token>")
+def download_pdf(token):
+    filename = os.path.join(
+        tempfile.gettempdir(),
+        "CVForge_" + token + ".pdf"
+    )
+
+    if not os.path.exists(filename):
+        return "CV not found.", 404
+
+    return send_file(
+        filename,
+        as_attachment=True,
+        download_name="CVForge_Professional_CV.pdf",
+        mimetype="application/pdf"
+    )
+
 
 if __name__ == "__main__":
-
     app.run(
         host="0.0.0.0",
-        port=5000,
+        port=int(os.environ.get("PORT", 5000)),
         debug=False
-    )
+        )
