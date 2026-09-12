@@ -7,6 +7,7 @@ from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.lib.utils import ImageReader
 import os
 import tempfile
+import base64
 
 
 app = Flask(__name__)
@@ -916,6 +917,128 @@ Dr. Jane Doe | XYZ University | jane@example.com | +251 9XX XXX XXX"></textarea>
     showStep(0);
 
 </script>
+
+</body>
+</html>
+"""
+PREVIEW_HTML = """
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CVForge - CV Preview</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 15px;
+            background: #eef1f2;
+            font-family: Arial, sans-serif;
+            color: #222;
+        }
+
+        .box {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            color: #173f49;
+            margin-top: 0;
+        }
+
+        .subtitle {
+            color: #777;
+            margin-bottom: 20px;
+        }
+
+        .preview {
+            width: 100%;
+            height: 75vh;
+            min-height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: #eee;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 9px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .download {
+            background: #d6aa4c;
+            color: #173f49;
+        }
+
+        .edit {
+            background: #e5e8e9;
+            color: #173f49;
+        }
+
+        @media (max-width: 600px) {
+            .buttons {
+                flex-direction: column;
+            }
+
+            .preview {
+                height: 70vh;
+                min-height: 500px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="box">
+
+    <h1>CVForge</h1>
+
+    <div class="subtitle">
+        Your CV is ready. Review it before downloading.
+    </div>
+
+    <iframe
+        class="preview"
+        src="data:application/pdf;base64,{{ pdf_data }}">
+    </iframe>
+
+    <div class="buttons">
+
+        <a
+            class="button edit"
+            href="/">
+            ← Edit CV
+        </a>
+
+        <a
+            class="button download"
+            href="data:application/pdf;base64,{{ pdf_data }}"
+            download="CVForge_Professional_CV.pdf">
+            ⬇ Download CV
+        </a>
+
+    </div>
+
+</div>
 
 </body>
 </html>
@@ -2157,12 +2280,15 @@ def generate():
         filename
     )
 
-    return send_file(
-        filename,
-        as_attachment=True,
-        download_name="CVForge_Professional_CV.pdf",
-        mimetype="application/pdf"
-    )
+    with open(filename, "rb") as pdf_file:
+    pdf_data = base64.b64encode(
+        pdf_file.read()
+    ).decode("utf-8")
+
+return render_template_string(
+    PREVIEW_HTML,
+    pdf_data=pdf_data
+)
 
 
 # ============================================================
