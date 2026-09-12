@@ -250,74 +250,906 @@ Participated in emergency care and medical documentation."></textarea>
 
         <!-- EDUCATION -->
 
-        <div class="section">
-            <h2>Education</h2>
+HTML = """
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CVForge - Professional CV Builder</title>
 
-            <textarea name="education"
-                placeholder="Doctor of Medicine (MD) | XYZ University | 2022
-High School Diploma | ABC School | 2016"></textarea>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 15px;
+            background: #eef1f2;
+            font-family: Arial, sans-serif;
+            color: #222;
+        }
+
+        .box {
+            max-width: 760px;
+            margin: auto;
+            background: white;
+            padding: 22px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            margin: 0;
+            color: #173f49;
+            font-size: 34px;
+        }
+
+        .subtitle {
+            color: #777;
+            margin-top: 5px;
+            margin-bottom: 22px;
+        }
+
+        /* PROGRESS */
+
+        .progress-area {
+            margin-bottom: 25px;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            color: #173f49;
+            margin-bottom: 8px;
+        }
+
+        .progress-bg {
+            height: 8px;
+            background: #e2e6e7;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 10%;
+            background: #d6aa4c;
+            border-radius: 20px;
+            transition: width 0.3s;
+        }
+
+        /* STEPS */
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .step-title {
+            color: #173f49;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .step-description {
+            color: #777;
+            margin-bottom: 22px;
+            line-height: 1.5;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-top: 16px;
+            color: #333;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 13px;
+            margin-top: 7px;
+            border: 1px solid #ccc;
+            border-radius: 9px;
+            font-size: 16px;
+            font-family: Arial, sans-serif;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #173f49;
+        }
+
+        textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+
+        small {
+            display: block;
+            color: #777;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        .example {
+            background: #f5f7f7;
+            border-left: 4px solid #d6aa4c;
+            padding: 12px;
+            border-radius: 7px;
+            margin-top: 12px;
+            color: #555;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* NAVIGATION */
+
+        .navigation {
+            display: flex;
+            gap: 10px;
+            margin-top: 28px;
+        }
+
+        .nav-button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 9px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .back-button {
+            background: #e5e8e9;
+            color: #173f49;
+        }
+
+        .next-button {
+            background: #173f49;
+            color: white;
+        }
+
+        .generate-button {
+            width: 100%;
+            padding: 17px;
+            border: none;
+            border-radius: 10px;
+            background: #d6aa4c;
+            color: #173f49;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        /* TEMPLATE CARDS */
+
+        .templates {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            margin-top: 20px;
+        }
+
+        .template-card {
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 18px;
+            cursor: pointer;
+            background: white;
+        }
+
+        .template-card:hover {
+            border-color: #d6aa4c;
+        }
+
+        .template-card.selected {
+            border-color: #173f49;
+            background: #f2f6f7;
+        }
+
+        .template-card h3 {
+            margin: 0 0 7px 0;
+            color: #173f49;
+        }
+
+        .template-card p {
+            margin: 0;
+            color: #777;
+            line-height: 1.4;
+        }
+
+        .template-badge {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 9px;
+            border-radius: 20px;
+            background: #d6aa4c;
+            color: #173f49;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .success-box {
+            text-align: center;
+            padding: 25px 10px;
+        }
+
+        .success-icon {
+            font-size: 55px;
+        }
+
+        .success-box h2 {
+            color: #173f49;
+            font-size: 27px;
+        }
+
+        @media (max-width: 500px) {
+            body {
+                padding: 8px;
+            }
+
+            .box {
+                padding: 18px;
+            }
+
+            h1 {
+                font-size: 30px;
+            }
+
+            .step-title {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="box">
+
+    <h1>CVForge</h1>
+
+    <div class="subtitle">
+        Build your professional CV step by step.
+    </div>
+
+    <div class="progress-area">
+        <div class="progress-text">
+            <span id="stepLabel">Step 1 of 10</span>
+            <span id="stepName">Personal Information</span>
+        </div>
+
+        <div class="progress-bg">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+    </div>
+
+
+    <form method="post"
+          action="/generate"
+          enctype="multipart/form-data"
+          id="cvForm">
+
+
+        <!-- ================================================= -->
+        <!-- STEP 1 -->
+        <!-- ================================================= -->
+
+        <div class="step active">
+
+            <div class="step-title">
+                1. Personal Information
+            </div>
+
+            <div class="step-description">
+                Tell us about yourself and how employers can contact you.
+            </div>
+
+            <label>Full Name *</label>
+            <input
+                name="name"
+                placeholder="John Doe"
+                required>
+
+            <label>Professional Title</label>
+            <input
+                name="title"
+                placeholder="Medical Doctor">
+
+            <label>Profile Photo</label>
+            <input
+                type="file"
+                name="photo"
+                accept="image/*">
 
             <small>
-                One qualification per line:
-                Degree | Institution | Year
+                Optional. JPG, PNG or another common image format.
             </small>
+
+            <label>Phone</label>
+            <input
+                name="phone"
+                placeholder="+251 9XX XXX XXX">
+
+            <label>Email</label>
+            <input
+                name="email"
+                type="email"
+                placeholder="you@example.com">
+
+            <label>Location</label>
+            <input
+                name="location"
+                placeholder="Addis Ababa, Ethiopia">
+
+            <label>LinkedIn</label>
+            <input
+                name="linkedin"
+                placeholder="linkedin.com/in/yourname">
+
+            <label>Website / Portfolio</label>
+            <input
+                name="website"
+                placeholder="www.example.com">
+
         </div>
 
 
-        <!-- CERTIFICATES -->
+        <!-- ================================================= -->
+        <!-- STEP 2 -->
+        <!-- ================================================= -->
 
-        <div class="section">
-            <h2>Certificates & Training</h2>
+        <div class="step">
 
-            <textarea name="certificates"
+            <div class="step-title">
+                2. Professional Summary
+            </div>
+
+            <div class="step-description">
+                Write a short introduction that shows your experience,
+                strengths and career goals.
+            </div>
+
+            <label>Professional Summary</label>
+
+            <textarea
+                name="summary"
+                placeholder="Medical doctor with experience in patient care, clinical assessment, diagnosis and emergency medicine. Dedicated to providing high-quality patient-centered care."></textarea>
+
+            <div class="example">
+                <strong>Tip:</strong>
+                Keep your summary around 3–5 sentences.
+                Focus on your strongest professional qualities.
+            </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- STEP 3 -->
+        <!-- ================================================= -->
+
+        <div class="step">
+
+            <div class="step-title">
+                3. Experience
+            </div>
+
+            <div class="step-description">
+                Add your professional work experience, starting with
+                your most recent position.
+            </div>
+
+            <label>Work Experience</label>
+
+            <textarea
+                name="experience"
+                style="min-height:260px"
+                placeholder="Medical Doctor | ABC General Hospital | Addis Ababa | 2023 - Present
+Provided clinical assessment, diagnosis and treatment for patients.
+Managed emergency cases and coordinated patient follow-up.
+Worked collaboratively with nurses and other healthcare professionals.
+
+Intern Doctor | XYZ Teaching Hospital | Addis Ababa | 2022 - 2023
+Assisted with patient assessment and clinical procedures.
+Participated in emergency care and medical documentation."></textarea>
+
+            <div class="example">
+                <strong>Format:</strong><br>
+                Job Title | Company | Location | Dates<br>
+                Then write your responsibilities and achievements below.
+            </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- STEP 4 -->
+        <!-- ================================================= -->
+
+        <div class="step">
+
+            <div class="step-title">
+                4. Education
+            </div>
+
+            <div class="step-description">
+                Add your academic qualifications.
+            </div>
+
+            <label>Education</label>
+
+            <textarea
+                name="education"
+                placeholder="Doctor of Medicine (MD) | XYZ University | 2022
+High School Diploma | ABC School | 2016"></textarea>
+
+            <div class="example">
+                <strong>Format:</strong><br>
+                Degree | Institution | Graduation Year
+            </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- STEP 5 -->
+        <!-- ================================================= -->
+
+        <div class="step">
+
+            <div class="step-title">
+                5. Skills
+            </div>
+
+            <div class="step-description">
+                Add the skills that best match your profession and target job.
+            </div>
+
+            <label>Skills</label>
+
+            <input
+                name="skills"
+                placeholder="Patient Care, Clinical Assessment, Diagnosis, Leadership, Communication">
+
+            <small>
+                Separate each skill with a comma.
+            </small>
+
+            <div class="example">
+                Example: Leadership, Communication, Teamwork,
+                Microsoft Office, Patient Care
+            </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- STEP 6 -->
+        <!-- ================================================= -->
+
+        <div class="step">
+
+            <div class="step-title">
+                6. Certificates
+            </div>
+
+            <div class="step-description">
+                Add professional certificates, training and courses.
+            </div>
+
+            <label>Certificates & Training</label>
+
+            <textarea
+                name="certificates"
                 placeholder="Basic Life Support (BLS) | 2023
 Advanced Cardiac Life Support (ACLS) | 2024
 First Aid Training | 2023"></textarea>
 
-            <small>
-                One certificate per line:
-                Certificate | Year
-            </small>
+            <div class="example">
+                <strong>Format:</strong><br>
+                Certificate Name | Year
+            </div>
+
         </div>
 
 
-        <!-- HOBBIES -->
+        <!-- ================================================= -->
+        <!-- STEP 7 -->
+        <!-- ================================================= -->
 
-        <div class="section">
-            <h2>Hobbies & Interests</h2>
+        <div class="step">
 
-            <input name="hobbies"
-                   placeholder="Reading, Volunteering, Research, Photography">
+            <div class="step-title">
+                7. Languages
+            </div>
 
-            <small>
-                Separate hobbies with commas.
-            </small>
+            <div class="step-description">
+                List the languages you speak and your proficiency level.
+            </div>
+
+            <label>Languages</label>
+
+            <textarea
+                name="languages"
+                placeholder="English | Fluent
+Amharic | Native
+Afaan Oromo | Native"></textarea>
+
+            <div class="example">
+                <strong>Format:</strong><br>
+                Language | Proficiency Level
+            </div>
+
         </div>
 
 
-        <!-- REFERENCES -->
+        <!-- ================================================= -->
+        <!-- STEP 8 -->
+        <!-- ================================================= -->
 
-        <div class="section">
-            <h2>References</h2>
+        <div class="step">
 
-            <textarea name="references"
+            <div class="step-title">
+                8. References
+            </div>
+
+            <div class="step-description">
+                Add professional references or choose to provide them later.
+            </div>
+
+            <label>References</label>
+
+            <textarea
+                name="references"
                 placeholder="Dr. John Smith | ABC Hospital | john@example.com | +251 9XX XXX XXX
 Dr. Jane Doe | XYZ University | jane@example.com | +251 9XX XXX XXX"></textarea>
 
-            <small>
-                One reference per line:
+            <div class="example">
+                <strong>Format:</strong><br>
                 Name | Organization | Email | Phone
-            </small>
+                <br><br>
+                You may also write:
+                <strong>References available upon request.</strong>
+            </div>
+
         </div>
 
 
-        <button class="button" type="submit">
-            GENERATE PROFESSIONAL PDF CV
-        </button>
+        <!-- ================================================= -->
+        <!-- STEP 9 -->
+        <!-- ================================================= -->
+
+        <div class="step">
+
+            <div class="step-title">
+                9. Choose Template
+            </div>
+
+            <div class="step-description">
+                Choose the style you want for your CV.
+            </div>
+
+            <div class="templates">
+
+                <div class="template-card selected"
+                     onclick="selectTemplate(this, 'modern')">
+
+                    <h3>Modern Professional</h3>
+
+                    <p>
+                        Dark teal and gold design with profile photo,
+                        sidebar and professional sections.
+                    </p>
+
+                    <span class="template-badge">
+                        CURRENT DESIGN
+                    </span>
+
+                </div>
+
+
+                <div class="template-card"
+                     onclick="selectTemplate(this, 'classic')">
+
+                    <h3>Classic Professional</h3>
+
+                    <p>
+                        Clean and traditional layout suitable for
+                        corporate and professional applications.
+                    </p>
+
+                    <span class="template-badge">
+                        COMING SOON
+                    </span>
+
+                </div>
+
+
+                <div class="template-card"
+                     onclick="selectTemplate(this, 'ats')">
+
+                    <h3>ATS Friendly</h3>
+
+                    <p>
+                        Simple professional layout designed for
+                        applicant tracking systems.
+                    </p>
+
+                    <span class="template-badge">
+                        COMING SOON
+                    </span>
+
+                </div>
+
+            </div>
+
+            <input
+                type="hidden"
+                name="template"
+                id="template"
+                value="modern">
+
+            <input
+                type="hidden"
+                name="hobbies"
+                id="hobbies"
+                value="">
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- STEP 10 -->
+        <!-- ================================================= -->
+
+        <div class="step">
+
+            <div class="success-box">
+
+                <div class="success-icon">
+                    📄
+                </div>
+
+                <div class="step-title">
+                    10. Generate Your CV
+                </div>
+
+                <div class="step-description">
+                    Your information is ready.
+                    Click the button below to generate your professional PDF CV.
+                </div>
+
+                <button
+                    class="generate-button"
+                    type="submit">
+
+                    GENERATE PROFESSIONAL CV
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- NAVIGATION -->
+
+        <div class="navigation">
+
+            <button
+                type="button"
+                class="nav-button back-button"
+                id="backButton"
+                onclick="previousStep()">
+
+                ← Back
+
+            </button>
+
+            <button
+                type="button"
+                class="nav-button next-button"
+                id="nextButton"
+                onclick="nextStep()">
+
+                Next →
+
+            </button>
+
+        </div>
 
     </form>
 
 </div>
+
+
+<script>
+
+    let currentStep = 0;
+
+    const stepNames = [
+        "Personal Information",
+        "Professional Summary",
+        "Experience",
+        "Education",
+        "Skills",
+        "Certificates",
+        "Languages",
+        "References",
+        "Choose Template",
+        "Generate CV"
+    ];
+
+    const steps = document.querySelectorAll(".step");
+
+    const progressBar =
+        document.getElementById("progressBar");
+
+    const stepLabel =
+        document.getElementById("stepLabel");
+
+    const stepName =
+        document.getElementById("stepName");
+
+    const backButton =
+        document.getElementById("backButton");
+
+    const nextButton =
+        document.getElementById("nextButton");
+
+
+    function showStep(index) {
+
+        steps.forEach(function(step, i) {
+
+            step.classList.toggle(
+                "active",
+                i === index
+            );
+
+        });
+
+        currentStep = index;
+
+        const number = index + 1;
+
+        const percentage =
+            (number / steps.length) * 100;
+
+        progressBar.style.width =
+            percentage + "%";
+
+        stepLabel.textContent =
+            "Step " + number + " of " + steps.length;
+
+        stepName.textContent =
+            stepNames[index];
+
+
+        if (index === 0) {
+
+            backButton.style.visibility =
+                "hidden";
+
+        } else {
+
+            backButton.style.visibility =
+                "visible";
+
+        }
+
+
+        if (index === steps.length - 1) {
+
+            nextButton.style.display =
+                "none";
+
+        } else {
+
+            nextButton.style.display =
+                "block";
+
+        }
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+
+
+    function validateCurrentStep() {
+
+        const current =
+            steps[currentStep];
+
+        const fields =
+            current.querySelectorAll(
+                "input[required], textarea[required]"
+            );
+
+        for (let field of fields) {
+
+            if (!field.checkValidity()) {
+
+                field.reportValidity();
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
+    function nextStep() {
+
+        if (!validateCurrentStep()) {
+            return;
+        }
+
+        if (currentStep < steps.length - 1) {
+
+            showStep(currentStep + 1);
+
+        }
+    }
+
+
+    function previousStep() {
+
+        if (currentStep > 0) {
+
+            showStep(currentStep - 1);
+
+        }
+    }
+
+
+    function selectTemplate(card, templateName) {
+
+        document
+            .querySelectorAll(".template-card")
+            .forEach(function(item) {
+
+                item.classList.remove("selected");
+
+            });
+
+        card.classList.add("selected");
+
+        document.getElementById("template").value =
+            templateName;
+
+    }
+
+
+    document
+        .getElementById("cvForm")
+        .addEventListener("submit", function(event) {
+
+            if (!validateCurrentStep()) {
+
+                event.preventDefault();
+
+            }
+
+        });
+
+
+    showStep(0);
+
+</script>
 
 </body>
 </html>
