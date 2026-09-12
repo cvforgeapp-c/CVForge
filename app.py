@@ -942,7 +942,6 @@ def draw_footer(c):
         "Created with CVForge"
     )
 
-
 def generate_modern(c, data):
     page_width, page_height = A4
 
