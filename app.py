@@ -939,10 +939,12 @@ def draw_footer(c):
     c.drawCentredString(
         page_width / 2,
         7 * mm,
-        "Created with CVForge"
+       "Created with CVForge"
     )
-    def generate_modern(c, data):
-    page_width, page_height = A4
+
+
+def generate_modern(c, data):
+    page_width, page_height = A4 
 
     sidebar_width = 63 * mm
     content_x = sidebar_width + 12 * mm
