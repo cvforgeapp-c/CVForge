@@ -804,15 +804,27 @@ def draw_profile_photo(c, photo_path, x, y, size):
     try:
         c.saveState()
 
+        # Center of the photo
+        cx = x + size / 2
+        cy = y - size / 2
+        radius = size / 2
+
+        # White border
         c.setFillColor(colors.white)
         c.circle(
-            x + size / 2,
-            y - size / 2,
-            size / 2 + 2,
+            cx,
+            cy,
+            radius + 2 * mm,
             fill=1,
             stroke=0
         )
 
+        # Circular clipping area
+        path = c.beginPath()
+        path.circle(cx, cy, radius)
+        c.clipPath(path, stroke=0, fill=0)
+
+        # Draw photo
         image = ImageReader(photo_path)
 
         c.drawImage(
@@ -862,13 +874,13 @@ def draw_header(c, data, sidebar_width):
 
     x = sidebar_width + 12 * mm
 
-    photo_size = 30 * mm
+    photo_size = 24 * mm
 
     draw_profile_photo(
         c,
         data.get("photo"),
-        page_width - photo_size - 12 * mm,
-        page_height - 43 * mm,
+        page_width - photo_size - 15 * mm,
+        page_height - 12 * mm,
         photo_size
     )
 
