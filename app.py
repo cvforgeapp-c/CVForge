@@ -971,12 +971,13 @@ def draw_sidebar_list(c, text, x, y, width):
 
         y -= 3
 
-    return y
-    _modern_canvas = None
-    def wrap(text, font, size, width):
-    """
-    Compatibility wrapper used by the Modern template.
-    """
+        return y
+
+
+_modern_canvas = None
+
+
+def wrap(text, font, size, width):
     return wrap_text(
         _modern_canvas,
         text,
@@ -987,10 +988,6 @@ def draw_sidebar_list(c, text, x, y, width):
 
 
 def blocks(text):
-    
-    Split experience into separate job blocks.
-    Supports blank-line-separated jobs.
-    
     result = []
 
     for block in clean(text).split("\n\n"):
@@ -1004,6 +1001,7 @@ def blocks(text):
             result.append(lines)
 
     return result
+
 def draw_profile_photo(c, photo_path, x, y, size):
     if not photo_path:
         return
