@@ -3,6 +3,7 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
+from reportlab.lib.utils import ImageReader
 import os
 import tempfile
 import base64
@@ -793,6 +794,42 @@ def draw_sidebar_list(c, text, x, y, width):
         y -= 3
 
     return y
+def draw_profile_photo(c, photo_path, x, y, size):
+    if not photo_path:
+        return
+
+    if not os.path.exists(photo_path):
+        return
+
+    try:
+        c.saveState()
+
+        c.setFillColor(colors.white)
+        c.circle(
+            x + size / 2,
+            y - size / 2,
+            size / 2 + 2,
+            fill=1,
+            stroke=0
+        )
+
+        image = ImageReader(photo_path)
+
+        c.drawImage(
+            image,
+            x,
+            y - size,
+            width=size,
+            height=size,
+            preserveAspectRatio=True,
+            anchor='c',
+            mask='auto'
+        )
+
+        c.restoreState()
+
+    except Exception:
+        pass
 
 
 def draw_header(c, data, sidebar_width):
@@ -825,8 +862,18 @@ def draw_header(c, data, sidebar_width):
 
     x = sidebar_width + 12 * mm
 
+photo_size = 30 * mm
+
+draw_profile_photo(
+    c,
+    data.get("photo"),
+    page_width - photo_size - 12 * mm,
+    page_height - 43 * mm,
+    photo_size
+)
+
     c.setFillColor(colors.white)
-    c.setFont("Helvetica-Bold", 24)
+    c.setFont("Helvetica-Bold", 21)
     c.drawString(x, page_height - 23 * mm, name)
 
     if title:
