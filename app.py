@@ -411,11 +411,19 @@ PREVIEW_HTML = """
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>CVForge Preview</title>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
 <style>
+
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     background: #eef3f3;
@@ -453,16 +461,30 @@ h1 {
     background: #dfe7e7;
     padding: 10px;
     border-radius: 12px;
-    box-sizing: border-box;
 }
 
-.preview {
+.pdf-page {
     width: 100%;
-    height: 900px;
+    height: auto;
     display: block;
-    border: none;
-    border-radius: 6px;
     background: white;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+}
+
+.loading {
+    text-align: center;
+    padding: 30px;
+    color: #777;
+    font-weight: bold;
+}
+
+.error {
+    text-align: center;
+    padding: 30px;
+    color: #b00020;
+    font-weight: bold;
 }
 
 .buttons {
@@ -505,15 +527,17 @@ a {
         padding: 5px;
     }
 
-    .preview {
-        height: 750px;
-    }
-
     .buttons {
         flex-direction: column;
     }
+
+    .pdf-page {
+        margin-bottom: 10px;
+    }
 }
+
 </style>
+
 </head>
 
 <body>
@@ -528,12 +552,11 @@ a {
 Your professional CV is ready
 </div>
 
-<div class="preview-box">
+<div class="preview-box" id="previewBox">
 
-<iframe
-    class="preview"
-    src="data:application/pdf;base64,{{ pdf_data }}">
-</iframe>
+<div class="loading" id="loading">
+Preparing your CV preview...
+</div>
 
 </div>
 
@@ -558,6 +581,113 @@ Your professional CV is ready
 </div>
 
 </div>
+
+
+<script>
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+
+const pdfBase64 = "{{ pdf_data }}";
+
+const previewBox = document.getElementById("previewBox");
+
+const loading = document.getElementById("loading");
+
+
+async function renderPDF() {
+
+    try {
+
+        const binaryString = atob(pdfBase64);
+
+        const len = binaryString.length;
+
+        const bytes = new Uint8Array(len);
+
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+
+        const pdf = await pdfjsLib.getDocument({
+            data: bytes
+        }).promise;
+
+
+        loading.remove();
+
+
+        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+
+            const page = await pdf.getPage(pageNumber);
+
+
+            const containerWidth =
+                previewBox.clientWidth - 20;
+
+
+            const originalViewport =
+                page.getViewport({ scale: 1 });
+
+
+            const scale =
+                containerWidth / originalViewport.width;
+
+
+            const viewport =
+                page.getViewport({ scale: scale });
+
+
+            const canvas =
+                document.createElement("canvas");
+
+
+            canvas.className = "pdf-page";
+
+
+            const context =
+                canvas.getContext("2d");
+
+
+            canvas.width = viewport.width;
+
+            canvas.height = viewport.height;
+
+
+            previewBox.appendChild(canvas);
+
+
+            await page.render({
+                canvasContext: context,
+                viewport: viewport
+            }).promise;
+
+        }
+
+    } catch (error) {
+
+        loading.remove();
+
+        const errorMessage =
+            document.createElement("div");
+
+        errorMessage.className = "error";
+
+        errorMessage.textContent =
+            "Unable to display the CV preview. Please try again.";
+
+        previewBox.appendChild(errorMessage);
+
+        console.error(error);
+
+    }
+
+}
+
+renderPDF();
+
+</script>
 
 </body>
 </html>
