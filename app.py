@@ -412,10 +412,13 @@ PREVIEW_HTML = """
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>CVForge Preview</title>
+<title>CVForge - Your CV</title>
 
 <style>
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     background: #eef3f3;
@@ -424,22 +427,24 @@ body {
 }
 
 .container {
-    max-width: 900px;
+    max-width: 1000px;
     margin: auto;
-    padding: 20px;
+    padding: 15px;
 }
 
 .card {
     background: white;
-    border-radius: 16px;
+    border-radius: 18px;
     padding: 20px;
     box-shadow: 0 5px 25px rgba(0,0,0,.08);
 }
 
-h1 {
+.logo {
     text-align: center;
+    font-size: 28px;
+    font-weight: bold;
     color: #0d4f4f;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
 }
 
 .subtitle {
@@ -451,17 +456,18 @@ h1 {
 .preview-box {
     width: 100%;
     background: #dfe7e7;
-    padding: 10px;
+    padding: 15px;
     border-radius: 12px;
+    overflow: hidden;
 }
 
 .preview {
     width: 100%;
     height: 900px;
-    display: block;
     border: none;
-    border-radius: 6px;
     background: white;
+    border-radius: 6px;
+    display: block;
 }
 
 .buttons {
@@ -498,6 +504,7 @@ a {
 
     .card {
         padding: 12px;
+        border-radius: 14px;
     }
 
     .preview-box {
@@ -512,7 +519,6 @@ a {
         flex-direction: column;
     }
 }
-
 </style>
 </head>
 
@@ -522,7 +528,7 @@ a {
 
 <div class="card">
 
-<h1>Your CV Preview</h1>
+<div class="logo">CVForge</div>
 
 <div class="subtitle">
 Your professional CV is ready
@@ -550,7 +556,7 @@ Your professional CV is ready
     class="download"
     href="/download/{{ token }}"
 >
-⬇ DOWNLOAD CV
+⬇ Download CV
 </a>
 
 </div>
