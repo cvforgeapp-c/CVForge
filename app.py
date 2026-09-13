@@ -1603,7 +1603,7 @@ def modern_wave_footer(c, W):
     c.drawPath(p3, fill=1, stroke=0)
 
 
-def modern(data, file):
+def generate_modern(c, data):
     W, H = A4
 
     c = canvas.Canvas(
