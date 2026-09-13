@@ -135,6 +135,74 @@ button {
     color: #777;
     font-size: 13px;
 }
+.template-grid {
+    display: grid;
+    gap: 15px;
+    margin-top: 18px;
+}
+
+.template-option {
+    width: 100%;
+    text-align: left;
+    background: #ffffff;
+    border: 2px solid #d9e0e0;
+    border-radius: 16px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.template-option:hover {
+    border-color: #0d4f4f;
+    transform: translateY(-2px);
+}
+
+.template-option.selected {
+    border-color: #c9a227;
+    background: #f8f5e9;
+    box-shadow: 0 4px 15px rgba(201,162,39,.18);
+}
+
+.template-name {
+    font-size: 20px;
+    font-weight: bold;
+    color: #173f3f;
+    margin-bottom: 8px;
+}
+
+.template-description {
+    color: #777;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.template-badge {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 7px 12px;
+    border-radius: 20px;
+    background: #e7eeee;
+    color: #173f3f;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.template-option.selected .template-badge {
+    background: #c9a227;
+    color: white;
+}
+
+.checkmark {
+    float: right;
+    display: none;
+    color: #c9a227;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.template-option.selected .checkmark {
+    display: block;
+}
 
 @media(max-width:600px) {
     .container { padding: 10px; }
@@ -330,22 +398,104 @@ Email / Phone"></textarea>
 <div class="step">
 <h2>10. Choose Template</h2>
 
-<label>CV Template</label>
-
-<select name="template">
-<option value="modern">Modern Professional</option>
-<option value="classic">Classic Professional</option>
-<option value="ats">ATS Friendly</option>
-</select>
-
 <p class="small">
 Choose the design that best matches your job application.
 </p>
 
-<div class="buttons">
-<button type="button" class="back" onclick="prevStep()">← Back</button>
-<button type="button" class="next" onclick="nextStep()">Next →</button>
+<input type="hidden" name="template" id="templateInput" value="modern">
+
+<div class="template-grid">
+
+<button
+    type="button"
+    class="template-option selected"
+    data-template="modern"
+    onclick="selectTemplate(this)"
+>
+    <span class="checkmark">✓</span>
+
+    <div class="template-name">
+        Modern Professional
+    </div>
+
+    <div class="template-description">
+        Premium visual design with a profile photo,
+        clean sections and a modern professional layout.
+    </div>
+
+    <span class="template-badge">
+        ✓ Selected
+    </span>
+</button>
+
+
+<button
+    type="button"
+    class="template-option"
+    data-template="classic"
+    onclick="selectTemplate(this)"
+>
+    <span class="checkmark">✓</span>
+
+    <div class="template-name">
+        Classic Professional
+    </div>
+
+    <div class="template-description">
+        Elegant and traditional design with a full-width
+        header. No photo. Ideal for corporate applications.
+    </div>
+
+    <span class="template-badge">
+        Select
+    </span>
+</button>
+
+
+<button
+    type="button"
+    class="template-option"
+    data-template="ats"
+    onclick="selectTemplate(this)"
+>
+    <span class="checkmark">✓</span>
+
+    <div class="template-name">
+        ATS Friendly
+    </div>
+
+    <div class="template-description">
+        Simple single-column, text-focused design with
+        no photo, icons or graphics.
+    </div>
+
+    <span class="template-badge">
+        Select
+    </span>
+</button>
+
 </div>
+
+<div class="buttons">
+
+<button
+    type="button"
+    class="back"
+    onclick="prevStep()"
+>
+    ← Back
+</button>
+
+<button
+    type="button"
+    class="next"
+    onclick="nextStep()"
+>
+    Next →
+</button>
+
+</div>
+
 </div>
 
 
@@ -386,6 +536,33 @@ function showStep(index) {
         top: 0,
         behavior: "smooth"
     });
+}
+function selectTemplate(button) {
+
+    const options = document.querySelectorAll(".template-option");
+
+    options.forEach(option => {
+
+        option.classList.remove("selected");
+
+        const badge = option.querySelector(".template-badge");
+
+        if (badge) {
+            badge.textContent = "Select";
+        }
+
+    });
+
+    button.classList.add("selected");
+
+    const badge = button.querySelector(".template-badge");
+
+    if (badge) {
+        badge.textContent = "✓ Selected";
+    }
+
+    document.getElementById("templateInput").value =
+        button.dataset.template;
 }
 
 function nextStep() {
