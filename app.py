@@ -987,10 +987,10 @@ def draw_sidebar_list(c, text, x, y, width):
 
 
 def blocks(text):
-    """
+    
     Split experience into separate job blocks.
     Supports blank-line-separated jobs.
-    """
+    
     result = []
 
     for block in clean(text).split("\n\n"):
