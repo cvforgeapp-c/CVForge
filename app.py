@@ -4,6 +4,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
+from reportlab.pdfbase.pdfmetrics import stringWidth
 import os
 import tempfile
 import base64
@@ -971,6 +972,38 @@ def draw_sidebar_list(c, text, x, y, width):
         y -= 3
 
     return y
+    _modern_canvas = None
+    def wrap(text, font, size, width):
+    """
+    Compatibility wrapper used by the Modern template.
+    """
+    return wrap_text(
+        _modern_canvas,
+        text,
+        font,
+        size,
+        width
+    )
+
+
+def blocks(text):
+    """
+    Split experience into separate job blocks.
+    Supports blank-line-separated jobs.
+    """
+    result = []
+
+    for block in clean(text).split("\n\n"):
+        lines = [
+            line.strip()
+            for line in block.splitlines()
+            if line.strip()
+        ]
+
+        if lines:
+            result.append(lines)
+
+    return result
 def draw_profile_photo(c, photo_path, x, y, size):
     if not photo_path:
         return
@@ -1604,14 +1637,15 @@ def modern_wave_footer(c, W):
 
 
 def generate_modern(c, data):
+    global _modern_canvas
+
+    _modern_canvas = c
+
     W, H = A4
 
-    c = canvas.Canvas(
-        file,
-        pagesize=A4
+    c.setTitle(
+        "CV - " + clean(data.get("name"))
     )
-
-    c.setTitle("CV - " + data["name"])
 
     # --------------------------------------------------------
     # COLORS
@@ -2336,7 +2370,7 @@ def generate_modern(c, data):
         "CLEAN CODE  •  BETTER SOLUTIONS  •  BRIGHTER FUTURE"
     )
 
-    c.save()
+    
 
 
 def generate_classic(c, data):
