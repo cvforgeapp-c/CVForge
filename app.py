@@ -862,24 +862,32 @@ def draw_header(c, data, sidebar_width):
 
     x = sidebar_width + 12 * mm
 
-photo_size = 30 * mm
+    photo_size = 30 * mm
 
-draw_profile_photo(
-    c,
-    data.get("photo"),
-    page_width - photo_size - 12 * mm,
-    page_height - 43 * mm,
-    photo_size
-)
+    draw_profile_photo(
+        c,
+        data.get("photo"),
+        page_width - photo_size - 12 * mm,
+        page_height - 43 * mm,
+        photo_size
+    )
 
     c.setFillColor(colors.white)
     c.setFont("Helvetica-Bold", 21)
-    c.drawString(x, page_height - 23 * mm, name)
+    c.drawString(
+        x,
+        page_height - 23 * mm,
+        name
+    )
 
     if title:
         c.setFont("Helvetica", 12)
         c.setFillColor(colors.HexColor("#E6EEEE"))
-        c.drawString(x, page_height - 32 * mm, title)
+        c.drawString(
+            x,
+            page_height - 32 * mm,
+            title
+        )
 
     summary = clean(data.get("summary"))
 
