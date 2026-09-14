@@ -1759,9 +1759,6 @@ def modern_wave_footer(c, W):
 
 
 def generate_modern(c, data):
-    global _modern_canvas
-
-    _modern_canvas = c
 
     W, H = A4
 
@@ -1769,496 +1766,554 @@ def generate_modern(c, data):
         "CV - " + clean(data.get("name"))
     )
 
-    # --------------------------------------------------------
-    # COLORS
-    # --------------------------------------------------------
-    BLUE = colors.HexColor("#0875D1")
-    DARK_BLUE = colors.HexColor("#07509B")
-    LIGHT_BLUE = colors.HexColor("#EAF6FF")
-    TEXT = colors.HexColor("#183B63")
-    HEADING = colors.HexColor("#0B5DB7")
+    # ========================================================
+    # SELECTED COLOR
+    # ========================================================
+
+    try:
+        ACCENT = colors.HexColor(
+            clean(data.get("accent_color"))
+            or "#1599A8"
+        )
+    except Exception:
+        ACCENT = colors.HexColor("#1599A8")
+
+    # Lighter version for sidebar
+    SIDEBAR = colors.HexColor("#EFF9FA")
+
+    DARK = colors.HexColor("#222222")
+    GREY = colors.HexColor("#666666")
     WHITE = colors.white
 
-    # --------------------------------------------------------
+    # ========================================================
     # PAGE
-    # --------------------------------------------------------
-    c.setFillColor(colors.white)
-    c.rect(0, 0, W, H, fill=1, stroke=0)
+    # ========================================================
 
-    # --------------------------------------------------------
-    # TOP HEADER
-    # --------------------------------------------------------
-    header_h = 70*mm
-
-    c.setFillColor(BLUE)
-    c.rect(0, H-header_h, W, header_h, fill=1, stroke=0)
-
-    # darker curved lower-right part of header
-    p = c.beginPath()
-    p.moveTo(W, H-header_h)
-    p.curveTo(
-        W-25*mm, H-63*mm,
-        W-12*mm, H-53*mm,
-        W, H-47*mm
+    c.setFillColor(WHITE)
+    c.rect(
+        0,
+        0,
+        W,
+        H,
+        fill=1,
+        stroke=0
     )
-    p.lineTo(W, H-header_h)
-    p.close()
 
-    c.setFillColor(DARK_BLUE)
-    c.drawPath(p, fill=1, stroke=0)
+    # ========================================================
+    # DIMENSIONS
+    # ========================================================
 
-    # subtle top-left curved highlight
-    p2 = c.beginPath()
-    p2.moveTo(0, H)
-    p2.curveTo(
-        18*mm, H-2*mm,
-        28*mm, H-18*mm,
-        0, H-30*mm
+    left_margin = 11 * mm
+    right_margin = 11 * mm
+
+    sidebar_w = 74 * mm
+
+    body_top = H - 58 * mm
+
+    main_x = sidebar_w + 11 * mm
+    main_w = W - main_x - right_margin
+
+    # ========================================================
+    # TOP WHITE AREA
+    # ========================================================
+
+    white_header_h = 42 * mm
+
+    c.setFillColor(WHITE)
+
+    c.rect(
+        0,
+        H - white_header_h,
+        W,
+        white_header_h,
+        fill=1,
+        stroke=0
     )
-    p2.close()
 
-    c.setFillColor(colors.HexColor("#1688EA"))
-    c.drawPath(p2, fill=1, stroke=0)
+    # ========================================================
+    # PHOTO
+    # ========================================================
 
-    # --------------------------------------------------------
-    # PROFILE PHOTO — LEFT
-    # --------------------------------------------------------
-    photo_size = 43*mm
-    photo_x = 12*mm
-    photo_y = H - 12*mm
+    photo_size = 43 * mm
 
-    if data.get("photo") and os.path.exists(data["photo"]):
+    photo_x = 12 * mm
+
+    photo_center_y = H - 35 * mm
+
+    photo_path = data.get("photo")
+
+    if photo_path and os.path.exists(photo_path):
+
         try:
-            im = ImageReader(data["photo"])
-            iw, ih = im.getSize()
+
+            image = ImageReader(photo_path)
+
+            iw, ih = image.getSize()
+
+            # ------------------------------------------------
+            # AUTOMATIC COVER CROP
+            # ------------------------------------------------
 
             scale = max(
                 photo_size / iw,
                 photo_size / ih
             )
 
-            dw = iw * scale
-            dh = ih * scale
+            draw_w = iw * scale
+            draw_h = ih * scale
 
-            px = photo_x + (photo_size - dw) / 2
-            py = photo_y - photo_size + (photo_size - dh) / 2
+            draw_x = (
+                photo_x
+                + (photo_size - draw_w) / 2
+            )
 
-            # white outer circle
+            draw_y = (
+                photo_center_y
+                - photo_size / 2
+                + (photo_size - draw_h) / 2
+            )
+
+            # White outer border
             c.setFillColor(WHITE)
+
             c.circle(
-                photo_x + photo_size/2,
-                photo_y - photo_size/2,
-                photo_size/2 + 2.5*mm,
+                photo_x + photo_size / 2,
+                photo_center_y,
+                photo_size / 2 + 2.2 * mm,
                 fill=1,
                 stroke=0
             )
 
-            # image clipped to circle
+            # Circular crop
             c.saveState()
 
             path = c.beginPath()
+
             path.circle(
-                photo_x + photo_size/2,
-                photo_y - photo_size/2,
-                photo_size/2
+                photo_x + photo_size / 2,
+                photo_center_y,
+                photo_size / 2
             )
-            c.clipPath(path, stroke=0, fill=0)
+
+            c.clipPath(
+                path,
+                stroke=0,
+                fill=0
+            )
 
             c.drawImage(
-                im,
-                px,
-                py,
-                width=dw,
-                height=dh,
+                image,
+                draw_x,
+                draw_y,
+                width=draw_w,
+                height=draw_h,
                 mask="auto"
             )
 
             c.restoreState()
 
-            # blue photo border
-            c.setStrokeColor(colors.HexColor("#8FD4FF"))
-            c.setLineWidth(1.2)
-            c.circle(
-                photo_x + photo_size/2,
-                photo_y - photo_size/2,
-                photo_size/2 + 1.2*mm,
-                fill=0,
-                stroke=1
-            )
-
         except Exception:
             pass
 
-    # --------------------------------------------------------
-    # NAME + TITLE
-    # --------------------------------------------------------
-    tx = 64*mm
-    name_y = H - 25*mm
+    # ========================================================
+    # NAME
+    # ========================================================
 
-    name = data["name"][:40]
+    name = clean(data.get("name"))
 
-    # split first/last name for visual emphasis
+    if not name:
+        name = "Your Name"
+
+    name_x = 72 * mm
+
+    name_y = H - 20 * mm
+
     parts = name.split()
 
+    c.setFillColor(colors.black)
+
     if len(parts) >= 2:
-        first = " ".join(parts[:-1])
-        last = parts[-1]
 
-        c.setFillColor(WHITE)
-        c.setFont("Helvetica", 24)
-        c.drawString(tx, name_y, first)
+        first_name = " ".join(parts[:-1])
+        last_name = parts[-1]
 
-        first_w = stringWidth(
-            first,
-            "Helvetica",
-            24
+        c.setFont(
+            "Helvetica-Bold",
+            21
         )
 
-        c.setFont("Helvetica-Bold", 24)
         c.drawString(
-            tx + first_w + 2*mm,
+            name_x,
             name_y,
-            last
+            first_name
         )
+
+        first_width = stringWidth(
+            first_name,
+            "Helvetica-Bold",
+            21
+        )
+
+        c.drawString(
+            name_x + first_width + 2 * mm,
+            name_y,
+            last_name
+        )
+
     else:
-        c.setFillColor(WHITE)
-        c.setFont("Helvetica-Bold", 24)
-        c.drawString(tx, name_y, name)
 
-    # job title
-    if data["title"]:
-        c.setFillColor(WHITE)
-        c.setFont("Helvetica", 12.5)
-        c.drawString(
-            tx,
-            H - 35*mm,
-            data["title"][:55]
+        c.setFont(
+            "Helvetica-Bold",
+            22
         )
 
-    # header divider
-    c.setStrokeColor(colors.HexColor("#B8E3FA"))
-    c.setLineWidth(0.7)
-    c.line(
-        tx,
-        H - 40*mm,
-        178*mm,
-        H - 40*mm
+        c.drawString(
+            name_x,
+            name_y,
+            name
+        )
+
+    # ========================================================
+    # COLORED JOB TITLE BAND
+    # ========================================================
+
+    band_y = H - 58 * mm
+
+    band_h = 16 * mm
+
+    c.setFillColor(ACCENT)
+
+    c.rect(
+        0,
+        band_y,
+        W,
+        band_h,
+        fill=1,
+        stroke=0
     )
 
-    # short tagline
-    c.setFillColor(colors.HexColor("#E8F6FF"))
-    c.setFont("Helvetica-Oblique", 8.7)
+    # Job title
+    title = clean(data.get("title"))
 
-    tagline = "Turning ideas into real solutions"
-    c.drawString(tx, H - 46*mm, tagline)
-
-    c.drawString(
-        tx,
-        H - 51*mm,
-        "through clean code"
-    )
-
-    # --------------------------------------------------------
-    # HEADER CONTACT AREA
-    # --------------------------------------------------------
-    contact_x = 180*mm
-    divider_x = 175*mm
-
-    c.setStrokeColor(colors.HexColor("#D6F0FF"))
-    c.setLineWidth(0.8)
-    c.line(
-        divider_x,
-        H - 15*mm,
-        divider_x,
-        H - 57*mm
-    )
-
-    contact_y = H - 20*mm
-
-    contacts = [
-        ("phone", data["phone"]),
-        ("email", data["email"]),
-        ("location", data["location"]),
-        ("linkedin", data["linkedin"])
-    ]
-
-    for kind, value in contacts:
-        if not value:
-            continue
+    if title:
 
         c.setFillColor(WHITE)
 
-        # small vector contact symbols
-        if kind == "phone":
-            c.setFont("Helvetica-Bold", 9)
-            symbol = "☎"
-        elif kind == "email":
-            c.setFont("Helvetica-Bold", 9)
-            symbol = "✉"
-        elif kind == "location":
-            c.setFont("Helvetica-Bold", 9)
-            symbol = "●"
-        else:
-            c.setFont("Helvetica-Bold", 8)
-            symbol = "in"
-
-        c.drawString(
-            contact_x,
-            contact_y,
-            symbol
-        )
-
-        c.setFont("Helvetica", 7.4)
-
-        lines = wrap(
-            value,
+        c.setFont(
             "Helvetica",
-            7.4,
-            34*mm
+            11
         )
 
-        for line in lines[:2]:
-            c.drawString(
-                contact_x + 7*mm,
-                contact_y,
-                line
-            )
-            contact_y -= 3.5*mm
+        title_width = stringWidth(
+            title.upper(),
+            "Helvetica",
+            11
+        )
 
-        contact_y -= 3.5*mm
+        c.drawString(
+            (W - title_width) / 2,
+            band_y + 5.5 * mm,
+            title.upper()
+        )
 
-    # --------------------------------------------------------
-    # BODY
-    # --------------------------------------------------------
-    body_top = H - header_h
+    # ========================================================
+    # BODY SIDEBAR
+    # ========================================================
 
-    side_w = 80*mm
+    c.setFillColor(SIDEBAR)
 
-    # light-blue sidebar
-    c.setFillColor(LIGHT_BLUE)
     c.rect(
         0,
         0,
-        side_w,
+        sidebar_w,
         body_top,
         fill=1,
         stroke=0
     )
 
-    # white main area
+    # ========================================================
+    # MAIN BODY
+    # ========================================================
+
     c.setFillColor(WHITE)
+
     c.rect(
-        side_w,
+        sidebar_w,
         0,
-        W-side_w,
+        W - sidebar_w,
         body_top,
         fill=1,
         stroke=0
     )
 
-    # --------------------------------------------------------
-    # SIDEBAR
-    # --------------------------------------------------------
-    sx = 9*mm
-    sw = side_w - 18*mm
-    sy = body_top - 14*mm
+    # ========================================================
+    # SECTION HELPER
+    # ========================================================
 
+    def section_title(title, x, y, width):
+
+        c.setFillColor(DARK)
+
+        c.setFont(
+            "Helvetica-Bold",
+            10.5
+        )
+
+        c.drawString(
+            x,
+            y,
+            title.upper()
+        )
+
+        c.setStrokeColor(ACCENT)
+
+        c.setLineWidth(1.1)
+
+        c.line(
+            x,
+            y - 3 * mm,
+            x + width,
+            y - 3 * mm
+        )
+
+        return y - 10 * mm
+
+    # ========================================================
+    # SIDEBAR
+    # ========================================================
+
+    sx = left_margin
+
+    sw = sidebar_w - 2 * left_margin
+
+    sy = body_top - 13 * mm
+
+    # --------------------------------------------------------
     # CONTACT
-    sy = modern_section(
-        c,
+    # --------------------------------------------------------
+
+    sy = section_title(
         "Contact",
-        "person",
         sx,
         sy,
         sw
     )
 
-    contact_values = [
-        data["phone"],
-        data["email"],
-        data["location"],
-        data["linkedin"],
-        data["website"]
+    contact_items = [
+        clean(data.get("email")),
+        clean(data.get("phone")),
+        clean(data.get("location")),
+        clean(data.get("linkedin")),
+        clean(data.get("website"))
     ]
 
-    for value in contact_values:
-        if not value:
+    for item in contact_items:
+
+        if not item:
             continue
 
-        lines = wrap(
-            value,
+        lines = wrap_text(
+            c,
+            item,
             "Helvetica",
-            8.3,
-            sw - 3*mm
+            8.2,
+            sw
+        )
+
+        c.setFillColor(GREY)
+
+        c.setFont(
+            "Helvetica",
+            8.2
         )
 
         for line in lines:
-            c.setFillColor(TEXT)
-            c.setFont("Helvetica", 8.3)
-            c.drawString(sx, sy, line)
-            sy -= 4.3*mm
 
-        sy -= 1.2*mm
+            c.drawString(
+                sx,
+                sy,
+                line
+            )
 
-    # SUMMARY
-    if data["summary"]:
-        sy -= 4*mm
+            sy -= 4.3 * mm
 
-        sy = modern_section(
-            c,
-            "Professional Summary",
-            "summary",
+        sy -= 2 * mm
+
+    # --------------------------------------------------------
+    # PROFILE SUMMARY
+    # --------------------------------------------------------
+
+    if clean(data.get("summary")):
+
+        sy -= 3 * mm
+
+        sy = section_title(
+            "Profile Summary",
             sx,
             sy,
             sw
         )
 
-        sy = modern_text(
+        sy = draw_wrapped(
             c,
-            data["summary"],
+            data.get("summary"),
             sx,
             sy,
             sw,
-            8.5,
-            4.5*mm
+            "Helvetica",
+            8.4,
+            4.3 * mm,
+            GREY
         )
 
+    # --------------------------------------------------------
     # SKILLS
-    if data["skills"]:
-        sy -= 4*mm
+    # --------------------------------------------------------
 
-        sy = modern_section(
-            c,
+    if clean(data.get("skills")):
+
+        sy -= 4 * mm
+
+        sy = section_title(
             "Skills",
-            "skills",
             sx,
             sy,
             sw
         )
 
         skill_items = [
-            z.strip()
-            for z in data["skills"].replace(
-                "\n", ","
-            ).split(",")
-            if z.strip()
+            item.strip()
+            for item in data.get("skills", "")
+            .replace(",", "\n")
+            .splitlines()
+            if item.strip()
         ]
 
         for skill in skill_items:
-            lines = wrap(
-                skill,
+
+            lines = wrap_text(
+                c,
+                "✓ " + skill,
                 "Helvetica",
-                8.6,
-                sw - 5*mm
+                8.4,
+                sw
             )
 
-            for n, line in enumerate(lines):
-                c.setFillColor(TEXT)
-                c.setFont("Helvetica", 8.6)
+            c.setFillColor(GREY)
 
-                if n == 0:
-                    c.drawString(
-                        sx,
-                        sy,
-                        "• " + line
-                    )
-                else:
-                    c.drawString(
-                        sx + 3*mm,
-                        sy,
-                        line
-                    )
+            c.setFont(
+                "Helvetica",
+                8.4
+            )
 
-                sy -= 4.4*mm
+            for line in lines:
 
-            sy -= 0.8*mm
+                c.drawString(
+                    sx,
+                    sy,
+                    line
+                )
 
+                sy -= 4.4 * mm
+
+            sy -= 1 * mm
+
+    # --------------------------------------------------------
     # LANGUAGES
-    if data["languages"]:
-        sy -= 4*mm
+    # --------------------------------------------------------
 
-        sy = modern_section(
-            c,
+    if clean(data.get("languages")):
+
+        sy -= 4 * mm
+
+        sy = section_title(
             "Languages",
-            "globe",
             sx,
             sy,
             sw
         )
 
-        for line in data["languages"].splitlines():
-            line = line.strip()
-
-            if not line:
-                continue
-
-            line = line.replace("|", " • ")
-
-            c.setFillColor(TEXT)
-            c.setFont("Helvetica", 8.5)
-            c.drawString(
-                sx,
-                sy,
-                "• " + line
-            )
-
-            sy -= 4.5*mm
-
-    # INTERESTS
-    if data["hobbies"]:
-        sy -= 4*mm
-
-        sy = modern_section(
-            c,
-            "Interests",
-            "summary",
-            sx,
-            sy,
-            sw
-        )
-
-        hobbies = [
-            h.strip()
-            for h in data["hobbies"].split(",")
-            if h.strip()
+        language_items = [
+            item.strip()
+            for item in data.get("languages", "")
+            .replace(",", "\n")
+            .splitlines()
+            if item.strip()
         ]
 
-        for hobby in hobbies:
-            c.setFillColor(TEXT)
-            c.setFont("Helvetica", 8.5)
-            c.drawString(
-                sx,
-                sy,
-                "• " + hobby
+        for language in language_items:
+
+            lines = wrap_text(
+                c,
+                "✓ " + language,
+                "Helvetica",
+                8.4,
+                sw
             )
-            sy -= 4.5*mm
 
-    # --------------------------------------------------------
+            c.setFillColor(GREY)
+
+            c.setFont(
+                "Helvetica",
+                8.4
+            )
+
+            for line in lines:
+
+                c.drawString(
+                    sx,
+                    sy,
+                    line
+                )
+
+                sy -= 4.4 * mm
+
+            sy -= 1 * mm
+
+    # ========================================================
     # MAIN CONTENT
-    # --------------------------------------------------------
-    mx = side_w + 10*mm
-    mw = W - mx - 10*mm
-    my = body_top - 14*mm
+    # ========================================================
 
-    # EXPERIENCE
-    if data["experience"]:
-        my = modern_section(
-            c,
+    mx = main_x
+
+    my = body_top - 13 * mm
+
+    # ========================================================
+    # PROFESSIONAL EXPERIENCE
+    # ========================================================
+
+    if clean(data.get("experience")):
+
+        my = section_title(
             "Professional Experience",
-            "briefcase",
             mx,
             my,
-            mw
+            main_w
         )
 
-        for block in blocks(data["experience"]):
+        experience_blocks = [
+            block.strip()
+            for block in data.get("experience", "")
+            .split("\n\n")
+            if block.strip()
+        ]
 
-            if not block:
+        for block in experience_blocks:
+
+            lines = [
+                line.strip()
+                for line in block.splitlines()
+                if line.strip()
+            ]
+
+            if not lines:
                 continue
+
+            first_line = lines[0]
 
             parts = [
                 p.strip()
-                for p in block[0].split("|")
+                for p in first_line.split("|")
             ]
 
             job = parts[0] if parts else ""
@@ -2266,87 +2321,133 @@ def generate_modern(c, data):
             location = parts[2] if len(parts) > 2 else ""
             dates = parts[3] if len(parts) > 3 else ""
 
-            # job title
-            c.setFillColor(colors.HexColor("#082D68"))
-            c.setFont("Helvetica-Bold", 11)
+            # Job
+            c.setFillColor(DARK)
+
+            c.setFont(
+                "Helvetica-Bold",
+                9.3
+            )
+
             c.drawString(
                 mx,
                 my,
-                job[:70]
+                job[:65]
             )
 
-            # dates at right
+            # Dates
             if dates:
-                c.setFillColor(TEXT)
-                c.setFont("Helvetica", 8.2)
 
-                date_w = stringWidth(
+                c.setFillColor(GREY)
+
+                c.setFont(
+                    "Helvetica",
+                    7.5
+                )
+
+                date_width = stringWidth(
                     dates,
+                    "Helvetica",
+                    7.5
+                )
+
+                c.drawString(
+                    W - right_margin - date_width,
+                    my,
+                    dates[:25]
+                )
+
+            my -= 4.5 * mm
+
+            # Company
+            if company:
+
+                c.setFillColor(GREY)
+
+                c.setFont(
                     "Helvetica",
                     8.2
                 )
 
                 c.drawString(
-                    W - 10*mm - date_w,
-                    my,
-                    dates[:30]
-                )
-
-            my -= 5*mm
-
-            if company:
-                c.setFillColor(colors.HexColor("#0875D1"))
-                c.setFont("Helvetica", 9.7)
-                c.drawString(
                     mx,
                     my,
-                    company[:75]
+                    company[:70]
                 )
-                my -= 4.5*mm
 
+                my -= 4 * mm
+
+            # Location
             if location:
-                c.setFillColor(colors.HexColor("#0875D1"))
-                c.setFont("Helvetica", 8.3)
+
+                c.setFillColor(GREY)
+
+                c.setFont(
+                    "Helvetica-Oblique",
+                    7.5
+                )
+
                 c.drawString(
                     mx,
                     my,
-                    location[:70]
+                    location[:60]
                 )
-                my -= 5*mm
 
-            # responsibilities
-            for responsibility in block[1:]:
-                if my < 37*mm:
-                    break
+                my -= 4 * mm
 
-                my = modern_bullets(
+            # Responsibilities
+            for responsibility in lines[1:]:
+
+                bullet_lines = wrap_text(
                     c,
-                    [responsibility],
-                    mx,
-                    my,
-                    mw,
-                    8.8,
-                    4.4*mm
+                    "• " + responsibility,
+                    "Helvetica",
+                    8.1,
+                    main_w
                 )
 
-            my -= 4*mm
+                c.setFillColor(DARK)
 
+                c.setFont(
+                    "Helvetica",
+                    8.1
+                )
+
+                for bullet_line in bullet_lines:
+
+                    c.drawString(
+                        mx,
+                        my,
+                        bullet_line
+                    )
+
+                    my -= 4.1 * mm
+
+            my -= 3 * mm
+
+    # ========================================================
     # EDUCATION
-    if data["education"] and my > 45*mm:
+    # ========================================================
 
-        my = modern_section(
-            c,
+    if clean(data.get("education")):
+
+        my -= 2 * mm
+
+        my = section_title(
             "Education",
-            "education",
             mx,
             my,
-            mw
+            main_w
         )
 
-        for line in data["education"].splitlines():
+        education_lines = [
+            line.strip()
+            for line in data.get("education", "")
+            .splitlines()
+            if line.strip()
+        ]
 
-            if not line.strip():
-                continue
+        for line in education_lines:
 
             parts = [
                 p.strip()
@@ -2357,139 +2458,191 @@ def generate_modern(c, data):
             institution = parts[1] if len(parts) > 1 else ""
             year = parts[2] if len(parts) > 2 else ""
 
-            c.setFillColor(colors.HexColor("#082D68"))
-            c.setFont("Helvetica-Bold", 10.5)
+            c.setFillColor(DARK)
+
+            c.setFont(
+                "Helvetica-Bold",
+                9
+            )
+
             c.drawString(
                 mx,
                 my,
-                degree[:75]
+                degree[:65]
             )
 
             if year:
-                c.setFillColor(TEXT)
-                c.setFont("Helvetica", 8.2)
 
-                yw = stringWidth(
+                c.setFillColor(GREY)
+
+                c.setFont(
+                    "Helvetica",
+                    7.5
+                )
+
+                year_width = stringWidth(
                     year,
                     "Helvetica",
-                    8.2
+                    7.5
                 )
 
                 c.drawString(
-                    W - 10*mm - yw,
+                    W - right_margin - year_width,
                     my,
                     year[:20]
                 )
 
-            my -= 5*mm
+            my -= 4.5 * mm
 
             if institution:
-                c.setFillColor(colors.HexColor("#0875D1"))
-                c.setFont("Helvetica", 9.2)
+
+                c.setFillColor(GREY)
+
+                c.setFont(
+                    "Helvetica",
+                    8
+                )
+
                 c.drawString(
                     mx,
                     my,
-                    institution[:80]
+                    institution[:70]
                 )
-                my -= 6*mm
 
+                my -= 6 * mm
+
+    # ========================================================
     # CERTIFICATES
-    if data["certificates"] and my > 38*mm:
+    # ========================================================
 
-        my = modern_section(
-            c,
+    if clean(data.get("certificates")):
+
+        my -= 1 * mm
+
+        my = section_title(
             "Certificates & Training",
-            "certificate",
             mx,
             my,
-            mw
+            main_w
         )
 
-        certificate_items = [
-            x.strip()
-            for x in data["certificates"].splitlines()
-            if x.strip()
+        certificates = [
+            item.strip()
+            for item in data.get("certificates", "")
+            .splitlines()
+            if item.strip()
         ]
 
-        my = modern_bullets(
-            c,
-            certificate_items,
-            mx,
-            my,
-            mw,
-            8.8,
-            4.5*mm
-        )
+        for certificate in certificates:
 
+            lines = wrap_text(
+                c,
+                "• " + certificate,
+                "Helvetica",
+                8,
+                main_w
+            )
+
+            c.setFillColor(DARK)
+
+            c.setFont(
+                "Helvetica",
+                8
+            )
+
+            for line in lines:
+
+                c.drawString(
+                    mx,
+                    my,
+                    line
+                )
+
+                my -= 4 * mm
+
+            my -= 1 * mm
+
+    # ========================================================
     # REFERENCES
-    if data["references"] and my > 30*mm:
+    # ========================================================
 
-        my -= 3*mm
+    if clean(data.get("references")):
 
-        my = modern_section(
-            c,
+        my -= 2 * mm
+
+        my = section_title(
             "References",
-            "references",
             mx,
             my,
-            mw
+            main_w
         )
 
-        reference_items = [
-            x.strip()
-            for x in data["references"].splitlines()
-            if x.strip()
+        references = [
+            item.strip()
+            for item in data.get("references", "")
+            .splitlines()
+            if item.strip()
         ]
 
-        my = modern_bullets(
-            c,
-            reference_items,
-            mx,
-            my,
-            mw,
-            8.6,
-            4.5*mm
-        )
+        for reference in references:
 
-    # --------------------------------------------------------
-    # FOOTER GRAPHICS
-    # --------------------------------------------------------
-    modern_wave_footer(c, W)
+            lines = wrap_text(
+                c,
+                "• " + reference,
+                "Helvetica",
+                8,
+                main_w
+            )
 
-    # footer slogan
-    c.setFillColor(BLUE)
-    c.setFont("Helvetica-Oblique", 13)
+            c.setFillColor(DARK)
 
-    c.drawString(
-        20*mm,
-        18*mm,
-        "Let's Build"
+            c.setFont(
+                "Helvetica",
+                8
+            )
+
+            for line in lines:
+
+                c.drawString(
+                    mx,
+                    my,
+                    line
+                )
+
+                my -= 4 * mm
+
+            my -= 1 * mm
+
+    # ========================================================
+    # FOOTER
+    # ========================================================
+
+    c.setStrokeColor(
+        colors.HexColor("#DDDDDD")
     )
 
-    c.drawString(
-        17*mm,
-        13*mm,
-        "Something Great"
-    )
+    c.setLineWidth(0.5)
 
-    # underline
-    c.setStrokeColor(BLUE)
-    c.setLineWidth(1.2)
     c.line(
-        18*mm,
-        10.5*mm,
-        48*mm,
-        10.5*mm
+        15 * mm,
+        8 * mm,
+        W - 15 * mm,
+        8 * mm
     )
 
-    # small footer branding
-    c.setFillColor(colors.HexColor("#0875D1"))
-    c.setFont("Helvetica-Bold", 6.5)
+    c.setFillColor(
+        colors.HexColor("#888888")
+    )
 
-    c.drawString(
-        157*mm,
-        10*mm,
-        "CLEAN CODE  •  BETTER SOLUTIONS  •  BRIGHTER FUTURE"
+    c.setFont(
+        "Helvetica",
+        6.5
+    )
+
+    c.drawCentredString(
+        W / 2,
+        4 * mm,
+        "Created with CVForge"
     )
 
     
@@ -3001,7 +3154,11 @@ def generate():
         "languages": request.form.get("languages", ""),
         "hobbies": request.form.get("hobbies", ""),
         "references": request.form.get("references", ""),
-        "template": request.form.get("template", "modern")
+        "template": request.form.get("template", "modern"),
+"accent_color": request.form.get(
+    "accent_color",
+    "#1599A8"
+)
     }
 
     photo = request.files.get("photo")
