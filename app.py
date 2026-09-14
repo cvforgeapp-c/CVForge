@@ -1759,6 +1759,9 @@ def modern_wave_footer(c, W):
 
 
 def generate_modern(c, data):
+    global _modern_canvas
+
+    _modern_canvas = c
 
     W, H = A4
 
@@ -1766,223 +1769,200 @@ def generate_modern(c, data):
         "CV - " + clean(data.get("name"))
     )
 
-    # ========================================================
-    # SELECTED COLOR
-    # ========================================================
+    # =========================================================
+    # COLORS
+    # =========================================================
 
     try:
-        ACCENT = colors.HexColor(
-            clean(data.get("accent_color"))
-            or "#1599A8"
+        accent = colors.HexColor(
+            clean(data.get("accent_color")) or "#1599A8"
         )
     except Exception:
-        ACCENT = colors.HexColor("#1599A8")
+        accent = colors.HexColor("#1599A8")
 
-    # Lighter version for sidebar
-    SIDEBAR = colors.HexColor("#EFF9FA")
+    dark = colors.HexColor("#222222")
+    medium = colors.HexColor("#555555")
+    light_text = colors.HexColor("#666666")
+    sidebar_bg = colors.HexColor("#EEF8FA")
+    white = colors.white
+    line_color = accent
 
-    DARK = colors.HexColor("#222222")
-    GREY = colors.HexColor("#666666")
-    WHITE = colors.white
+    # =========================================================
+    # PAGE / LAYOUT
+    # =========================================================
 
-    # ========================================================
-    # PAGE
-    # ========================================================
+    margin_left = 14 * mm
+    margin_right = 14 * mm
 
-    c.setFillColor(WHITE)
+    sidebar_x = 0
+    sidebar_w = 72 * mm
+
+    main_x = sidebar_w + 10 * mm
+    main_w = W - main_x - margin_right
+
+    # =========================================================
+    # TOP HEADER
+    # =========================================================
+
+    header_h = 50 * mm
+    band_h = 14 * mm
+
+    # White top area
+    c.setFillColor(white)
     c.rect(
         0,
-        0,
+        H - header_h,
         W,
-        H,
+        header_h,
         fill=1,
         stroke=0
     )
 
-    # ========================================================
-    # DIMENSIONS
-    # ========================================================
-
-    left_margin = 11 * mm
-    right_margin = 11 * mm
-
-    sidebar_w = 74 * mm
-
-    body_top = H - 58 * mm
-
-    main_x = sidebar_w + 11 * mm
-    main_w = W - main_x - right_margin
-
-    # ========================================================
-    # TOP WHITE AREA
-    # ========================================================
-
-    white_header_h = 42 * mm
-
-    c.setFillColor(WHITE)
-
-    c.rect(
-        0,
-        H - white_header_h,
-        W,
-        white_header_h,
-        fill=1,
-        stroke=0
-    )
-
-    # ========================================================
+    # ---------------------------------------------------------
     # PHOTO
-    # ========================================================
+    # ---------------------------------------------------------
 
-    photo_size = 43 * mm
+    photo_path = clean(data.get("photo"))
 
-    photo_x = 12 * mm
+    if photo_path:
+        photo_size = 32 * mm
 
-    photo_center_y = H - 35 * mm
+        # Fixed position on upper-left
+        photo_x = 15 * mm
+        photo_y = H - 12 * mm
 
-    photo_path = data.get("photo")
+        draw_profile_photo(
+            c,
+            photo_path,
+            photo_x,
+            photo_y,
+            photo_size
+        )
 
-    if photo_path and os.path.exists(photo_path):
-
-        try:
-
-            image = ImageReader(photo_path)
-
-            iw, ih = image.getSize()
-
-            # ------------------------------------------------
-            # AUTOMATIC COVER CROP
-            # ------------------------------------------------
-
-            scale = max(
-                photo_size / iw,
-                photo_size / ih
-            )
-
-            draw_w = iw * scale
-            draw_h = ih * scale
-
-            draw_x = (
-                photo_x
-                + (photo_size - draw_w) / 2
-            )
-
-            draw_y = (
-                photo_center_y
-                - photo_size / 2
-                + (photo_size - draw_h) / 2
-            )
-
-            # White outer border
-            c.setFillColor(WHITE)
-
-            c.circle(
-                photo_x + photo_size / 2,
-                photo_center_y,
-                photo_size / 2 + 2.2 * mm,
-                fill=1,
-                stroke=0
-            )
-
-            # Circular crop
-            c.saveState()
-
-            path = c.beginPath()
-
-            path.circle(
-                photo_x + photo_size / 2,
-                photo_center_y,
-                photo_size / 2
-            )
-
-            c.clipPath(
-                path,
-                stroke=0,
-                fill=0
-            )
-
-            c.drawImage(
-                image,
-                draw_x,
-                draw_y,
-                width=draw_w,
-                height=draw_h,
-                mask="auto"
-            )
-
-            c.restoreState()
-
-        except Exception:
-            pass
-
-    # ========================================================
+    # ---------------------------------------------------------
     # NAME
-    # ========================================================
+    # ---------------------------------------------------------
 
-    name = clean(data.get("name"))
+    name = clean(data.get("name")) or "Your Name"
 
-    if not name:
-        name = "Your Name"
+    name_x = 55 * mm
+    name_y = H - 22 * mm
 
-    name_x = 72 * mm
+    c.setFillColor(dark)
+    c.setFont("Helvetica-Bold", 22)
 
-    name_y = H - 20 * mm
+    # Prevent extremely long names from overflowing
+    name_size = 22
 
-    parts = name.split()
+    while (
+        c.stringWidth(name, "Helvetica-Bold", name_size)
+        > W - name_x - margin_right
+        and name_size > 14
+    ):
+        name_size -= 1
 
-    c.setFillColor(colors.black)
+    c.setFont("Helvetica-Bold", name_size)
 
-    if len(parts) >= 2:
+    c.drawString(
+        name_x,
+        name_y,
+        name
+    )
 
-        first_name = " ".join(parts[:-1])
-        last_name = parts[-1]
+    # ---------------------------------------------------------
+    # SMALL CONTACT LINE
+    # ---------------------------------------------------------
 
-        c.setFont(
-            "Helvetica-Bold",
-            21
+    contact_parts = []
+
+    phone = clean(data.get("phone"))
+    email = clean(data.get("email"))
+    location = clean(data.get("location"))
+
+    if phone:
+        contact_parts.append(phone)
+
+    if email:
+        contact_parts.append(email)
+
+    if location:
+        contact_parts.append(location)
+
+    contact_text = "  •  ".join(contact_parts)
+
+    if contact_text:
+        contact_size = 7.5
+
+        c.setFillColor(medium)
+        c.setFont("Helvetica", contact_size)
+
+        # Wrap contact line if necessary
+        contact_lines = wrap_text(
+            c,
+            contact_text,
+            "Helvetica",
+            contact_size,
+            W - name_x - margin_right
         )
 
-        c.drawString(
-            name_x,
-            name_y,
-            first_name
+        contact_y = H - 31 * mm
+
+        for line in contact_lines[:2]:
+            c.drawString(
+                name_x,
+                contact_y,
+                line
+            )
+
+            contact_y -= 4 * mm
+
+    # ---------------------------------------------------------
+    # LINKEDIN / WEBSITE
+    # ---------------------------------------------------------
+
+    links = []
+
+    linkedin = clean(data.get("linkedin"))
+    website = clean(data.get("website"))
+
+    if linkedin:
+        links.append(linkedin)
+
+    if website:
+        links.append(website)
+
+    links_text = "  •  ".join(links)
+
+    if links_text:
+        c.setFillColor(medium)
+        c.setFont("Helvetica", 7.2)
+
+        link_lines = wrap_text(
+            c,
+            links_text,
+            "Helvetica",
+            7.2,
+            W - name_x - margin_right
         )
 
-        first_width = stringWidth(
-            first_name,
-            "Helvetica-Bold",
-            21
-        )
+        link_y = H - 39 * mm
 
-        c.drawString(
-            name_x + first_width + 2 * mm,
-            name_y,
-            last_name
-        )
+        for line in link_lines[:2]:
+            c.drawString(
+                name_x,
+                link_y,
+                line
+            )
 
-    else:
+            link_y -= 4 * mm
 
-        c.setFont(
-            "Helvetica-Bold",
-            22
-        )
+    # =========================================================
+    # COLORED JOB-TITLE BAND
+    # =========================================================
 
-        c.drawString(
-            name_x,
-            name_y,
-            name
-        )
+    band_y = H - header_h - band_h
 
-    # ========================================================
-    # COLORED JOB TITLE BAND
-    # ========================================================
-
-    band_y = H - 58 * mm
-
-    band_h = 16 * mm
-
-    c.setFillColor(ACCENT)
-
+    c.setFillColor(accent)
     c.rect(
         0,
         band_y,
@@ -1992,119 +1972,136 @@ def generate_modern(c, data):
         stroke=0
     )
 
-    # Job title
-    title = clean(data.get("title"))
+    title = clean(data.get("title")) or "PROFESSIONAL"
 
-    if title:
+    c.setFillColor(white)
+    c.setFont("Helvetica-Bold", 10.5)
 
-        c.setFillColor(WHITE)
+    title_text = title.upper()
 
-        c.setFont(
-            "Helvetica",
-            11
-        )
+    title_width = c.stringWidth(
+        title_text,
+        "Helvetica-Bold",
+        10.5
+    )
 
-        title_width = stringWidth(
-            title.upper(),
-            "Helvetica",
-            11
-        )
+    c.drawCentredString(
+        W / 2,
+        band_y + 4.5 * mm,
+        title_text
+    )
 
-        c.drawString(
-            (W - title_width) / 2,
-            band_y + 5.5 * mm,
-            title.upper()
-        )
+    # =========================================================
+    # SIDEBAR
+    # =========================================================
 
-    # ========================================================
-    # BODY SIDEBAR
-    # ========================================================
+    content_bottom = 13 * mm
 
-    c.setFillColor(SIDEBAR)
-
+    c.setFillColor(sidebar_bg)
     c.rect(
-        0,
-        0,
+        sidebar_x,
+        content_bottom,
         sidebar_w,
-        body_top,
+        band_y - content_bottom,
         fill=1,
         stroke=0
     )
 
-    # ========================================================
-    # MAIN BODY
-    # ========================================================
+    sidebar_y = band_y - 12 * mm
 
-    c.setFillColor(WHITE)
+    # ---------------------------------------------------------
+    # SIDEBAR SECTION HELPER
+    # ---------------------------------------------------------
 
-    c.rect(
-        sidebar_w,
-        0,
-        W - sidebar_w,
-        body_top,
-        fill=1,
-        stroke=0
-    )
+    def sidebar_section(title_text):
+        nonlocal sidebar_y
 
-    # ========================================================
-    # SECTION HELPER
-    # ========================================================
-
-    def section_title(title, x, y, width):
-
-        c.setFillColor(DARK)
-
-        c.setFont(
-            "Helvetica-Bold",
-            10.5
-        )
+        c.setFillColor(dark)
+        c.setFont("Helvetica-Bold", 8.5)
 
         c.drawString(
-            x,
-            y,
-            title.upper()
+            10 * mm,
+            sidebar_y,
+            title_text.upper()
         )
 
-        c.setStrokeColor(ACCENT)
+        sidebar_y -= 2.5 * mm
 
-        c.setLineWidth(1.1)
+        c.setStrokeColor(accent)
+        c.setLineWidth(0.8)
 
         c.line(
-            x,
-            y - 3 * mm,
-            x + width,
-            y - 3 * mm
+            10 * mm,
+            sidebar_y,
+            sidebar_w - 10 * mm,
+            sidebar_y
         )
 
-        return y - 10 * mm
+        sidebar_y -= 5 * mm
 
-    # ========================================================
-    # SIDEBAR
-    # ========================================================
+    def sidebar_lines(text, bullet=False):
+        nonlocal sidebar_y
 
-    sx = left_margin
+        if not clean(text):
+            return
 
-    sw = sidebar_w - 2 * left_margin
+        for raw_line in clean(text).splitlines():
 
-    sy = body_top - 13 * mm
+            line = raw_line.strip()
 
-    # --------------------------------------------------------
+            if not line:
+                continue
+
+            if line.startswith("•"):
+                line = line[1:].strip()
+
+            if line.startswith("-"):
+                line = line[1:].strip()
+
+            prefix = "• " if bullet else ""
+
+            available_width = (
+                sidebar_w - 20 * mm
+            )
+
+            wrapped = wrap_text(
+                c,
+                prefix + line,
+                "Helvetica",
+                7.2,
+                available_width
+            )
+
+            for wrapped_line in wrapped:
+
+                c.setFillColor(light_text)
+                c.setFont(
+                    "Helvetica",
+                    7.2
+                )
+
+                c.drawString(
+                    10 * mm,
+                    sidebar_y,
+                    wrapped_line
+                )
+
+                sidebar_y -= 3.6 * mm
+
+        sidebar_y -= 1.5 * mm
+
+    # ---------------------------------------------------------
     # CONTACT
-    # --------------------------------------------------------
+    # ---------------------------------------------------------
 
-    sy = section_title(
-        "Contact",
-        sx,
-        sy,
-        sw
-    )
+    sidebar_section("Contact")
 
     contact_items = [
-        clean(data.get("email")),
-        clean(data.get("phone")),
-        clean(data.get("location")),
-        clean(data.get("linkedin")),
-        clean(data.get("website"))
+        phone,
+        email,
+        location,
+        linkedin,
+        website
     ]
 
     for item in contact_items:
@@ -2112,193 +2109,486 @@ def generate_modern(c, data):
         if not item:
             continue
 
-        lines = wrap_text(
+        wrapped = wrap_text(
             c,
             item,
             "Helvetica",
-            8.2,
-            sw
+            7.2,
+            sidebar_w - 20 * mm
         )
 
-        c.setFillColor(GREY)
+        for line in wrapped:
 
-        c.setFont(
-            "Helvetica",
-            8.2
-        )
-
-        for line in lines:
+            c.setFillColor(light_text)
+            c.setFont(
+                "Helvetica",
+                7.2
+            )
 
             c.drawString(
-                sx,
-                sy,
+                10 * mm,
+                sidebar_y,
                 line
             )
 
-            sy -= 4.3 * mm
+            sidebar_y -= 3.6 * mm
 
-        sy -= 2 * mm
+        sidebar_y -= 1 * mm
 
-    # --------------------------------------------------------
-    # PROFILE SUMMARY
-    # --------------------------------------------------------
-
-    if clean(data.get("summary")):
-
-        sy -= 3 * mm
-
-        sy = section_title(
-            "Profile Summary",
-            sx,
-            sy,
-            sw
-        )
-
-        sy = draw_wrapped(
-            c,
-            data.get("summary"),
-            sx,
-            sy,
-            sw,
-            "Helvetica",
-            8.4,
-            4.3 * mm,
-            GREY
-        )
-
-    # --------------------------------------------------------
+    # ---------------------------------------------------------
     # SKILLS
-    # --------------------------------------------------------
+    # ---------------------------------------------------------
 
     if clean(data.get("skills")):
 
-        sy -= 4 * mm
+        sidebar_section("Skills")
 
-        sy = section_title(
-            "Skills",
-            sx,
-            sy,
-            sw
-        )
+        for raw_line in clean(
+            data.get("skills")
+        ).splitlines():
 
-        skill_items = [
-            item.strip()
-            for item in data.get("skills", "")
-            .replace(",", "\n")
-            .splitlines()
-            if item.strip()
-        ]
+            skill = raw_line.strip()
 
-        for skill in skill_items:
+            if not skill:
+                continue
 
-            lines = wrap_text(
+            if skill.startswith("•"):
+                skill = skill[1:].strip()
+
+            if skill.startswith("-"):
+                skill = skill[1:].strip()
+
+            wrapped = wrap_text(
                 c,
                 "✓ " + skill,
                 "Helvetica",
-                8.4,
-                sw
+                7.2,
+                sidebar_w - 20 * mm
             )
 
-            c.setFillColor(GREY)
+            for line in wrapped:
 
-            c.setFont(
-                "Helvetica",
-                8.4
-            )
-
-            for line in lines:
+                c.setFillColor(light_text)
+                c.setFont(
+                    "Helvetica",
+                    7.2
+                )
 
                 c.drawString(
-                    sx,
-                    sy,
+                    10 * mm,
+                    sidebar_y,
                     line
                 )
 
-                sy -= 4.4 * mm
+                sidebar_y -= 3.6 * mm
 
-            sy -= 1 * mm
+        sidebar_y -= 2 * mm
 
-    # --------------------------------------------------------
+    # ---------------------------------------------------------
     # LANGUAGES
-    # --------------------------------------------------------
+    # ---------------------------------------------------------
 
     if clean(data.get("languages")):
 
-        sy -= 4 * mm
+        sidebar_section("Languages")
 
-        sy = section_title(
-            "Languages",
-            sx,
-            sy,
-            sw
-        )
+        for raw_line in clean(
+            data.get("languages")
+        ).splitlines():
 
-        language_items = [
-            item.strip()
-            for item in data.get("languages", "")
-            .replace(",", "\n")
-            .splitlines()
-            if item.strip()
-        ]
+            language = raw_line.strip()
 
-        for language in language_items:
+            if not language:
+                continue
 
-            lines = wrap_text(
+            if language.startswith("•"):
+                language = language[1:].strip()
+
+            if language.startswith("-"):
+                language = language[1:].strip()
+
+            wrapped = wrap_text(
                 c,
                 "✓ " + language,
                 "Helvetica",
-                8.4,
-                sw
+                7.2,
+                sidebar_w - 20 * mm
             )
 
-            c.setFillColor(GREY)
+            for line in wrapped:
 
-            c.setFont(
-                "Helvetica",
-                8.4
-            )
-
-            for line in lines:
+                c.setFillColor(light_text)
+                c.setFont(
+                    "Helvetica",
+                    7.2
+                )
 
                 c.drawString(
-                    sx,
-                    sy,
+                    10 * mm,
+                    sidebar_y,
                     line
                 )
 
-                sy -= 4.4 * mm
+                sidebar_y -= 3.6 * mm
 
-            sy -= 1 * mm
+        sidebar_y -= 2 * mm
 
-    # ========================================================
+    # ---------------------------------------------------------
+    # INTERESTS
+    # ---------------------------------------------------------
+
+    if clean(data.get("hobbies")):
+
+        sidebar_section("Interests")
+
+        for raw_line in clean(
+            data.get("hobbies")
+        ).splitlines():
+
+            interest = raw_line.strip()
+
+            if not interest:
+                continue
+
+            if interest.startswith("•"):
+                interest = interest[1:].strip()
+
+            if interest.startswith("-"):
+                interest = interest[1:].strip()
+
+            wrapped = wrap_text(
+                c,
+                "• " + interest,
+                "Helvetica",
+                7.2,
+                sidebar_w - 20 * mm
+            )
+
+            for line in wrapped:
+
+                c.setFillColor(light_text)
+                c.setFont(
+                    "Helvetica",
+                    7.2
+                )
+
+                c.drawString(
+                    10 * mm,
+                    sidebar_y,
+                    line
+                )
+
+                sidebar_y -= 3.6 * mm
+
+        sidebar_y -= 2 * mm
+
+    # =========================================================
     # MAIN CONTENT
-    # ========================================================
+    # =========================================================
 
-    mx = main_x
+    main_y = band_y - 12 * mm
 
-    my = body_top - 13 * mm
+    def main_section(title_text):
+        nonlocal main_y
 
-    # ========================================================
+        c.setFillColor(dark)
+        c.setFont(
+            "Helvetica-Bold",
+            9.5
+        )
+
+        c.drawString(
+            main_x,
+            main_y,
+            title_text.upper()
+        )
+
+        main_y -= 2.5 * mm
+
+        c.setStrokeColor(line_color)
+        c.setLineWidth(0.8)
+
+        c.line(
+            main_x,
+            main_y,
+            W - margin_right,
+            main_y
+        )
+
+        main_y -= 5 * mm
+
+    def main_paragraph(text, size=7.7, leading=3.9):
+        nonlocal main_y
+
+        if not clean(text):
+            return
+
+        for raw_line in clean(text).splitlines():
+
+            line = raw_line.strip()
+
+            if not line:
+                main_y -= 1.5 * mm
+                continue
+
+            if line.startswith("•"):
+                line = line[1:].strip()
+
+            if line.startswith("-"):
+                line = line[1:].strip()
+
+            wrapped = wrap_text(
+                c,
+                line,
+                "Helvetica",
+                size,
+                main_w
+            )
+
+            for wrapped_line in wrapped:
+
+                c.setFillColor(medium)
+                c.setFont(
+                    "Helvetica",
+                    size
+                )
+
+                c.drawString(
+                    main_x,
+                    main_y,
+                    wrapped_line
+                )
+
+                main_y -= leading
+
+        main_y -= 1.5 * mm
+
+    # =========================================================
+    # PROFESSIONAL SUMMARY
+    # =========================================================
+
+    if clean(data.get("summary")):
+
+        main_section(
+            "Professional Summary"
+        )
+
+        main_paragraph(
+            data.get("summary"),
+            size=7.7,
+            leading=3.9
+        )
+
+    # =========================================================
     # PROFESSIONAL EXPERIENCE
-    # ========================================================
+    # =========================================================
 
     if clean(data.get("experience")):
 
-        my = section_title(
-            "Professional Experience",
-            mx,
-            my,
-            main_w
+        main_section(
+            "Professional Experience"
         )
 
         experience_blocks = [
             block.strip()
-            for block in data.get("experience", "")
-            .split("\n\n")
+            for block in clean(
+                data.get("experience")
+            ).split("\n\n")
             if block.strip()
         ]
 
         for block in experience_blocks:
+
+            # Remove accidental instructional text
+            filtered_lines = []
+
+            for raw_line in block.splitlines():
+
+                line = raw_line.strip()
+
+                if not line:
+                    continue
+
+                if line.lower().startswith(
+                    "important:"
+                ):
+                    continue
+
+                if (
+                    "if your current code" in
+                    line.lower()
+                ):
+                    continue
+
+                filtered_lines.append(line)
+
+            if not filtered_lines:
+                continue
+
+            first_line = filtered_lines[0]
+
+            # -------------------------------------------------
+            # JOB HEADER
+            # Expected:
+            # Job Title | Company | Location | Dates
+            # -------------------------------------------------
+
+            parts = [
+                p.strip()
+                for p in first_line.split("|")
+            ]
+
+            job_title = parts[0] if parts else ""
+            company = parts[1] if len(parts) > 1 else ""
+            job_location = parts[2] if len(parts) > 2 else ""
+            dates = parts[3] if len(parts) > 3 else ""
+
+            # If no pipe format, display first line normally
+            if len(parts) == 1:
+
+                c.setFillColor(dark)
+                c.setFont(
+                    "Helvetica-Bold",
+                    8.2
+                )
+
+                c.drawString(
+                    main_x,
+                    main_y,
+                    job_title
+                )
+
+                main_y -= 4 * mm
+
+            else:
+
+                # Job title
+                c.setFillColor(dark)
+                c.setFont(
+                    "Helvetica-Bold",
+                    8.2
+                )
+
+                c.drawString(
+                    main_x,
+                    main_y,
+                    job_title
+                )
+
+                # Dates on right
+                if dates:
+
+                    c.setFillColor(medium)
+                    c.setFont(
+                        "Helvetica",
+                        7
+                    )
+
+                    date_width = c.stringWidth(
+                        dates,
+                        "Helvetica",
+                        7
+                    )
+
+                    c.drawString(
+                        W - margin_right - date_width,
+                        main_y,
+                        dates
+                    )
+
+                main_y -= 3.5 * mm
+
+                # Company + location
+                company_line = company
+
+                if job_location:
+                    if company_line:
+                        company_line += (
+                            "  •  " + job_location
+                        )
+                    else:
+                        company_line = job_location
+
+                if company_line:
+
+                    c.setFillColor(
+                        light_text
+                    )
+
+                    c.setFont(
+                        "Helvetica",
+                        7
+                    )
+
+                    c.drawString(
+                        main_x,
+                        main_y,
+                        company_line
+                    )
+
+                    main_y -= 4 * mm
+
+            # -------------------------------------------------
+            # JOB BULLETS
+            # -------------------------------------------------
+
+            for raw_line in filtered_lines[1:]:
+
+                bullet = raw_line.strip()
+
+                if not bullet:
+                    continue
+
+                if bullet.startswith("•"):
+                    bullet = bullet[1:].strip()
+
+                if bullet.startswith("-"):
+                    bullet = bullet[1:].strip()
+
+                wrapped = wrap_text(
+                    c,
+                    "• " + bullet,
+                    "Helvetica",
+                    7.25,
+                    main_w
+                )
+
+                for line in wrapped:
+
+                    c.setFillColor(medium)
+                    c.setFont(
+                        "Helvetica",
+                        7.25
+                    )
+
+                    c.drawString(
+                        main_x,
+                        main_y,
+                        line
+                    )
+
+                    main_y -= 3.6 * mm
+
+            # Space between jobs
+            main_y -= 3 * mm
+
+    # =========================================================
+    # EDUCATION
+    # =========================================================
+
+    if clean(data.get("education")):
+
+        main_section("Education")
+
+        education_blocks = [
+            block.strip()
+            for block in clean(
+                data.get("education")
+            ).split("\n\n")
+            if block.strip()
+        ]
+
+        for block in education_blocks:
 
             lines = [
                 line.strip()
@@ -2309,339 +2599,213 @@ def generate_modern(c, data):
             if not lines:
                 continue
 
-            first_line = lines[0]
+            first = lines[0]
 
             parts = [
                 p.strip()
-                for p in first_line.split("|")
+                for p in first.split("|")
             ]
 
-            job = parts[0] if parts else ""
-            company = parts[1] if len(parts) > 1 else ""
-            location = parts[2] if len(parts) > 2 else ""
-            dates = parts[3] if len(parts) > 3 else ""
+            degree = parts[0]
+            institution = (
+                parts[1]
+                if len(parts) > 1
+                else ""
+            )
+            edu_location = (
+                parts[2]
+                if len(parts) > 2
+                else ""
+            )
+            edu_dates = (
+                parts[3]
+                if len(parts) > 3
+                else ""
+            )
 
-            # Job
-            c.setFillColor(DARK)
-
+            c.setFillColor(dark)
             c.setFont(
                 "Helvetica-Bold",
-                9.3
+                8
             )
 
             c.drawString(
-                mx,
-                my,
-                job[:65]
+                main_x,
+                main_y,
+                degree
             )
 
-            # Dates
-            if dates:
+            if edu_dates:
 
-                c.setFillColor(GREY)
-
+                c.setFillColor(medium)
                 c.setFont(
                     "Helvetica",
-                    7.5
+                    7
                 )
 
-                date_width = stringWidth(
-                    dates,
+                date_width = c.stringWidth(
+                    edu_dates,
                     "Helvetica",
-                    7.5
+                    7
                 )
 
                 c.drawString(
-                    W - right_margin - date_width,
-                    my,
-                    dates[:25]
+                    W - margin_right - date_width,
+                    main_y,
+                    edu_dates
                 )
 
-            my -= 4.5 * mm
+            main_y -= 3.8 * mm
 
-            # Company
-            if company:
+            second_line = institution
 
-                c.setFillColor(GREY)
+            if edu_location:
+                if second_line:
+                    second_line += (
+                        "  •  " + edu_location
+                    )
+                else:
+                    second_line = edu_location
 
+            if second_line:
+
+                c.setFillColor(light_text)
                 c.setFont(
                     "Helvetica",
-                    8.2
+                    7.1
                 )
 
                 c.drawString(
-                    mx,
-                    my,
-                    company[:70]
+                    main_x,
+                    main_y,
+                    second_line
                 )
 
-                my -= 4 * mm
+                main_y -= 4.5 * mm
 
-            # Location
-            if location:
+            for extra in lines[1:]:
 
-                c.setFillColor(GREY)
-
-                c.setFont(
-                    "Helvetica-Oblique",
-                    7.5
-                )
-
-                c.drawString(
-                    mx,
-                    my,
-                    location[:60]
-                )
-
-                my -= 4 * mm
-
-            # Responsibilities
-            for responsibility in lines[1:]:
-
-                bullet_lines = wrap_text(
+                wrapped = wrap_text(
                     c,
-                    "• " + responsibility,
+                    extra,
                     "Helvetica",
-                    8.1,
+                    7.2,
                     main_w
                 )
 
-                c.setFillColor(DARK)
+                for line in wrapped:
 
-                c.setFont(
-                    "Helvetica",
-                    8.1
-                )
-
-                for bullet_line in bullet_lines:
-
-                    c.drawString(
-                        mx,
-                        my,
-                        bullet_line
+                    c.setFillColor(medium)
+                    c.setFont(
+                        "Helvetica",
+                        7.2
                     )
 
-                    my -= 4.1 * mm
+                    c.drawString(
+                        main_x,
+                        main_y,
+                        line
+                    )
 
-            my -= 3 * mm
+                    main_y -= 3.6 * mm
 
-    # ========================================================
-    # EDUCATION
-    # ========================================================
+            main_y -= 2 * mm
 
-    if clean(data.get("education")):
-
-        my -= 2 * mm
-
-        my = section_title(
-            "Education",
-            mx,
-            my,
-            main_w
-        )
-
-        education_lines = [
-            line.strip()
-            for line in data.get("education", "")
-            .splitlines()
-            if line.strip()
-        ]
-
-        for line in education_lines:
-
-            parts = [
-                p.strip()
-                for p in line.split("|")
-            ]
-
-            degree = parts[0] if parts else ""
-            institution = parts[1] if len(parts) > 1 else ""
-            year = parts[2] if len(parts) > 2 else ""
-
-            c.setFillColor(DARK)
-
-            c.setFont(
-                "Helvetica-Bold",
-                9
-            )
-
-            c.drawString(
-                mx,
-                my,
-                degree[:65]
-            )
-
-            if year:
-
-                c.setFillColor(GREY)
-
-                c.setFont(
-                    "Helvetica",
-                    7.5
-                )
-
-                year_width = stringWidth(
-                    year,
-                    "Helvetica",
-                    7.5
-                )
-
-                c.drawString(
-                    W - right_margin - year_width,
-                    my,
-                    year[:20]
-                )
-
-            my -= 4.5 * mm
-
-            if institution:
-
-                c.setFillColor(GREY)
-
-                c.setFont(
-                    "Helvetica",
-                    8
-                )
-
-                c.drawString(
-                    mx,
-                    my,
-                    institution[:70]
-                )
-
-                my -= 6 * mm
-
-    # ========================================================
-    # CERTIFICATES
-    # ========================================================
+    # =========================================================
+    # CERTIFICATES & TRAINING
+    # =========================================================
 
     if clean(data.get("certificates")):
 
-        my -= 1 * mm
-
-        my = section_title(
-            "Certificates & Training",
-            mx,
-            my,
-            main_w
+        main_section(
+            "Certificates & Training"
         )
 
-        certificates = [
-            item.strip()
-            for item in data.get("certificates", "")
-            .splitlines()
-            if item.strip()
-        ]
+        for raw_line in clean(
+            data.get("certificates")
+        ).splitlines():
 
-        for certificate in certificates:
+            certificate = raw_line.strip()
 
-            lines = wrap_text(
+            if not certificate:
+                continue
+
+            if certificate.startswith("•"):
+                certificate = certificate[1:].strip()
+
+            if certificate.startswith("-"):
+                certificate = certificate[1:].strip()
+
+            wrapped = wrap_text(
                 c,
                 "• " + certificate,
                 "Helvetica",
-                8,
+                7.25,
                 main_w
             )
 
-            c.setFillColor(DARK)
+            for line in wrapped:
 
-            c.setFont(
-                "Helvetica",
-                8
-            )
-
-            for line in lines:
+                c.setFillColor(medium)
+                c.setFont(
+                    "Helvetica",
+                    7.25
+                )
 
                 c.drawString(
-                    mx,
-                    my,
+                    main_x,
+                    main_y,
                     line
                 )
 
-                my -= 4 * mm
+                main_y -= 3.6 * mm
 
-            my -= 1 * mm
+        main_y -= 2 * mm
 
-    # ========================================================
+    # =========================================================
     # REFERENCES
-    # ========================================================
+    # =========================================================
 
     if clean(data.get("references")):
 
-        my -= 2 * mm
-
-        my = section_title(
-            "References",
-            mx,
-            my,
-            main_w
+        main_section(
+            "References"
         )
 
-        references = [
-            item.strip()
-            for item in data.get("references", "")
-            .splitlines()
-            if item.strip()
-        ]
+        main_paragraph(
+            data.get("references"),
+            size=7.5,
+            leading=3.8
+        )
 
-        for reference in references:
-
-            lines = wrap_text(
-                c,
-                "• " + reference,
-                "Helvetica",
-                8,
-                main_w
-            )
-
-            c.setFillColor(DARK)
-
-            c.setFont(
-                "Helvetica",
-                8
-            )
-
-            for line in lines:
-
-                c.drawString(
-                    mx,
-                    my,
-                    line
-                )
-
-                my -= 4 * mm
-
-            my -= 1 * mm
-
-    # ========================================================
+    # =========================================================
     # FOOTER
-    # ========================================================
+    # =========================================================
 
     c.setStrokeColor(
-        colors.HexColor("#DDDDDD")
+        colors.HexColor("#D8D8D8")
     )
-
-    c.setLineWidth(0.5)
+    c.setLineWidth(0.4)
 
     c.line(
-        15 * mm,
+        14 * mm,
         8 * mm,
-        W - 15 * mm,
+        W - 14 * mm,
         8 * mm
     )
 
     c.setFillColor(
-        colors.HexColor("#888888")
+        colors.HexColor("#999999")
     )
 
     c.setFont(
         "Helvetica",
-        6.5
+        5.5
     )
 
     c.drawCentredString(
         W / 2,
-        4 * mm,
+        5 * mm,
         "Created with CVForge"
     )
 
