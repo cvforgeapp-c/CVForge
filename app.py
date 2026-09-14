@@ -1760,7 +1760,6 @@ def modern_wave_footer(c, W):
 
 def generate_modern(c, data):
     global _modern_canvas
-
     _modern_canvas = c
 
     W, H = A4
@@ -1770,10 +1769,9 @@ def generate_modern(c, data):
     )
 
     # =========================================================
-    # FINAL MODERN PROFESSIONAL DESIGN
+    # COLORS
     # =========================================================
 
-    # User-selected accent color
     try:
         accent = colors.HexColor(
             clean(data.get("accent_color")) or "#1599A8"
@@ -1789,30 +1787,30 @@ def generate_modern(c, data):
     soft_line = colors.HexColor("#D7E6E9")
 
     # =========================================================
-    # PAGE DIMENSIONS
+    # LAYOUT
     # =========================================================
 
     sidebar_w = 76 * mm
-    margin_left = 10 * mm
     margin_right = 10 * mm
 
     main_x = sidebar_w + 10 * mm
     main_w = W - main_x - margin_right
 
-    # =========================================================
-    # HEADER
-    # =========================================================
-
     header_h = 48 * mm
     band_h = 14 * mm
 
-    band_y = H - header_h - band_h
+    header_bottom = H - header_h
+    band_y = header_bottom - band_h
 
-    # White header
+    # =========================================================
+    # WHITE HEADER
+    # =========================================================
+
     c.setFillColor(white)
+
     c.rect(
         0,
-        H - header_h,
+        header_bottom,
         W,
         header_h,
         fill=1,
@@ -1827,46 +1825,50 @@ def generate_modern(c, data):
 
     if photo_path and os.path.exists(photo_path):
 
-        photo_size = 40 * mm
+        photo_size = 42 * mm
 
-        # Photo overlaps the colored band,
-        # exactly like the reference design.
-        photo_x = 16 * mm
-        photo_y = band_y + 2 * mm + photo_size
+        # Center of photo sits exactly around
+        # the bottom edge of the white header.
+        photo_cx = 36 * mm
+        photo_cy = header_bottom
+
+        photo_x = photo_cx - photo_size / 2
+        photo_y = photo_cy + photo_size / 2
 
         try:
             c.saveState()
 
-            cx = photo_x + photo_size / 2
-            cy = photo_y - photo_size / 2
             radius = photo_size / 2
 
-            # White outer circle
+            # White outer frame
             c.setFillColor(white)
+
             c.circle(
-                cx,
-                cy,
-                radius + 2.5 * mm,
+                photo_cx,
+                photo_cy,
+                radius + 2.2 * mm,
                 fill=1,
                 stroke=0
             )
 
-            # Thin accent circular frame
+            # Teal circular frame
             c.setStrokeColor(accent)
             c.setLineWidth(1.2)
+
             c.circle(
-                cx,
-                cy,
-                radius + 1.2 * mm,
+                photo_cx,
+                photo_cy,
+                radius + 1.1 * mm,
                 fill=0,
                 stroke=1
             )
 
             # Circular clipping
             path = c.beginPath()
+
             path.circle(
-                cx,
-                cy,
+                photo_cx,
+                photo_cy,
                 radius
             )
 
@@ -1878,12 +1880,16 @@ def generate_modern(c, data):
 
             image = ImageReader(photo_path)
 
+            # Slightly enlarged image area gives
+            # a better natural portrait crop.
+            image_pad = -2 * mm
+
             c.drawImage(
                 image,
-                photo_x,
-                photo_y - photo_size,
-                width=photo_size,
-                height=photo_size,
+                photo_x + image_pad,
+                photo_y - photo_size - image_pad,
+                width=photo_size - 2 * image_pad,
+                height=photo_size - 2 * image_pad,
                 preserveAspectRatio=True,
                 anchor="c",
                 mask="auto"
@@ -1895,21 +1901,15 @@ def generate_modern(c, data):
             pass
 
     # =========================================================
-    # NAME + PROFESSIONAL TITLE
+    # NAME
     # =========================================================
 
     name = clean(data.get("name")) or "Your Name"
-    professional_title = (
-        clean(data.get("title"))
-        or "PROFESSIONAL"
-    )
 
-    # Position to the right of photo
     name_x = 82 * mm
-    name_y = H - 20 * mm
+    name_y = H - 19 * mm
 
-    # Name
-    name_size = 24
+    name_size = 25
 
     while (
         c.stringWidth(
@@ -1923,6 +1923,7 @@ def generate_modern(c, data):
         name_size -= 1
 
     c.setFillColor(dark)
+
     c.setFont(
         "Helvetica-Bold",
         name_size
@@ -1934,10 +1935,18 @@ def generate_modern(c, data):
         name
     )
 
-    # Professional title below name
-    title_size = 10.5
+    # =========================================================
+    # PROFESSIONAL TITLE UNDER NAME
+    # =========================================================
+
+    professional_title = (
+        clean(data.get("title"))
+        or "PROFESSIONAL"
+    )
 
     title_text = professional_title.upper()
+
+    title_size = 11
 
     while (
         c.stringWidth(
@@ -1950,7 +1959,8 @@ def generate_modern(c, data):
     ):
         title_size -= 0.5
 
-    c.setFillColor(accent)
+    c.setFillColor(dark)
+
     c.setFont(
         "Helvetica",
         title_size
@@ -1958,12 +1968,12 @@ def generate_modern(c, data):
 
     c.drawString(
         name_x,
-        name_y - 10 * mm,
+        name_y - 11 * mm,
         title_text
     )
 
     # =========================================================
-    # FULL-WIDTH JOB TITLE BAND
+    # FULL WIDTH TEAL BAND
     # =========================================================
 
     c.setFillColor(accent)
@@ -1977,9 +1987,8 @@ def generate_modern(c, data):
         stroke=0
     )
 
-    band_title = title_text
-
     c.setFillColor(white)
+
     c.setFont(
         "Helvetica-Bold",
         11
@@ -1987,181 +1996,39 @@ def generate_modern(c, data):
 
     c.drawCentredString(
         W / 2,
-        band_y + 4.4 * mm,
-        band_title
+        band_y + 4.3 * mm,
+        title_text
     )
 
     # =========================================================
-    # SIDEBAR BACKGROUND
+    # SIDEBAR
     # =========================================================
 
-    content_bottom = 10 * mm
+    bottom = 10 * mm
 
     c.setFillColor(sidebar_bg)
 
     c.rect(
         0,
-        content_bottom,
+        bottom,
         sidebar_w,
-        band_y - content_bottom,
+        band_y - bottom,
         fill=1,
         stroke=0
     )
 
-    # =========================================================
-    # CONTACT ICONS
-    # =========================================================
-
-    def draw_contact_icon(kind, x, y):
-        c.saveState()
-
-        c.setFillColor(accent)
-        c.setStrokeColor(accent)
-        c.setLineWidth(1.1)
-
-        if kind == "email":
-
-            c.roundRect(
-                x,
-                y - 3.2 * mm,
-                6.5 * mm,
-                4.8 * mm,
-                0.8 * mm,
-                fill=0,
-                stroke=1
-            )
-
-            c.line(
-                x,
-                y + 1.3 * mm,
-                x + 3.25 * mm,
-                y - 0.8 * mm
-            )
-
-            c.line(
-                x + 6.5 * mm,
-                y + 1.3 * mm,
-                x + 3.25 * mm,
-                y - 0.8 * mm
-            )
-
-        elif kind == "phone":
-
-            c.setLineWidth(2)
-
-            path = c.beginPath()
-
-            path.moveTo(
-                x + 1 * mm,
-                y + 1.5 * mm
-            )
-
-            path.curveTo(
-                x + 2 * mm,
-                y + 3 * mm,
-                x + 4.5 * mm,
-                y - 1 * mm,
-                x + 5.8 * mm,
-                y + 0.2 * mm
-            )
-
-            c.drawPath(
-                path,
-                stroke=1,
-                fill=0
-            )
-
-        elif kind == "location":
-
-            c.circle(
-                x + 3.2 * mm,
-                y + 0.8 * mm,
-                2.2 * mm,
-                fill=0,
-                stroke=1
-            )
-
-            p = c.beginPath()
-
-            p.moveTo(
-                x + 1.2 * mm,
-                y - 0.5 * mm
-            )
-
-            p.lineTo(
-                x + 3.2 * mm,
-                y - 4.5 * mm
-            )
-
-            p.lineTo(
-                x + 5.2 * mm,
-                y - 0.5 * mm
-            )
-
-            c.drawPath(
-                p,
-                stroke=1,
-                fill=0
-            )
-
-        elif kind == "linkedin":
-
-            c.setFont(
-                "Helvetica-Bold",
-                7
-            )
-
-            c.drawString(
-                x,
-                y - 2 * mm,
-                "in"
-            )
-
-            c.rect(
-                x - 0.8 * mm,
-                y - 3.2 * mm,
-                6.5 * mm,
-                5 * mm,
-                fill=0,
-                stroke=1
-            )
-
-        elif kind == "website":
-
-            c.circle(
-                x + 3.2 * mm,
-                y,
-                2.8 * mm,
-                fill=0,
-                stroke=1
-            )
-
-            c.line(
-                x + 0.4 * mm,
-                y,
-                x + 6 * mm,
-                y
-            )
-
-            c.line(
-                x + 3.2 * mm,
-                y - 2.8 * mm,
-                x + 3.2 * mm,
-                y + 2.8 * mm
-            )
-
-        c.restoreState()
-
-    # =========================================================
-    # SIDEBAR HELPERS
-    # =========================================================
-
     sidebar_y = band_y - 12 * mm
 
+    # =========================================================
+    # SIDEBAR HEADING
+    # =========================================================
+
     def sidebar_heading(title_text):
+
         nonlocal sidebar_y
 
         c.setFillColor(dark)
+
         c.setFont(
             "Helvetica-Bold",
             10.5
@@ -2173,7 +2040,7 @@ def generate_modern(c, data):
             title_text.upper()
         )
 
-        sidebar_y -= 2.7 * mm
+        sidebar_y -= 2.8 * mm
 
         c.setStrokeColor(accent)
         c.setLineWidth(0.9)
@@ -2186,6 +2053,150 @@ def generate_modern(c, data):
         )
 
         sidebar_y -= 5 * mm
+
+    # =========================================================
+    # SIMPLE CONTACT ICON
+    # =========================================================
+
+    def contact_icon(kind, x, y):
+
+        c.saveState()
+
+        c.setStrokeColor(accent)
+        c.setFillColor(accent)
+        c.setLineWidth(1)
+
+        if kind == "email":
+
+            c.rect(
+                x,
+                y - 3.5 * mm,
+                6 * mm,
+                4.5 * mm,
+                fill=0,
+                stroke=1
+            )
+
+            c.line(
+                x,
+                y + 1 * mm,
+                x + 3 * mm,
+                y - 1.5 * mm
+            )
+
+            c.line(
+                x + 6 * mm,
+                y + 1 * mm,
+                x + 3 * mm,
+                y - 1.5 * mm
+            )
+
+        elif kind == "phone":
+
+            c.setLineWidth(1.7)
+
+            p = c.beginPath()
+
+            p.moveTo(
+                x + 1 * mm,
+                y + 1.5 * mm
+            )
+
+            p.curveTo(
+                x + 2 * mm,
+                y + 3 * mm,
+                x + 4 * mm,
+                y - 1 * mm,
+                x + 5.5 * mm,
+                y + 0.5 * mm
+            )
+
+            c.drawPath(
+                p,
+                stroke=1,
+                fill=0
+            )
+
+        elif kind == "location":
+
+            c.circle(
+                x + 3 * mm,
+                y,
+                2 * mm,
+                fill=0,
+                stroke=1
+            )
+
+            p = c.beginPath()
+
+            p.moveTo(
+                x + 1 * mm,
+                y - 1 * mm
+            )
+
+            p.lineTo(
+                x + 3 * mm,
+                y - 4.5 * mm
+            )
+
+            p.lineTo(
+                x + 5 * mm,
+                y - 1 * mm
+            )
+
+            c.drawPath(
+                p,
+                stroke=1,
+                fill=0
+            )
+
+        elif kind == "linkedin":
+
+            c.setFont(
+                "Helvetica-Bold",
+                6.5
+            )
+
+            c.drawString(
+                x,
+                y - 2 * mm,
+                "in"
+            )
+
+            c.rect(
+                x - 0.7 * mm,
+                y - 3 * mm,
+                6 * mm,
+                4.8 * mm,
+                fill=0,
+                stroke=1
+            )
+
+        elif kind == "website":
+
+            c.circle(
+                x + 3 * mm,
+                y,
+                2.7 * mm,
+                fill=0,
+                stroke=1
+            )
+
+            c.line(
+                x + 0.4 * mm,
+                y,
+                x + 5.6 * mm,
+                y
+            )
+
+            c.line(
+                x + 3 * mm,
+                y - 2.5 * mm,
+                x + 3 * mm,
+                y + 2.5 * mm
+            )
+
+        c.restoreState()
 
     # =========================================================
     # CONTACT
@@ -2206,7 +2217,7 @@ def generate_modern(c, data):
         if not value:
             continue
 
-        draw_contact_icon(
+        contact_icon(
             kind,
             9 * mm,
             sidebar_y + 1 * mm
@@ -2223,6 +2234,7 @@ def generate_modern(c, data):
         for line in wrapped:
 
             c.setFillColor(text)
+
             c.setFont(
                 "Helvetica",
                 8.2
@@ -2234,9 +2246,9 @@ def generate_modern(c, data):
                 line
             )
 
-            sidebar_y -= 4.2 * mm
+            sidebar_y -= 4.3 * mm
 
-        sidebar_y -= 1.5 * mm
+        sidebar_y -= 1.2 * mm
 
     # =========================================================
     # PROFILE SUMMARY
@@ -2259,6 +2271,7 @@ def generate_modern(c, data):
         for line in summary_lines:
 
             c.setFillColor(text)
+
             c.setFont(
                 "Helvetica",
                 8.5
@@ -2270,7 +2283,7 @@ def generate_modern(c, data):
                 line
             )
 
-            sidebar_y -= 4.4 * mm
+            sidebar_y -= 4.35 * mm
 
         sidebar_y -= 3 * mm
 
@@ -2305,38 +2318,28 @@ def generate_modern(c, data):
                 sidebar_w - 20 * mm
             )
 
-            first_line = True
-
-            for line in wrapped:
+            for i, line in enumerate(wrapped):
 
                 c.setFillColor(text)
+
                 c.setFont(
                     "Helvetica",
                     8.3
                 )
 
-                if first_line:
+                if i == 0:
+
                     c.drawString(
                         9 * mm,
                         sidebar_y,
                         "✓"
                     )
 
-                    c.drawString(
-                        16 * mm,
-                        sidebar_y,
-                        line
-                    )
-
-                    first_line = False
-
-                else:
-
-                    c.drawString(
-                        16 * mm,
-                        sidebar_y,
-                        line
-                    )
+                c.drawString(
+                    16 * mm,
+                    sidebar_y,
+                    line
+                )
 
                 sidebar_y -= 4.1 * mm
 
@@ -2375,17 +2378,16 @@ def generate_modern(c, data):
                 sidebar_w - 20 * mm
             )
 
-            first_line = True
-
-            for line in wrapped:
+            for i, line in enumerate(wrapped):
 
                 c.setFillColor(text)
+
                 c.setFont(
                     "Helvetica",
                     8.3
                 )
 
-                if first_line:
+                if i == 0:
 
                     c.drawString(
                         9 * mm,
@@ -2393,28 +2395,18 @@ def generate_modern(c, data):
                         "✓"
                     )
 
-                    c.drawString(
-                        16 * mm,
-                        sidebar_y,
-                        line
-                    )
-
-                    first_line = False
-
-                else:
-
-                    c.drawString(
-                        16 * mm,
-                        sidebar_y,
-                        line
-                    )
+                c.drawString(
+                    16 * mm,
+                    sidebar_y,
+                    line
+                )
 
                 sidebar_y -= 4.1 * mm
 
         sidebar_y -= 3 * mm
 
     # =========================================================
-    # INTERESTS / HOBBIES - OPTIONAL
+    # OPTIONAL INTERESTS
     # =========================================================
 
     if clean(data.get("hobbies")):
@@ -2449,44 +2441,42 @@ def generate_modern(c, data):
             for i, line in enumerate(wrapped):
 
                 c.setFillColor(text)
+
                 c.setFont(
                     "Helvetica",
                     8.3
                 )
 
                 if i == 0:
+
                     c.drawString(
                         9 * mm,
                         sidebar_y,
                         "•"
                     )
 
-                    c.drawString(
-                        16 * mm,
-                        sidebar_y,
-                        line
-                    )
-                else:
-                    c.drawString(
-                        16 * mm,
-                        sidebar_y,
-                        line
-                    )
+                c.drawString(
+                    16 * mm,
+                    sidebar_y,
+                    line
+                )
 
                 sidebar_y -= 4.1 * mm
 
         sidebar_y -= 2 * mm
 
     # =========================================================
-    # MAIN COLUMN HELPERS
+    # MAIN COLUMN
     # =========================================================
 
     main_y = band_y - 12 * mm
 
     def main_heading(title_text):
+
         nonlocal main_y
 
         c.setFillColor(dark)
+
         c.setFont(
             "Helvetica-Bold",
             10.5
@@ -2513,7 +2503,85 @@ def generate_modern(c, data):
         main_y -= 5 * mm
 
     # =========================================================
-    # EXPERIENCE
+    # EXPERIENCE PARSER
+    # =========================================================
+
+    def get_experience_jobs(raw_text):
+
+        lines = []
+
+        for raw in clean(raw_text).splitlines():
+
+            line = raw.strip()
+
+            if not line:
+                continue
+
+            lower = line.lower()
+
+            # Remove accidental instructional text
+            if lower.startswith("important:"):
+                continue
+
+            if "if your current code separates" in lower:
+                continue
+
+            if lower == "use this format:":
+                continue
+
+            lines.append(line)
+
+        jobs = []
+        current = None
+
+        for line in lines:
+
+            parts = [
+                p.strip()
+                for p in line.split("|")
+            ]
+
+            # A line containing at least
+            # Job | Company | Location | Dates
+            # starts a new job.
+            is_job_header = (
+                len(parts) >= 4
+            )
+
+            if is_job_header:
+
+                if current:
+                    jobs.append(current)
+
+                current = {
+                    "title": parts[0],
+                    "company": parts[1],
+                    "location": parts[2],
+                    "dates": parts[3],
+                    "bullets": []
+                }
+
+            else:
+
+                if current is None:
+                    continue
+
+                # Ignore accidental format instructions
+                if line.lower() in [
+                    "use this format",
+                    "use this format:"
+                ]:
+                    continue
+
+                current["bullets"].append(line)
+
+        if current:
+            jobs.append(current)
+
+        return jobs
+
+    # =========================================================
+    # PROFESSIONAL EXPERIENCE
     # =========================================================
 
     if clean(data.get("experience")):
@@ -2522,83 +2590,15 @@ def generate_modern(c, data):
             "Professional Experience"
         )
 
-        experience_blocks = [
-            block.strip()
-            for block in clean(
-                data.get("experience")
-            ).split("\n\n")
-            if block.strip()
-        ]
+        jobs = get_experience_jobs(
+            data.get("experience")
+        )
 
-        for block in experience_blocks:
-
-            lines = []
-
-            for raw in block.splitlines():
-
-                line = raw.strip()
-
-                if not line:
-                    continue
-
-                # Remove accidental instructions
-                lower = line.lower()
-
-                if lower.startswith("important:"):
-                    continue
-
-                if "if your current code separates" in lower:
-                    continue
-
-                if lower == "use this format:":
-                    continue
-
-                lines.append(line)
-
-            if not lines:
-                continue
-
-            first_line = lines[0]
-
-            parts = [
-                p.strip()
-                for p in first_line.split("|")
-            ]
-
-            # -------------------------------------------------
-            # Job header
-            # -------------------------------------------------
-
-            if len(parts) >= 4:
-
-                job_title = parts[0]
-                company = parts[1]
-                job_location = parts[2]
-                dates = parts[3]
-
-            elif len(parts) == 3:
-
-                job_title = parts[0]
-                company = parts[1]
-                job_location = ""
-                dates = parts[2]
-
-            elif len(parts) == 2:
-
-                job_title = parts[0]
-                company = parts[1]
-                job_location = ""
-                dates = ""
-
-            else:
-
-                job_title = first_line
-                company = ""
-                job_location = ""
-                dates = ""
+        for job in jobs:
 
             # Job title
             c.setFillColor(dark)
+
             c.setFont(
                 "Helvetica-Bold",
                 9.5
@@ -2607,20 +2607,21 @@ def generate_modern(c, data):
             c.drawString(
                 main_x,
                 main_y,
-                job_title
+                job["title"]
             )
 
             # Dates
-            if dates:
+            if job["dates"]:
 
                 c.setFillColor(accent)
+
                 c.setFont(
                     "Helvetica",
                     8.2
                 )
 
                 date_width = c.stringWidth(
-                    dates,
+                    job["dates"],
                     "Helvetica",
                     8.2
                 )
@@ -2628,26 +2629,32 @@ def generate_modern(c, data):
                 c.drawString(
                     W - margin_right - date_width,
                     main_y,
-                    dates
+                    job["dates"]
                 )
 
-            main_y -= 4.7 * mm
+            main_y -= 4.8 * mm
 
-            # Company
-            if company:
+            # Company + location
+            company_line = job["company"]
+
+            if job["location"]:
+
+                if company_line:
+                    company_line += (
+                        "  •  "
+                        + job["location"]
+                    )
+                else:
+                    company_line = job["location"]
+
+            if company_line:
 
                 c.setFillColor(text)
+
                 c.setFont(
                     "Helvetica",
                     8.6
                 )
-
-                company_line = company
-
-                if job_location:
-                    company_line += (
-                        "  •  " + job_location
-                    )
 
                 c.drawString(
                     main_x,
@@ -2657,11 +2664,8 @@ def generate_modern(c, data):
 
                 main_y -= 4.5 * mm
 
-            # -------------------------------------------------
-            # Experience bullets
-            # -------------------------------------------------
-
-            for bullet in lines[1:]:
+            # Bullets
+            for bullet in job["bullets"]:
 
                 if not bullet:
                     continue
@@ -2677,12 +2681,13 @@ def generate_modern(c, data):
                     bullet,
                     "Helvetica",
                     8.5,
-                    main_w - 6 * mm
+                    main_w - 8 * mm
                 )
 
                 for i, line in enumerate(wrapped):
 
                     c.setFillColor(text)
+
                     c.setFont(
                         "Helvetica",
                         8.5
@@ -2696,24 +2701,16 @@ def generate_modern(c, data):
                             "•"
                         )
 
-                        c.drawString(
-                            main_x + 6 * mm,
-                            main_y,
-                            line
-                        )
-
-                    else:
-
-                        c.drawString(
-                            main_x + 6 * mm,
-                            main_y,
-                            line
-                        )
+                    c.drawString(
+                        main_x + 6 * mm,
+                        main_y,
+                        line
+                    )
 
                     main_y -= 4.2 * mm
 
-            # Space between jobs
-            main_y -= 3.5 * mm
+            # Clear separation between jobs
+            main_y -= 4 * mm
 
     # =========================================================
     # EDUCATION
@@ -2742,11 +2739,9 @@ def generate_modern(c, data):
             if not lines:
                 continue
 
-            first_line = lines[0]
-
             parts = [
                 p.strip()
-                for p in first_line.split("|")
+                for p in lines[0].split("|")
             ]
 
             degree = parts[0]
@@ -2757,19 +2752,20 @@ def generate_modern(c, data):
                 else ""
             )
 
-            edu_location = (
+            location = (
                 parts[2]
                 if len(parts) > 2
                 else ""
             )
 
-            edu_dates = (
+            dates = (
                 parts[3]
                 if len(parts) > 3
                 else ""
             )
 
             c.setFillColor(dark)
+
             c.setFont(
                 "Helvetica-Bold",
                 9.2
@@ -2781,16 +2777,17 @@ def generate_modern(c, data):
                 degree
             )
 
-            if edu_dates:
+            if dates:
 
                 c.setFillColor(accent)
+
                 c.setFont(
                     "Helvetica",
                     8.2
                 )
 
                 date_width = c.stringWidth(
-                    edu_dates,
+                    dates,
                     "Helvetica",
                     8.2
                 )
@@ -2798,21 +2795,27 @@ def generate_modern(c, data):
                 c.drawString(
                     W - margin_right - date_width,
                     main_y,
-                    edu_dates
+                    dates
                 )
 
-            main_y -= 4.7 * mm
+            main_y -= 4.8 * mm
 
-            if institution:
+            institution_line = institution
 
-                second_line = institution
+            if location:
 
-                if edu_location:
-                    second_line += (
-                        "  •  " + edu_location
+                if institution_line:
+                    institution_line += (
+                        "  •  "
+                        + location
                     )
+                else:
+                    institution_line = location
+
+            if institution_line:
 
                 c.setFillColor(text)
+
                 c.setFont(
                     "Helvetica",
                     8.5
@@ -2821,41 +2824,15 @@ def generate_modern(c, data):
                 c.drawString(
                     main_x,
                     main_y,
-                    second_line
+                    institution_line
                 )
 
                 main_y -= 4.5 * mm
 
-            for extra in lines[1:]:
-
-                wrapped = wrap_text(
-                    c,
-                    extra,
-                    "Helvetica",
-                    8.3,
-                    main_w
-                )
-
-                for line in wrapped:
-
-                    c.setFillColor(text)
-                    c.setFont(
-                        "Helvetica",
-                        8.3
-                    )
-
-                    c.drawString(
-                        main_x,
-                        main_y,
-                        line
-                    )
-
-                    main_y -= 4.1 * mm
-
             main_y -= 3 * mm
 
     # =========================================================
-    # CERTIFICATES & TRAINING
+    # CERTIFICATES
     # =========================================================
 
     if clean(data.get("certificates")):
@@ -2884,12 +2861,13 @@ def generate_modern(c, data):
                 certificate,
                 "Helvetica",
                 8.4,
-                main_w - 6 * mm
+                main_w - 8 * mm
             )
 
             for i, line in enumerate(wrapped):
 
                 c.setFillColor(text)
+
                 c.setFont(
                     "Helvetica",
                     8.4
@@ -2903,43 +2881,36 @@ def generate_modern(c, data):
                         "•"
                     )
 
-                    c.drawString(
-                        main_x + 6 * mm,
-                        main_y,
-                        line
-                    )
-
-                else:
-
-                    c.drawString(
-                        main_x + 6 * mm,
-                        main_y,
-                        line
-                    )
+                c.drawString(
+                    main_x + 6 * mm,
+                    main_y,
+                    line
+                )
 
                 main_y -= 4.2 * mm
 
         main_y -= 3 * mm
 
     # =========================================================
-    # REFERENCES - OPTIONAL
+    # REFERENCES
     # =========================================================
 
     if clean(data.get("references")):
 
         main_heading("References")
 
-        reference_lines = wrap_text(
+        wrapped = wrap_text(
             c,
             clean(data.get("references")),
             "Helvetica",
             8.4,
-            main_w - 6 * mm
+            main_w - 8 * mm
         )
 
-        for i, line in enumerate(reference_lines):
+        for i, line in enumerate(wrapped):
 
             c.setFillColor(text)
+
             c.setFont(
                 "Helvetica",
                 8.4
@@ -2953,19 +2924,11 @@ def generate_modern(c, data):
                     "•"
                 )
 
-                c.drawString(
-                    main_x + 6 * mm,
-                    main_y,
-                    line
-                )
-
-            else:
-
-                c.drawString(
-                    main_x + 6 * mm,
-                    main_y,
-                    line
-                )
+            c.drawString(
+                main_x + 6 * mm,
+                main_y,
+                line
+            )
 
             main_y -= 4.2 * mm
 
