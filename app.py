@@ -204,6 +204,42 @@ button {
 .template-option.selected .checkmark {
     display: block;
 }
+.color-section {
+    margin-top: 25px;
+    padding: 18px;
+    background: #f7f9f9;
+    border-radius: 14px;
+}
+
+.color-section h3 {
+    margin: 0 0 6px;
+    color: #173f3f;
+}
+
+.color-grid {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.color-option {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 4px solid white;
+    box-shadow: 0 0 0 1px #ccd8d8;
+    cursor: pointer;
+    padding: 0;
+    flex: none;
+}
+
+.color-option.selected {
+    box-shadow:
+        0 0 0 2px #222,
+        0 3px 10px rgba(0,0,0,.18);
+    transform: scale(1.08);
+}
 
 @media(max-width:600px) {
     .container { padding: 10px; }
@@ -355,7 +391,7 @@ placeholder="Certificate Name - Organization - Year"></textarea>
 <label>Languages</label>
 <textarea name="languages"
 placeholder="English - Fluent
-Amharic - Native"></textarea>
+spanish - Native"></textarea>
 
 <div class="buttons">
 <button type="button" class="back" onclick="prevStep()">← Back</button>
@@ -476,6 +512,80 @@ Choose the design that best matches your job application.
 </button>
 
 </div>
+<div class="color-section">
+
+<h3>Choose CV Color</h3>
+
+<p class="small">
+Choose the accent color for your CV. This color will be used for the header, section lines and highlights.
+</p>
+
+<input
+    type="hidden"
+    name="accent_color"
+    id="accentColorInput"
+    value="#1599A8"
+>
+
+<div class="color-grid">
+
+<button
+    type="button"
+    class="color-option selected"
+    data-color="#1599A8"
+    style="background:#1599A8"
+    onclick="selectColor(this)"
+    aria-label="Teal"
+></button>
+
+<button
+    type="button"
+    class="color-option"
+    data-color="#1769AA"
+    style="background:#1769AA"
+    onclick="selectColor(this)"
+    aria-label="Blue"
+></button>
+
+<button
+    type="button"
+    class="color-option"
+    data-color="#173F63"
+    style="background:#173F63"
+    onclick="selectColor(this)"
+    aria-label="Navy"
+></button>
+
+<button
+    type="button"
+    class="color-option"
+    data-color="#8B2F3B"
+    style="background:#8B2F3B"
+    onclick="selectColor(this)"
+    aria-label="Burgundy"
+></button>
+
+<button
+    type="button"
+    class="color-option"
+    data-color="#704C8C"
+    style="background:#704C8C"
+    onclick="selectColor(this)"
+    aria-label="Purple"
+></button>
+
+<button
+    type="button"
+    class="color-option"
+    data-color="#357A5B"
+    style="background:#357A5B"
+    onclick="selectColor(this)"
+    aria-label="Green"
+></button>
+
+</div>
+
+</div>
 
 <div class="buttons">
 
@@ -564,6 +674,20 @@ function selectTemplate(button) {
 
     document.getElementById("templateInput").value =
         button.dataset.template;
+}
+function selectColor(button) {
+
+    const options =
+        document.querySelectorAll(".color-option");
+
+    options.forEach(option => {
+        option.classList.remove("selected");
+    });
+
+    button.classList.add("selected");
+
+    document.getElementById("accentColorInput").value =
+        button.dataset.color;
 }
 
 function nextStep() {
@@ -953,13 +1077,13 @@ def draw_sidebar_list(c, text, x, y, width):
         if item.strip()
     ]
 
-    c.setFillColor(colors.white)
+    c.setFillColor(colors.HexColor("#333333"))
     c.setFont("Helvetica", 8.5)
 
     for item in items:
         lines = wrap_text(
             c,
-            "• " + item,
+            "✓ " + item,
             "Helvetica",
             8.5,
             width
@@ -971,7 +1095,7 @@ def draw_sidebar_list(c, text, x, y, width):
 
         y -= 3
 
-        return y
+    return y
 
 
 _modern_canvas = None
