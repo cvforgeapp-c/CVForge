@@ -1774,10 +1774,10 @@ def generate_modern(c, data):
 
     try:
         accent = colors.HexColor(
-            clean(data.get("accent_color")) or "#1599A8"
+            clean(data.get("accent_color")) or "#078A9A"
         )
     except Exception:
-        accent = colors.HexColor("#1599A8")
+        accent = colors.HexColor("#078A9A")
 
     dark = colors.HexColor("#123F55")
     text = colors.HexColor("#244F62")
