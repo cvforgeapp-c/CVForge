@@ -1134,27 +1134,30 @@ def remove_photo_background(input_path):
         "CVForge_white_" + uuid.uuid4().hex + ".png"
     )
 
-    with open(input_path, "rb") as source:
-        input_bytes = source.read()
+    image = Image.open(input_path).convert("RGB")
 
-    output_bytes = remove(input_bytes)
+    width, height = image.size
+    pixels = image.load()
 
-    image = Image.open(
-        BytesIO(output_bytes)
-    ).convert("RGBA")
+    # Use the top-left pixel as the approximate background color
+    bg = pixels[0, 0]
 
-    white = Image.new(
-        "RGBA",
-        image.size,
-        (255, 255, 255, 255)
-    )
+    threshold = 45
 
-    white.alpha_composite(image)
+    for y in range(height):
+        for x in range(width):
+            r, g, b = pixels[x, y]
 
-    white.convert("RGB").save(
-        output_path,
-        "PNG"
-    )
+            distance = (
+                abs(r - bg[0]) +
+                abs(g - bg[1]) +
+                abs(b - bg[2])
+            )
+
+            if distance < threshold:
+                pixels[x, y] = (255, 255, 255)
+
+    image.save(output_path, "PNG")
 
     return output_path
 def draw_profile_photo(c, photo_path, x, y, size):
