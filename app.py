@@ -9,6 +9,9 @@ import os
 import tempfile
 import base64
 import uuid
+from rembg import remove
+from PIL import Image
+from io import BytesIO
 
 app = Flask(__name__)
 
