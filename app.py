@@ -3559,9 +3559,9 @@ except Exception:
 
 data["photo"] = photo_path
 
-        filename = os.path.join(
+            filename = os.path.join(
         tempfile.gettempdir(),
-        "CVForge_CV.pdf"
+        "CVForge_" + uuid.uuid4().hex + ".pdf"
     )
 
     generate_pdf(data, filename)
