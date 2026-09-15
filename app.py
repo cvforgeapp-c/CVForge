@@ -2876,9 +2876,19 @@ def generate_modern(c, data):
         # Center of the photo sits exactly on the
         # top edge of the teal band
         photo_cx = 39 * mm
-        photo_cy = header_bottom
 
-        radius = photo_size / 2
+radius = photo_size / 2
+
+# Move the photo upward so the bottom
+# of the circle reaches about the middle
+# of the teal band.
+band_height = 15 * mm
+
+photo_cy = (
+    header_bottom
+    - (band_height / 2)
+    + radius
+)
 
         try:
             c.saveState()
