@@ -2859,6 +2859,7 @@ def generate_modern(c, data):
             )
 
             main_y -= 4.2 * mm
+            
 
             # =========================================================
     # PHOTO — REFERENCE POSITION
