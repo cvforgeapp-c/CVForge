@@ -3561,14 +3561,12 @@ if photo and photo.filename:
     data["photo"] = photo_path
 else:
     data["photo"] = ""
-
     filename = os.path.join(
         tempfile.gettempdir(),
         "CVForge_" + uuid.uuid4().hex + ".pdf"
     )
-
     generate_pdf(data, filename)
-
+    
     with open(filename, "rb") as pdf_file:
         pdf_data = base64.b64encode(
             pdf_file.read()
