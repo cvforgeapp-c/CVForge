@@ -1128,6 +1128,35 @@ def blocks(text):
             result.append(lines)
 
     return result
+    def remove_photo_background(input_path):
+    output_path = os.path.join(
+        tempfile.gettempdir(),
+        "CVForge_white_" + uuid.uuid4().hex + ".png"
+    )
+
+    with open(input_path, "rb") as source:
+        input_bytes = source.read()
+
+    output_bytes = remove(input_bytes)
+
+    image = Image.open(
+        BytesIO(output_bytes)
+    ).convert("RGBA")
+
+    white = Image.new(
+        "RGBA",
+        image.size,
+        (255, 255, 255, 255)
+    )
+
+    white.alpha_composite(image)
+
+    white.convert("RGB").save(
+        output_path,
+        "PNG"
+    )
+
+    return output_path
 
 def draw_profile_photo(c, photo_path, x, y, size):
     if not photo_path:
