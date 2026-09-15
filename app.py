@@ -9,7 +9,6 @@ import os
 import tempfile
 import base64
 import uuid
-from rembg import remove
 from PIL import Image
 from io import BytesIO
 
@@ -3550,11 +3549,6 @@ def generate():
             "CVForge_" + photo.filename
         )
         photo.save(photo_path)
-
-        try:
-            photo_path = remove_photo_background(photo_path)
-        except Exception:
-            pass
 
         data["photo"] = photo_path
     else:
