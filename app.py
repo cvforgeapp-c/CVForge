@@ -2872,13 +2872,11 @@ def generate_modern(c, data):
 
         # Larger photo to match the reference
         photo_size = 48 * mm
-        photo_cx = 39 * mm
+
+photo_cx = 39 * mm
 
 radius = photo_size / 2
 
-# Move the photo upward so the bottom
-# of the circle reaches about the middle
-# of the teal band.
 band_height = 15 * mm
 
 photo_cy = (
@@ -2887,8 +2885,8 @@ photo_cy = (
     + radius
 )
 
-        try:
-            c.saveState()
+try:
+    c.saveState()
 
             # -------------------------------------------------
             # WHITE OUTER CIRCLE
