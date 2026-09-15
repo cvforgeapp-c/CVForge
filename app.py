@@ -1832,9 +1832,11 @@ band_h = 13 * mm
 
 header_bottom = H - header_h
 band_y = header_bottom - band_h
+
     # =========================================================
     # WHITE HEADER
     # =========================================================
+
 c.setFillColor(white)
 
     c.rect(
