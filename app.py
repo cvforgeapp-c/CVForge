@@ -2861,7 +2861,7 @@ def generate_modern(c, data):
             main_y -= 4.2 * mm
             
 
-            # =========================================================
+                # =========================================================
     # PHOTO — REFERENCE POSITION
     # Circular photo overlaps WHITE HEADER + TEAL BAND
     # =========================================================
@@ -2873,20 +2873,14 @@ def generate_modern(c, data):
         # Larger photo to match the reference
         photo_size = 48 * mm
 
-photo_cx = 39 * mm
+        
+        photo_cx = 39 * mm
+        photo_cy = header_bottom + 8 * mm
 
-radius = photo_size / 2
+        radius = photo_size / 2
 
-band_height = 15 * mm
-
-photo_cy = (
-    header_bottom
-    - (band_height / 2)
-    + radius
-)
-
-try:
-    c.saveState()
+        try:
+            c.saveState()
 
             # -------------------------------------------------
             # WHITE OUTER CIRCLE
