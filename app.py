@@ -1139,22 +1139,22 @@ def remove_photo_background(input_path):
     width, height = image.size
     pixels = image.load()
 
-    # Use the top-left pixel as the approximate background color
-    bg = pixels[0, 0]
+    # Background color from the top-left corner
+    bg_r, bg_g, bg_b = pixels[0, 0]
 
-    threshold = 45
-
+    # Replace similar background pixels with white
     for y in range(height):
         for x in range(width):
             r, g, b = pixels[x, y]
 
             distance = (
-                abs(r - bg[0]) +
-                abs(g - bg[1]) +
-                abs(b - bg[2])
+                abs(r - bg_r)
+                + abs(g - bg_g)
+                + abs(b - bg_b)
             )
 
-            if distance < threshold:
+            # Higher value removes more of the colored background
+            if distance < 100:
                 pixels[x, y] = (255, 255, 255)
 
     image.save(output_path, "PNG")
