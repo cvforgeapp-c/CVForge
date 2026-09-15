@@ -1816,89 +1816,9 @@ def generate_modern(c, data):
         fill=1,
         stroke=0
     )
+    
 
-    # =========================================================
-    # PHOTO
-    # =========================================================
 
-    photo_path = clean(data.get("photo"))
-
-    if photo_path and os.path.exists(photo_path):
-
-        photo_size = 42 * mm
-
-        # Center of photo sits exactly around
-        # the bottom edge of the white header.
-        photo_cx = 36 * mm
-        photo_cy = header_bottom
-
-        photo_x = photo_cx - photo_size / 2
-        photo_y = photo_cy + photo_size / 2
-
-        try:
-            c.saveState()
-
-            radius = photo_size / 2
-
-            # White outer frame
-            c.setFillColor(white)
-
-            c.circle(
-                photo_cx,
-                photo_cy,
-                radius + 2.2 * mm,
-                fill=1,
-                stroke=0
-            )
-
-            # Teal circular frame
-            c.setStrokeColor(accent)
-            c.setLineWidth(1.2)
-
-            c.circle(
-                photo_cx,
-                photo_cy,
-                radius + 1.1 * mm,
-                fill=0,
-                stroke=1
-            )
-
-            # Circular clipping
-            path = c.beginPath()
-
-            path.circle(
-                photo_cx,
-                photo_cy,
-                radius
-            )
-
-            c.clipPath(
-                path,
-                stroke=0,
-                fill=0
-            )
-
-            image = ImageReader(photo_path)
-
-            # Slightly enlarged image area gives
-            # a better natural portrait crop.
-            image_pad = -2 * mm
-
-            c.drawImage(
-                image,
-                photo_x + image_pad,
-                photo_y - photo_size - image_pad,
-                width=photo_size - 2 * image_pad,
-                height=photo_size - 2 * image_pad,
-                preserveAspectRatio=True,
-                anchor="c",
-                mask="auto"
-            )
-
-            c.restoreState()
-
-        except Exception:
-            pass
 
     # =========================================================
     # NAME
@@ -2091,6 +2011,7 @@ def generate_modern(c, data):
                 y - 1.5 * mm
             )
 
+       
         elif kind == "phone":
 
             c.setLineWidth(1.7)
@@ -2117,6 +2038,7 @@ def generate_modern(c, data):
                 fill=0
             )
 
+       
         elif kind == "location":
 
             c.circle(
@@ -2150,6 +2072,7 @@ def generate_modern(c, data):
                 fill=0
             )
 
+       
         elif kind == "linkedin":
 
             c.setFont(
@@ -2172,6 +2095,7 @@ def generate_modern(c, data):
                 stroke=1
             )
 
+       
         elif kind == "website":
 
             c.circle(
@@ -2249,6 +2173,7 @@ def generate_modern(c, data):
             sidebar_y -= 4.3 * mm
 
         sidebar_y -= 1.2 * mm
+        
 
     # =========================================================
     # PROFILE SUMMARY
@@ -2286,6 +2211,7 @@ def generate_modern(c, data):
             sidebar_y -= 4.35 * mm
 
         sidebar_y -= 3 * mm
+        
 
     # =========================================================
     # SKILLS
@@ -2344,6 +2270,7 @@ def generate_modern(c, data):
                 sidebar_y -= 4.1 * mm
 
         sidebar_y -= 3 * mm
+        
 
     # =========================================================
     # LANGUAGES
@@ -2404,6 +2331,7 @@ def generate_modern(c, data):
                 sidebar_y -= 4.1 * mm
 
         sidebar_y -= 3 * mm
+        
 
     # =========================================================
     # OPTIONAL INTERESTS
@@ -2931,6 +2859,110 @@ def generate_modern(c, data):
             )
 
             main_y -= 4.2 * mm
+
+        # =========================================================
+    # PHOTO — DRAW LAST SO THE COMPLETE CIRCLE STAYS VISIBLE
+    # =========================================================
+
+    photo_path = clean(data.get("photo"))
+
+    if photo_path and os.path.exists(photo_path):
+
+        photo_size = 43 * mm
+
+        # Center of the circular photo.
+        # The circle crosses the white header and teal band.
+        photo_cx = 37 * mm
+        photo_cy = header_bottom
+
+        radius = photo_size / 2
+
+        try:
+            c.saveState()
+
+            # -------------------------------------------------
+            # White outer border
+            # -------------------------------------------------
+
+            c.setFillColor(colors.white)
+
+            c.circle(
+                photo_cx,
+                photo_cy,
+                radius + 2.2 * mm,
+                fill=1,
+                stroke=0
+            )
+
+            # -------------------------------------------------
+            # Teal circular frame
+            # -------------------------------------------------
+
+            c.setStrokeColor(accent)
+
+            c.setLineWidth(1.3)
+
+            c.circle(
+                photo_cx,
+                photo_cy,
+                radius + 1.1 * mm,
+                fill=0,
+                stroke=1
+            )
+
+            # -------------------------------------------------
+            # Clip photo to a perfect circle
+            # -------------------------------------------------
+
+            path = c.beginPath()
+
+            path.circle(
+                photo_cx,
+                photo_cy,
+                radius
+            )
+
+            c.clipPath(
+                path,
+                stroke=0,
+                fill=0
+            )
+
+            # -------------------------------------------------
+            # Draw photo with slight zoom
+            # -------------------------------------------------
+
+            image = ImageReader(photo_path)
+
+            zoom = 1.10
+
+            draw_size = photo_size * zoom
+
+            draw_x = (
+                photo_cx
+                - draw_size / 2
+            )
+
+            draw_y = (
+                photo_cy
+                - draw_size / 2
+            )
+
+            c.drawImage(
+                image,
+                draw_x,
+                draw_y,
+                width=draw_size,
+                height=draw_size,
+                preserveAspectRatio=True,
+                anchor="c",
+                mask="auto"
+            )
+
+            c.restoreState()
+
+        except Exception:
+            pass
 
     # =========================================================
     # FOOTER
