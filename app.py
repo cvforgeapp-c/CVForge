@@ -1830,7 +1830,7 @@ def generate_modern(c, data):
     main_x = sidebar_w + 10 * mm
     main_w = W - main_x - margin_right
 
-    header_h = 48 * mm
+    header_h = 38 * mm
     band_h = 14 * mm
 
     header_bottom = H - header_h
