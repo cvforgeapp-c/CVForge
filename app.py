@@ -1128,7 +1128,8 @@ def blocks(text):
             result.append(lines)
 
     return result
-    def remove_photo_background(input_path):
+    
+def remove_photo_background(input_path):
     output_path = os.path.join(
         tempfile.gettempdir(),
         "CVForge_white_" + uuid.uuid4().hex + ".png"
@@ -1157,7 +1158,6 @@ def blocks(text):
     )
 
     return output_path
-
 def draw_profile_photo(c, photo_path, x, y, size):
     if not photo_path:
         return
