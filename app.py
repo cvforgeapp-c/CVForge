@@ -1768,27 +1768,27 @@ def generate_modern(c, data):
         "CV - " + clean(data.get("name"))
     )
 
-# =========================
-# COLORS
-# =========================
+    # ==============================
+    # COLORS
+    # ==============================
 
-try:
-    accent = colors.HexColor(
-        clean(data.get("accent_color")) or "#078A9A"
-    )
-except Exception:
-    accent = colors.HexColor("#078A9A")
+    try:
+        accent = colors.HexColor(
+            clean(data.get("accent_color")) or "#1599A8"
+        )
+    except Exception:
+        accent = colors.HexColor("#1599A8")
 
-dark = colors.HexColor("#064C5E")
-text = colors.HexColor("#164F63")
-muted = colors.HexColor("#4F6F79")
-sidebar_bg = colors.HexColor("#E7F7FA")
-white = colors.white
-soft_line = colors.HexColor("#8CCED6")
+    dark = colors.HexColor("#123F55")
+    text = colors.HexColor("#164F63")
+    muted = colors.HexColor("#4F6F79")
+    sidebar_bg = colors.HexColor("#E7F7FA")
+    white = colors.white
+    soft_line = colors.HexColor("#8CCED6")
 
-    # =========================================================
+    # ==============================
     # LAYOUT
-    # =========================================================
+    # ==============================
 
     sidebar_w = 76 * mm
     margin_right = 10 * mm
@@ -1800,7 +1800,6 @@ soft_line = colors.HexColor("#8CCED6")
     band_h = 14 * mm
 
     header_bottom = H - header_h
-    band_y = header_bottom - band_h
 
     # =========================================================
     # WHITE HEADER
