@@ -1768,23 +1768,23 @@ def generate_modern(c, data):
         "CV - " + clean(data.get("name"))
     )
 
-    # =========================================================
-    # COLORS
-    # =========================================================
+    # =========================
+# COLORS
+# =========================
 
-    try:
-        accent = colors.HexColor(
-            clean(data.get("accent_color")) or "#078A9A"
-        )
-    except Exception:
-        accent = colors.HexColor("#078A9A")
+try:
+    accent = colors.HexColor(
+        clean(data.get("accent_color")) or "#078A9A"
+    )
+except Exception:
+    accent = colors.HexColor("#078A9A")
 
-    dark = colors.HexColor("#123F55")
-    text = colors.HexColor("#244F62")
-    muted = colors.HexColor("#607782")
-    sidebar_bg = colors.HexColor("#EAF8FA")
-    white = colors.white
-    soft_line = colors.HexColor("#D7E6E9")
+dark = colors.HexColor("#064C5E")
+text = colors.HexColor("#164F63")
+muted = colors.HexColor("#4F6F79")
+sidebar_bg = colors.HexColor("#E7F7FA")
+white = colors.white
+soft_line = colors.HexColor("#8CCED6")
 
     # =========================================================
     # LAYOUT
