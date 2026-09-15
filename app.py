@@ -3542,8 +3542,7 @@ def generate():
 )
     }
 
-            photo = 
-    request.files.get("photo")
+        photo = request.files.get("photo")
 
     if photo and photo.filename:
         photo_path = os.path.join(
