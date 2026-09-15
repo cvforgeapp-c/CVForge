@@ -2901,7 +2901,7 @@ def generate_modern(c, data):
             # -------------------------------------------------
 
             c.setStrokeColor(accent)
-            c.setLineWidth(1.2)
+            c.setLineWidth(2.5)
 
             c.circle(
                 photo_cx,
