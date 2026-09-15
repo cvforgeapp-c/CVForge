@@ -2872,9 +2872,6 @@ def generate_modern(c, data):
 
         # Larger photo to match the reference
         photo_size = 48 * mm
-
-        # Center of the photo sits exactly on the
-        # top edge of the teal band
         photo_cx = 39 * mm
 
 radius = photo_size / 2
