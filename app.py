@@ -1820,21 +1820,18 @@ def generate_modern(c, data):
     white = colors.white
     soft_line = colors.HexColor("#8CCED6")
 
-    # ==============================
     # LAYOUT
-    # ==============================
+sidebar_w = 76 * mm
+margin_right = 10 * mm
+main_x = sidebar_w + 10 * mm
+main_w = W - main_x - margin_right
 
-    sidebar_w = 76 * mm
-    margin_right = 10 * mm
+# Compact header — closer to reference design
+header_h = 43 * mm
+band_h = 13 * mm
 
-    main_x = sidebar_w + 10 * mm
-    main_w = W - main_x - margin_right
-
-    header_h = 38 * mm
-    band_h = 14 * mm
-
-    header_bottom = H - header_h
-    band_y = header_bottom - band_h
+header_bottom = H - header_h
+band_y = header_bottom - band_h
 
     # =========================================================
     # WHITE HEADER
