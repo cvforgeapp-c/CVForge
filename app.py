@@ -3582,8 +3582,7 @@ else:
     with open(preview_file, "wb") as output:
         with open(filename, "rb") as source:
             output.write(source.read())
-
-    return render_template_string(
+            return render_template_string(
         PREVIEW_HTML,
         pdf_data=pdf_data,
         token=token
