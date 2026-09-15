@@ -3542,7 +3542,7 @@ def generate():
 )
     }
 
-        photo = 
+            photo = 
     request.files.get("photo")
 
     if photo and photo.filename:
