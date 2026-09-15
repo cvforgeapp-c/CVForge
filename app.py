@@ -3559,7 +3559,6 @@ if photo and photo.filename:
         pass
 
     data["photo"] = photo_path
-
 else:
     data["photo"] = ""
 
