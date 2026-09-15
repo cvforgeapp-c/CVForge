@@ -1800,6 +1800,7 @@ def generate_modern(c, data):
     band_h = 14 * mm
 
     header_bottom = H - header_h
+    band_y = header_bottom - band_h
 
     # =========================================================
     # WHITE HEADER
