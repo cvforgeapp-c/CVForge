@@ -2860,19 +2860,21 @@ def generate_modern(c, data):
 
             main_y -= 4.2 * mm
 
-        # =========================================================
-    # PHOTO — DRAW LAST SO THE COMPLETE CIRCLE STAYS VISIBLE
+            # =========================================================
+    # PHOTO — REFERENCE POSITION
+    # Circular photo overlaps WHITE HEADER + TEAL BAND
     # =========================================================
 
     photo_path = clean(data.get("photo"))
 
     if photo_path and os.path.exists(photo_path):
 
-        photo_size = 43 * mm
+        # Larger photo to match the reference
+        photo_size = 48 * mm
 
-        # Center of the circular photo.
-        # The circle crosses the white header and teal band.
-        photo_cx = 37 * mm
+        # Center of the photo sits exactly on the
+        # top edge of the teal band
+        photo_cx = 39 * mm
         photo_cy = header_bottom
 
         radius = photo_size / 2
@@ -2881,7 +2883,7 @@ def generate_modern(c, data):
             c.saveState()
 
             # -------------------------------------------------
-            # White outer border
+            # WHITE OUTER CIRCLE
             # -------------------------------------------------
 
             c.setFillColor(colors.white)
@@ -2889,29 +2891,28 @@ def generate_modern(c, data):
             c.circle(
                 photo_cx,
                 photo_cy,
-                radius + 2.2 * mm,
+                radius + 2.5 * mm,
                 fill=1,
                 stroke=0
             )
 
             # -------------------------------------------------
-            # Teal circular frame
+            # TEAL CIRCULAR FRAME
             # -------------------------------------------------
 
             c.setStrokeColor(accent)
-
-            c.setLineWidth(1.3)
+            c.setLineWidth(1.2)
 
             c.circle(
                 photo_cx,
                 photo_cy,
-                radius + 1.1 * mm,
+                radius + 1.0 * mm,
                 fill=0,
                 stroke=1
             )
 
             # -------------------------------------------------
-            # Clip photo to a perfect circle
+            # CLIP PHOTO TO PERFECT CIRCLE
             # -------------------------------------------------
 
             path = c.beginPath()
@@ -2929,12 +2930,12 @@ def generate_modern(c, data):
             )
 
             # -------------------------------------------------
-            # Draw photo with slight zoom
+            # PHOTO — SLIGHT ZOOM
             # -------------------------------------------------
 
             image = ImageReader(photo_path)
 
-            zoom = 1.10
+            zoom = 1.08
 
             draw_size = photo_size * zoom
 
