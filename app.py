@@ -3546,16 +3546,23 @@ def generate():
     
     photo = request.files.get("photo")
 
-    if photo and photo.filename:
-        photo_path = os.path.join(
-            tempfile.gettempdir(),
-            "CVForge_" + photo.filename
-        )
-        photo.save(photo_path)
+if photo and photo.filename:
+    photo_path = os.path.join(
+        tempfile.gettempdir(),
+        "CVForge_" + photo.filename
+    )
 
-        data["photo"] = photo_path
-    else:
-        data["photo"] = ""
+    photo.save(photo_path)
+
+    try:
+        photo_path = remove_photo_background(photo_path)
+    except Exception:
+        pass
+
+    data["photo"] = photo_path
+
+else:
+    data["photo"] = ""
 
     filename = os.path.join(
         tempfile.gettempdir(),
