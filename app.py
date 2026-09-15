@@ -2875,7 +2875,7 @@ def generate_modern(c, data):
 
         
         photo_cx = 39 * mm
-        photo_cy = header_bottom + 20 * mm
+        photo_cy = header_bottom + 17 * mm
 
         radius = photo_size / 2
 
