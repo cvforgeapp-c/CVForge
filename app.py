@@ -3551,13 +3551,13 @@ def generate():
         )
 
         photo.save(photo_path)
-        try:
+
+try:
     photo_path = remove_photo_background(photo_path)
 except Exception:
     pass
-        data["photo"] = photo_path
-    else:
-        data["photo"] = ""
+
+data["photo"] = photo_path
 
     filename = os.path.join(
         tempfile.gettempdir(),
