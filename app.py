@@ -1827,8 +1827,8 @@ def generate_modern(c, data):
     main_w = W - main_x - margin_right
 
     # Compact header
-    header_h = 43 * mm
-    band_h = 13 * mm
+    header_h = 38 * mm
+    band_h = 16 * mm
 
     header_bottom = H - header_h
     band_y = header_bottom - band_h
