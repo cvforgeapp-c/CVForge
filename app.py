@@ -3541,7 +3541,6 @@ def generate():
     "#1599A8"
 )
     }
-    
     photo = request.files.get("photo")
 
     if photo and photo.filename:
