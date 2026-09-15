@@ -3559,7 +3559,7 @@ except Exception:
 
 data["photo"] = photo_path
 
-    filename = os.path.join(
+filename = os.path.join(
         tempfile.gettempdir(),
         "CVForge_" + uuid.uuid4().hex + ".pdf"
     )
