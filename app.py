@@ -3543,30 +3543,26 @@ def generate():
     "#1599A8"
 )
     }
+    
     photo = request.files.get("photo")
 
-if photo and photo.filename:
-    photo_path = os.path.join(
-        tempfile.gettempdir(),
-        "CVForge_" + photo.filename
-    )
+    if photo and photo.filename:
+        photo_path = os.path.join(
+            tempfile.gettempdir(),
+            "CVForge_" + photo.filename
+        )
+        photo.save(photo_path)
+        data["photo"] = photo_path
+    else:
+        data["photo"] = ""
 
-    photo.save(photo_path)
-
-    try:
-        photo_path = remove_photo_background(photo_path)
-    except Exception:
-        pass
-
-    data["photo"] = photo_path
-else:
-    data["photo"] = ""
     filename = os.path.join(
         tempfile.gettempdir(),
         "CVForge_" + uuid.uuid4().hex + ".pdf"
     )
+
     generate_pdf(data, filename)
-    
+
     with open(filename, "rb") as pdf_file:
         pdf_data = base64.b64encode(
             pdf_file.read()
@@ -3582,12 +3578,12 @@ else:
     with open(preview_file, "wb") as output:
         with open(filename, "rb") as source:
             output.write(source.read())
-            return render_template_string(
+
+    return render_template_string(
         PREVIEW_HTML,
         pdf_data=pdf_data,
         token=token
     )
-
 
 @app.route("/pdf/<token>")
 def view_pdf(token):
