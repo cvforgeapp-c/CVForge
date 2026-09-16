@@ -2924,13 +2924,13 @@ def generate_modern(c, data):
     if photo_path and os.path.exists(photo_path):
 
         # Larger photo to match the reference
-        photo_size = 43 * mm
+        photo_size = 41 * mm
 
         
         photo_cx = 39 * mm
         photo_cy = header_bottom + 9.5 * mm  
 
-        radius = photo_size / 2
+        radius = (43 * mm) / 2
 
         try:
             c.saveState()
