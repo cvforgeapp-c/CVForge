@@ -1819,8 +1819,8 @@ def generate_modern(c, data):
     sidebar_bg = colors.HexColor("#E7F7FA")
     white = colors.white
     soft_line = colors.HexColor("#8CCED6")
-
-        # LAYOUT
+    
+    # LAYOUT
     sidebar_w = 76 * mm
     margin_right = 10 * mm
     main_x = sidebar_w + 10 * mm
@@ -1832,8 +1832,8 @@ def generate_modern(c, data):
 
     header_bottom = H - header_h
     band_y = header_bottom - band_h
-
-        # WHITE HEADER
+    
+    # WHITE HEADER
 
     c.setFillColor(white)
     c.rect(
@@ -1851,14 +1851,14 @@ def generate_modern(c, data):
 
     name = clean(data.get("name")) or "Your Name"
 
-# Position just to the right of the photo
+    # Position just to the right of the photo
     name_x = 82 * mm
     name_y = H - 18 * mm
 
-# Large bold name
+    # Large bold name
     name_size = 25
 
-# Automatically reduce size for very long names
+    # Automatically reduce size for very long names
     while (
         c.stringWidth(
             name,
