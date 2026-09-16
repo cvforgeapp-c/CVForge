@@ -2424,12 +2424,11 @@ def generate_modern(c, data):
     # =========================================================
 
     main_y = band_y - 12 * mm
-
+   
     def main_heading(title_text):
-
+        nonlocal main_y
         
-
-        c.setFillColor(dark)
+        c.setFillColor(dark) 
 
         c.setFont(
             "Helvetica-Bold",
