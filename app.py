@@ -1858,7 +1858,7 @@ def generate_modern(c, data):
 # Large bold teal name
 name_size = 25
 
-c.setFillColor(accent)
+    c.setFillColor(accent)
 c.setFont("Helvetica-Bold", name_size)
 
 # Keep the name on one line when possible
