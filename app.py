@@ -2944,7 +2944,7 @@ def generate_modern(c, data):
             c.circle(
                 photo_cx,
                 photo_cy,
-                radius + 2.5 * mm,
+                radius + 3 * mm,
                 fill=1,
                 stroke=0
             )
