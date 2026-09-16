@@ -2415,7 +2415,7 @@ while (
 
     def main_heading(title_text):
 
-        nonlocal main_y
+        
 
         c.setFillColor(dark)
 
