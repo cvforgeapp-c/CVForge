@@ -1861,13 +1861,13 @@ def generate_modern(c, data):
 # Automatically reduce size for very long names
     while (
         c.stringWidth(
-        name,
-        "Helvetica-Bold",
-        name_size
-    ) > W - name_x - 15 * mm
-    and name_size > 18
-):
-    name_size -= 1
+            name,
+            "Helvetica-Bold",
+            name_size
+        ) > W - name_x - 15 * mm
+        and name_size > 18
+    ):
+        name_size -= 1
 
 # Deep teal name
     c.setFillColor(
