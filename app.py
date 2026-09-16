@@ -1855,7 +1855,7 @@ def generate_modern(c, data):
     name_x = 82 * mm
     name_y = H - 18 * mm
 
-    # Large bold name
+       # Large bold name
     name_size = 25
 
     # Automatically reduce size for very long names
@@ -1868,20 +1868,22 @@ def generate_modern(c, data):
         and name_size > 18
     ):
         name_size -= 1
-        
-     # Deep teal name
-        c.setFillColor(
-            colors.HexColor("#0F5A70")
-        )
-        c.setFont(
-            "Helvetica-Bold",
-            name_size
-        )
-        c.drawString(
-            name_x,
-            name_y,
-            name
-        )
+
+    # Draw the name
+    c.setFillColor(
+        colors.HexColor("#0F5A70")
+    )
+
+    c.setFont(
+        "Helvetica-Bold",
+        name_size
+    )
+
+    c.drawString(
+        name_x,
+        name_y,
+        name
+    ) 
 
     # =========================================================
         # PROFESSIONAL TITLE UNDER NAME
