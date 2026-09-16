@@ -5,12 +5,38 @@ from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfbase.pdfmetrics import stringWidth
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 import os
 import tempfile
 import base64
 import uuid
 from PIL import Image
 from io import BytesIO
+from io import BytesIO
+
+# ============================================================
+# CUSTOM FONT — MONTSERRAT EXTRA BOLD
+# ============================================================
+
+FONT_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "fonts"
+)
+
+MONTSERRAT_EXTRA_BOLD = os.path.join(
+    FONT_DIR,
+    "Montserrat-ExtraBold.ttf"
+)
+
+pdfmetrics.registerFont(
+    TTFont(
+        "Montserrat-ExtraBold",
+        MONTSERRAT_EXTRA_BOLD
+    )
+)
+
+app = Flask(__name__)
 
 app = Flask(__name__)
 
