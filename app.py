@@ -1876,11 +1876,10 @@ c.drawString(
     name
 )
 
-    # =========================================================
-    # PROFESSIONAL TITLE UNDER NAME
-    # =========================================================
-
-    professional_title = (
+# =========================================================
+# PROFESSIONAL TITLE UNDER NAME
+# =========================================================
+professional_title = (
         clean(data.get("title"))
         or "PROFESSIONAL"
     )
