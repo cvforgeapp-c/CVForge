@@ -1852,8 +1852,8 @@ def generate_modern(c, data):
     name = clean(data.get("name")) or "Your Name"
 
 # Position just to the right of the photo
-name_x = 82 * mm
-name_y = H - 18 * mm
+    name_x = 82 * mm
+    name_y = H - 18 * mm
 
 # Large bold teal name
 name_size = 25
