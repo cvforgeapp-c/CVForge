@@ -1880,32 +1880,26 @@ c.drawString(
 # PROFESSIONAL TITLE UNDER NAME
 # =========================================================
 professional_title = (
-        clean(data.get("title"))
-        or "PROFESSIONAL"
+    clean(data.get("title"))
+    or "PROFESSIONAL" )
+title_text = professional_title.upper()
+title_size = 11
+while (
+    c.stringWidth(
+        title_text,
+        "Helvetica",
+        title_size
     )
-
-    title_text = professional_title.upper()
-
-    title_size = 11
-
-    while (
-        c.stringWidth(
-            title_text,
-            "Helvetica",
-            title_size
-        )
-        > W - name_x - margin_right
-        and title_size > 8
-    ):
-        title_size -= 0.5
-
+    > W - name_x - margin_right
+    and title_size > 8
+):
+    title_size -= 0.5
     c.setFillColor(dark)
-
     c.setFont(
         "Helvetica",
         title_size
     )
-
+    
     c.drawString(
         name_x,
         name_y - 11 * mm,
