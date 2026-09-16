@@ -1879,7 +1879,7 @@ def generate_modern(c, data):
 
     # Position just to the right of the photo
     name_x = 82 * mm
-    name_y = H - 21 * mm
+    name_y = H - 15 * mm
 
        # Large bold name
     name_size = 38
