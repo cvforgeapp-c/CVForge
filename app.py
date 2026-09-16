@@ -1846,28 +1846,38 @@ def generate_modern(c, data):
     )
     
 # ============================================================
-# NAME — LARGE, BOLD TEAL
+# NAME — LARGE, BOLD, DEEP TEAL
 # ============================================================
 
-    name = clean(data.get("name")) or "Your Name"
+name = clean(data.get("name")) or "Your Name"
 
 # Position just to the right of the photo
-    name_x = 82 * mm
-    name_y = H - 18 * mm
+name_x = 82 * mm
+name_y = H - 18 * mm
 
-# Large bold teal name
+# Large bold name
 name_size = 25
-c.setFillColor(accent)
-c.setFont("Helvetica-Bold", name_size)
 
-# Keep the name on one line when possible
+# Automatically reduce size for very long names
 while (
-    c.stringWidth(name, "Helvetica-Bold", name_size)
-    > W - name_x - 15 * mm
+    c.stringWidth(
+        name,
+        "Helvetica-Bold",
+        name_size
+    ) > W - name_x - 15 * mm
     and name_size > 18
 ):
     name_size -= 1
-    c.setFont("Helvetica-Bold", name_size)
+
+# Deep teal name
+c.setFillColor(
+    colors.HexColor("#0F5A70")
+)
+
+c.setFont(
+    "Helvetica-Bold",
+    name_size
+)
 
 c.drawString(
     name_x,
