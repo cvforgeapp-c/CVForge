@@ -2944,7 +2944,7 @@ def generate_modern(c, data):
             c.circle(
                 photo_cx,
                 photo_cy,
-                radius + 2.5 * mm,
+                radius + 1.5 * mm,
                 fill=1,
                 stroke=0
             )
@@ -2954,8 +2954,7 @@ def generate_modern(c, data):
             # -------------------------------------------------
 
             c.setStrokeColor(accent)
-            c.setLineWidth(2.5) 
-
+            c.setLineWidth(2.8)
             c.circle(
                 photo_cx,
                 photo_cy,
