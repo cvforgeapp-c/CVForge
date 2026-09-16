@@ -1869,19 +1869,57 @@ def generate_modern(c, data):
     ):
         name_size -= 1
 
-# Deep teal name
+    # Deep teal name
     c.setFillColor(
-    colors.HexColor("#0F5A70")
-)
+        colors.HexColor("#0F5A70")
+    )
+
     c.setFont(
-    "Helvetica-Bold",
-    name_size
-)
+        "Helvetica-Bold",
+        name_size
+    )
+
     c.drawString(
-    name_x,
-    name_y,
-    name
-)
+        name_x,
+        name_y,
+        name
+    )
+
+    # ============================================================
+    # PROFESSIONAL TITLE UNDER NAME
+    # ============================================================
+
+    professional_title = (
+        clean(data.get("title"))
+        or "PROFESSIONAL"
+    )
+
+    title_text = professional_title.upper()
+    title_size = 11
+
+    while (
+        c.stringWidth(
+            title_text,
+            "Helvetica",
+            title_size
+        )
+        > W - name_x - margin_right
+        and title_size > 8
+    ):
+        title_size -= 0.5
+
+    c.setFillColor(dark)
+
+    c.setFont(
+        "Helvetica",
+        title_size
+    )
+
+    c.drawString(
+        name_x,
+        name_y - 11 * mm,
+        title_text
+    )
     # =========================================================
 # PROFESSIONAL TITLE UNDER NAME
 # =========================================================
