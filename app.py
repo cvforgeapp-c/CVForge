@@ -2924,7 +2924,7 @@ def generate_modern(c, data):
     if photo_path and os.path.exists(photo_path):
 
         # Larger photo to match the reference
-        photo_size = 38 * mm
+        photo_size = 43 * mm
 
         
         photo_cx = 39 * mm
