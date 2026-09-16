@@ -1869,7 +1869,7 @@ def generate_modern(c, data):
     ):
         name_size -= 1
 
-    # Deep teal name
+        # Deep teal name
     c.setFillColor(
         colors.HexColor("#0F5A70")
     )
@@ -1885,9 +1885,9 @@ def generate_modern(c, data):
         name
     )
 
-    # ============================================================
+    # =========================================================
     # PROFESSIONAL TITLE UNDER NAME
-    # ============================================================
+    # =========================================================
 
     professional_title = (
         clean(data.get("title"))
