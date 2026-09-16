@@ -1888,7 +1888,7 @@ def generate_modern(c, data):
     while (
         c.stringWidth(
             name,
-            "Helvetica-Bold",
+            "Montserrat-ExtraBold",
             name_size
         ) > W - name_x - 15 * mm
         and name_size > 18
@@ -1901,7 +1901,7 @@ def generate_modern(c, data):
     )
 
     c.setFont(
-        "Helvetica-Bold",
+        "Montserrat-ExtraBold",
         name_size
     )
 
