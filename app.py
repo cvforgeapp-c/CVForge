@@ -1849,7 +1849,7 @@ def generate_modern(c, data):
 # NAME — LARGE, BOLD TEAL
 # ============================================================
 
-name = clean(data.get("name")) or "Your Name"
+    name = clean(data.get("name")) or "Your Name"
 
 # Position just to the right of the photo
 name_x = 82 * mm
