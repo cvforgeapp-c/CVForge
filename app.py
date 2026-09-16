@@ -1882,7 +1882,7 @@ def generate_modern(c, data):
     name_y = H - 18 * mm
 
        # Large bold name
-    name_size = 25
+    name_size = 38
 
     # Automatically reduce size for very long names
     while (
