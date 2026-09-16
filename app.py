@@ -1959,7 +1959,7 @@ while (
 
     def sidebar_heading(title_text):
 
-        nonlocal sidebar_y
+        
 
         c.setFillColor(dark)
 
