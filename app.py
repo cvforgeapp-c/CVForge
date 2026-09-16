@@ -1973,9 +1973,9 @@ def generate_modern(c, data):
 
     def sidebar_heading(title_text):
 
-        
+    nonlocal sidebar_y
 
-        c.setFillColor(dark)
+    c.setFillColor(dark)
 
         c.setFont(
             "Helvetica-Bold",
