@@ -1951,64 +1951,65 @@ def modern(data,file):
 # =========================
 # PROFILE PHOTO
 # =========================
-photo = data.get("photo")
+ photo = data.get("photo")
+ if photo and os.path.exists(photo):
+	 try:
+		 from reportlab.lib.utils import ImageReader
+		 
+# Photo position — centered in sidebar, near the top
+photo_size = 48 * mm
+photo_x = (sidebar_w - photo_size) / 2
+photo_y = H - 63 * mm
 
-if photo and os.path.exists(photo):
-    try:
-        from reportlab.lib.utils import ImageReader
+# Outer gold border
+c.setFillColor(gold)
+c.circle(
+	photo_x + photo_size / 2,
+	photo_y + photo_size / 2,
+	photo_size / 2 + 2.2 * mm,
+	stroke=0,
+	fill=1
+)
 
-        # Photo position — centered in sidebar, near the top
-        photo_size = 48 * mm
-        photo_x = (sidebar_w - photo_size) / 2
-        photo_y = H - 63 * mm
+# Inner white border
+c.setFillColor(colors.white)
+c.circle(
+	photo_x + photo_size / 2,
+	photo_y + photo_size / 2,
+	photo_size / 2 + 0.8 * mm,
+	stroke=0,
+	fill=1
+)
 
-        # Outer gold border
-        c.setFillColor(gold)
-        c.circle(
-            photo_x + photo_size / 2,
-            photo_y + photo_size / 2,
-            photo_size / 2 + 2.2 * mm,
-            stroke=0,
-            fill=1
-        )
+# Circular photo clipping
 
-        # Inner white border
-        c.setFillColor(colors.white)
-        c.circle(
-            photo_x + photo_size / 2,
-            photo_y + photo_size / 2,
-            photo_size / 2 + 0.8 * mm,
-            stroke=0,
-            fill=1
-        )
+c.saveState()
 
-        # Circular photo clipping
-        c.saveState()
+path = c.beginPath()
+path.circle(
+	
+	photo_x + photo_size / 2,
+	photo_y + photo_size / 2,
+	photo_size / 2
+)
+c.clipPath(path, stroke=0, fill=0)
 
-        path = c.beginPath()
-        path.circle(
-            photo_x + photo_size / 2,
-            photo_y + photo_size / 2,
-            photo_size / 2
-        )
-        c.clipPath(path, stroke=0, fill=0)
+# Draw uploaded photo
+c.drawImage(
+	ImageReader(photo),
+	photo_x,
+	photo_y,
+	width=photo_size,
+	height=photo_size,
+	preserveAspectRatio=True,
+	anchor="c",
+	mask="auto"
+)
 
-        # Draw uploaded photo
-        c.drawImage(
-            ImageReader(photo),
-            photo_x,
-            photo_y,
-            width=photo_size,
-            height=photo_size,
-            preserveAspectRatio=True,
-            anchor="c",
-            mask="auto"
-        )
+c.restoreState()
 
-        c.restoreState()
-
-    except Exception:
-        pass 
+except Exception:
+pass 
 
     # =========================================================
     # HELPER: WRAPPED TEXT
