@@ -565,6 +565,14 @@ Choose the accent color for your CV. This color will be used for the header, sec
     onclick="selectColor(this)"
     aria-label="Teal"
 ></button>
+<button
+    type="button"
+    class="color-option"
+    data-color="#D6AA4C"
+    style="background:#D6AA4C"
+    onclick="selectColor(this)"
+    aria-label="Gold"
+></button>
 
 <button
     type="button"
@@ -612,6 +620,72 @@ Choose the accent color for your CV. This color will be used for the header, sec
 ></button>
 
 </div>
+
+</div>
+
+<div class="color-section">
+
+    <h3>Choose Sidebar Color</h3>
+
+    <p class="small">
+        Choose the color of the left sidebar column.
+    </p>
+
+    <input
+        type="hidden"
+        name="sidebar_color"
+        id="sidebarColorInput"
+        value="#173F49"
+    >
+
+    <div class="color-grid">
+
+        <button
+            type="button"
+            class="color-option selected"
+            data-sidebar-color="#173F49"
+            style="background:#173F49"
+            onclick="selectSidebarColor(this)"
+            aria-label="Dark Teal"
+        ></button>
+
+        <button
+            type="button"
+            class="color-option"
+            data-sidebar-color="#0D4B56"
+            style="background:#0D4B56"
+            onclick="selectSidebarColor(this)"
+            aria-label="Teal"
+        ></button>
+
+        <button
+            type="button"
+            class="color-option"
+            data-sidebar-color="#1F2937"
+            style="background:#1F2937"
+            onclick="selectSidebarColor(this)"
+            aria-label="Charcoal"
+        ></button>
+
+        <button
+            type="button"
+            class="color-option"
+            data-sidebar-color="#123B2A"
+            style="background:#123B2A"
+            onclick="selectSidebarColor(this)"
+            aria-label="Dark Green"
+        ></button>
+
+        <button
+            type="button"
+            class="color-option"
+            data-sidebar-color="#3B2F4A"
+            style="background:#3B2F4A"
+            onclick="selectSidebarColor(this)"
+            aria-label="Dark Purple"
+        ></button>
+
+    </div>
 
 </div>
 
@@ -706,7 +780,7 @@ function selectTemplate(button) {
 function selectColor(button) {
 
     const options =
-        document.querySelectorAll(".color-option");
+        document.querySelectorAll(".color-option[data-color]");
 
     options.forEach(option => {
         option.classList.remove("selected");
@@ -714,8 +788,24 @@ function selectColor(button) {
 
     button.classList.add("selected");
 
-    document.getElementById("accentColorInput").value =
-        button.dataset.color;
+    document.getElementById("accentColorInput")
+        .value = button.dataset.color;
+}
+
+
+function selectSidebarColor(button) {
+
+    const options =
+        document.querySelectorAll(".color-option[data-sidebar-color]");
+
+    options.forEach(option => {
+        option.classList.remove("selected");
+    });
+
+    button.classList.add("selected");
+
+    document.getElementById("sidebarColorInput")
+        .value = button.dataset.sidebarColor;
 }
 
 function nextStep() {
@@ -1835,6 +1925,7 @@ def modern(data,file):
     # COLORS
     # =========================================================
     teal = colors.HexColor("#173F49")
+    sidebar_color = colors.HexColor(data.get("sidebar_color") or "#173F49")
     gold = colors.HexColor(data.get("accent_color") or "#D6AA4C")
     white = colors.white
     dark = colors.HexColor("#222222")
@@ -1850,7 +1941,7 @@ def modern(data,file):
     # =========================================================
     # SIDEBAR
     # =========================================================
-    c.setFillColor(teal)
+    c.setFillColor(sidebar_color)
     c.rect(0, 0, sidebar_w, H, stroke=0, fill=1)
 
     # Gold vertical separator
