@@ -2973,8 +2973,11 @@ def generate_pdf(data, filename):
     
     else:
         modern(data, filename)
+        return
+        
+        c.save()
 
-    c.save()
+    
 
 
 @app.route("/")
