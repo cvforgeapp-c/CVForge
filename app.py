@@ -2963,9 +2963,9 @@ def generate_pdf(data, filename):
 
     elif template == "ats":
         generate_ats(c, data)
-
+    
     else:
-    modern(data, filename)
+        modern(data, filename)
 
     c.save()
 
