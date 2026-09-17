@@ -1856,76 +1856,68 @@ def modern(data,file):
     # Gold vertical separator
     c.setFillColor(gold)
     c.rect(sidebar_w - 1.2 * mm, 0, 1.2 * mm, H, stroke=0, fill=1)
+    
+# =========================
+# PROFILE PHOTO
+# =========================
+photo = data.get("photo")
 
-    # =========================================================
-    # PROFILE PHOTO
-    # =========================================================
-    photo = data.get("photo")
+if photo and os.path.exists(photo):
+    try:
+        from reportlab.lib.utils import ImageReader
 
-    if photo and os.path.exists(photo):
-        try:
-            im = ImageReader(photo)
+        # Photo position — centered in sidebar, near the top
+        photo_size = 48 * mm
+        photo_x = (sidebar_w - photo_size) / 2
+        photo_y = H - 63 * mm
 
-            photo_size = 38 * mm
-            photo_cx = 18 * mm
-            photo_cy = H - 45 * mm
+        # Outer gold border
+        c.setFillColor(gold)
+        c.circle(
+            photo_x + photo_size / 2,
+            photo_y + photo_size / 2,
+            photo_size / 2 + 2.2 * mm,
+            stroke=0,
+            fill=1
+        )
 
-            iw, ih = im.getSize()
+        # Inner white border
+        c.setFillColor(colors.white)
+        c.circle(
+            photo_x + photo_size / 2,
+            photo_y + photo_size / 2,
+            photo_size / 2 + 0.8 * mm,
+            stroke=0,
+            fill=1
+        )
 
-            scale = max(
-                photo_size / iw,
-                photo_size / ih
-            )
+        # Circular photo clipping
+        c.saveState()
 
-            draw_w = iw * scale
-            draw_h = ih * scale
+        path = c.beginPath()
+        path.circle(
+            photo_x + photo_size / 2,
+            photo_y + photo_size / 2,
+            photo_size / 2
+        )
+        c.clipPath(path, stroke=0, fill=0)
 
-            c.saveState()
+        # Draw uploaded photo
+        c.drawImage(
+            ImageReader(photo),
+            photo_x,
+            photo_y,
+            width=photo_size,
+            height=photo_size,
+            preserveAspectRatio=True,
+            anchor="c",
+            mask="auto"
+        )
 
-            path = c.beginPath()
-            path.circle(
-                photo_cx,
-                photo_cy,
-                photo_size / 2
-            )
+        c.restoreState()
 
-            c.clipPath(path, stroke=0, fill=0)
-
-            c.drawImage(
-                im,
-                photo_cx - draw_w / 2,
-                photo_cy - draw_h / 2,
-                width=draw_w,
-                height=draw_h,
-                mask="auto"
-            )
-
-            c.restoreState()
-
-            # White inner border
-            c.setStrokeColor(white)
-            c.setLineWidth(2.2)
-            c.circle(
-                photo_cx,
-                photo_cy,
-                photo_size / 2 + 1.5 * mm,
-                stroke=1,
-                fill=0
-            )
-
-            # Gold outer border
-            c.setStrokeColor(gold)
-            c.setLineWidth(1.1)
-            c.circle(
-                photo_cx,
-                photo_cy,
-                photo_size / 2 + 3.2 * mm,
-                stroke=1,
-                fill=0
-            )
-
-        except Exception:
-            pass
+    except Exception:
+        pass 
 
     # =========================================================
     # HELPER: WRAPPED TEXT
