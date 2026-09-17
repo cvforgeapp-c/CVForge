@@ -1952,7 +1952,8 @@ def modern(data,file):
 # PROFILE PHOTO
 # =========================
 photo = data.get("photo")
- if photo and os.path.exists(photo):
+
+if photo and os.path.exists(photo):
 	 try:
 		 from reportlab.lib.utils import ImageReader
 		 
