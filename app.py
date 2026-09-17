@@ -1029,6 +1029,8 @@ def clean(text):
     if not text:
         return ""
     return str(text).strip()
+    
+    _modern_canvas = None
 
 
 def wrap_text(c, text, font, size, max_width):
@@ -1130,6 +1132,9 @@ _modern_canvas = None
 
 
 def wrap(text, font, size, width):
+    if not text:
+        return []
+
     return wrap_text(
         _modern_canvas,
         text,
@@ -1822,6 +1827,8 @@ def modern(data,file):
     W, H = A4
 
     c = canvas.Canvas(file, pagesize=A4)
+    global _modern_canvas
+    _modern_canvas = c
     c.setTitle("CV - " + (data.get("name") or "My CV"))
 
     # =========================================================
