@@ -2965,7 +2965,7 @@ def generate_pdf(data, filename):
         generate_ats(c, data)
 
     else:
-        generate_modern(c, data)
+    modern(data, filename)
 
     c.save()
 
