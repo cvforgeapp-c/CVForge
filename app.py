@@ -2261,9 +2261,9 @@ def modern(data,file):
     # =========================================================
     # NAME
     # =========================================================
-    name = data.get("name") or "My CV"
+    name = (data.get("name") or "My CV").upper() 
 
-    name_size = 36 
+    name_size = 32
 
     while (
         name_size > 17
