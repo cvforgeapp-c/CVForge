@@ -2263,7 +2263,7 @@ def modern(data,file):
     # =========================================================
     name = data.get("name") or "My CV"
 
-    name_size = 28
+    name_size = 36 
 
     while (
         name_size > 17
