@@ -3089,7 +3089,7 @@ def generate():
         "template": request.form.get("template", "modern"),
 "accent_color": request.form.get(
     "accent_color",
-    "#1599A8"
+    "sidebar_color": request.form.get("sidebar_color", "#173F49"),
 )
     }
     
