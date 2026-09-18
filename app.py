@@ -1924,9 +1924,9 @@ def modern(data,file):
     # =========================================================
     # COLORS
     # =========================================================
-    teal = colors.HexColor("#173F49")
+    teal = colors.HexColor("#053D47")
     sidebar_color = colors.HexColor(data.get("sidebar_color") or "#173F49")
-    gold = colors.HexColor(data.get("accent_color") or "#D6AA4C")
+    gold = colors.HexColor(data.get("accent_color") or "#F2B632")
     white = colors.white
     dark = colors.HexColor("#222222")
     muted = colors.HexColor("#687477")
@@ -1934,7 +1934,7 @@ def modern(data,file):
     # =========================================================
     # PAGE STRUCTURE
     # =========================================================
-    sidebar_w = 70 * mm
+    sidebar_w = 78 * mm
     main_x = sidebar_w + 14 * mm
     main_w = W - main_x - 13 * mm
 
