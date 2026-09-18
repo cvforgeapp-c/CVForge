@@ -1941,6 +1941,9 @@ def modern(data,file):
     # =========================================================
     # SIDEBAR
     # =========================================================
+    background = colors.HexColor("#FAFCFB")
+    c.setFillColor(background)
+    c.rect(0, 0, W, H, stroke=0, fill=1)
     c.setFillColor(sidebar_color)
     c.rect(0, 0, sidebar_w, H, stroke=0, fill=1)
 
