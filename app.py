@@ -2284,7 +2284,7 @@ def modern(data,file):
     c.drawString(
         main_x,
         H - 23 * mm,
-        name[:45]
+        name.upper()[:45]
     )
 
     # =========================================================
