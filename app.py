@@ -2381,14 +2381,6 @@ def modern(data,file):
     # SUMMARY
     # =========================================================
     if data.get("summary"):
-
-        y = main_section(
-            "Professional Summary",
-            main_x,
-            y,
-            main_w
-        )
-
         y = draw_lines(
             data["summary"],
             main_x,
@@ -2398,8 +2390,7 @@ def modern(data,file):
             leading=4.8 * mm,
             color=muted
         )
-
-        y -= 4 * mm
+        y -= 7 * mm
 
     # =========================================================
     # EXPERIENCE
