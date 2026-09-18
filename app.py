@@ -2070,7 +2070,7 @@ def modern(data,file):
     # =========================================================
     def main_section(title, x, y, width):
 
-        c.setFillColor(dark)
+        c.setFillColor(gold)
         c.setFont(
             "Helvetica-Bold",
             10.5
