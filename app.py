@@ -2294,7 +2294,7 @@ def modern(data,file):
 
     if title:
 
-        c.setFillColor(gold)
+        c.setFillColor(colors.HexColor("#FF8C00")
         c.setFont(
             "Helvetica-Bold",
             16
