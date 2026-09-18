@@ -3087,9 +3087,8 @@ def generate():
         "hobbies": request.form.get("hobbies", ""),
         "references": request.form.get("references", ""),
         "template": request.form.get("template", "modern"),
-"accent_color": request.form.get(
-    "accent_color",
-    "sidebar_color": request.form.get("sidebar_color", "#173F49"),
+"accent_color": request.form.get("accent_color"),
+"sidebar_color": request.form.get("sidebar_color", "#173F49"),
 )
     }
     
