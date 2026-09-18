@@ -2088,11 +2088,11 @@ def modern(data,file):
         # Briefcase icon
         cx = x + 5 * mm
         cy = y + 1 * mm
+        
         # Experience briefcase icon
         if "experience" in title.lower():
-
-        c.setFillColor(gold)
-        c.setStrokeColor(gold)
+            c.setFillColor(gold)
+            c.setStrokeColor(gold)
 
         # Main solid briefcase
             c.roundRect(
