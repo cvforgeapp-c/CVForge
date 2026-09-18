@@ -2085,6 +2085,53 @@ def modern(data,file):
             stroke=0,
             fill=1
         )
+        # Briefcase icon
+        cx = x + 5 * mm
+        cy = y + 1 * mm
+        c.setStrokeColor(gold)
+        c.setFillColor(gold)
+        c.setLineWidth(1.4)
+
+        # Briefcase body
+        c.roundRect(
+            cx - 3.2 * mm,
+            cy - 2.3 * mm,
+            6.4 * mm,
+            4.6 * mm,
+            0.8 * mm,
+            stroke=1,
+            fill=0
+        )
+
+        # Briefcase handle
+        c.line(
+            cx - 1.5 * mm,
+            cy + 2.3 * mm,
+            cx - 1.5 * mm,
+            cy + 3.7 * mm
+        )
+
+        c.line(
+            cx + 1.5 * mm,
+            cy + 2.3 * mm,
+            cx + 1.5 * mm,
+            cy + 3.7 * mm
+        )
+
+        c.line(
+            cx - 1.5 * mm,
+            cy + 3.7 * mm,
+            cx + 1.5 * mm,
+            cy + 3.7 * mm
+        )
+
+        # Center clasp
+        c.line(
+            cx,
+            cy - 2.3 * mm,
+            cx,
+            cy + 2.3 * mm
+        )
 
         c.setFillColor(dark)
         c.setFont(
