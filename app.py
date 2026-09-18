@@ -2077,6 +2077,14 @@ def modern(data,file):
     # HELPER: MAIN SECTION TITLE
     # =========================================================
     def main_section(title, x, y, width):
+        c.setFillColor(teal)
+        c.circle(
+            x + 5 * mm,
+            y + 1 * mm,
+            5.2 * mm,
+            stroke=0,
+            fill=1
+        )
 
         c.setFillColor(dark)
         c.setFont(
