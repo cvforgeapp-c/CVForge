@@ -2297,7 +2297,7 @@ def modern(data,file):
         c.setFillColor(gold)
         c.setFont(
             "Helvetica-Bold",
-            14.5
+            16
         )
 
         c.drawString(
