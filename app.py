@@ -1953,15 +1953,14 @@ def modern(data,file):
     # =========================
     photo = data.get("photo")
     if photo and os.path.exists(photo):
-	try:
-		from reportlab.lib.utils import ImageReader
-		# Photo position — centered in sidebar, near the top
-    photo_size = 48 * mm
-    photo_x = (sidebar_w - photo_size) / 2
-    photo_y = H - 63 * mm
-
-    # Outer gold border
-    c.setFillColor(gold)
+	    try:
+			from reportlab.lib.utils import ImageReader
+			# Photo position — centered in sidebar, near the top
+	        photo_size = 48 * mm
+            photo_x = (sidebar_w - photo_size) / 2
+            photo_y = H - 63 * mm
+	# Outer gold border
+	c.setFillColor(gold)
     c.circle(
 		photo_x + photo_size / 2,
 		photo_y + photo_size / 2,
