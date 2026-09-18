@@ -1947,9 +1947,6 @@ def modern(data,file):
     c.setFillColor(sidebar_color)
     c.rect(0, 0, sidebar_w, H, stroke=0, fill=1)
 
-    # Gold vertical separator
-    c.setFillColor(gold)
-    c.rect(sidebar_w - 1.2 * mm, 0, 1.2 * mm, H, stroke=0, fill=1)
     
     # =========================
     # PROFILE PHOTO
@@ -2070,10 +2067,10 @@ def modern(data,file):
     # =========================================================
     def main_section(title, x, y, width):
 
-        c.setFillColor(gold)
+        c.setFillColor(dark_teal)
         c.setFont(
             "Helvetica-Bold",
-            10.5
+            11.5
         )
 
         c.drawString(
@@ -2300,7 +2297,7 @@ def modern(data,file):
         c.setFillColor(gold)
         c.setFont(
             "Helvetica-Bold",
-            12.5
+            14.5
         )
 
         c.drawString(
