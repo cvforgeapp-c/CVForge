@@ -1972,6 +1972,17 @@ def modern(data,file):
                 fill=1
             )
 
+            # Thin dark ring between white and gold
+            c.setStrokeColor(colors.HexColor("#222222"))
+            c.setLineWidth(1.2)
+            c.circle(
+                photo_x + photo_size / 2,
+                photo_y + photo_size / 2,
+                photo_size / 2 + 1.2 * mm,
+                stroke=1,
+                fill=0
+            )
+
             # Inner white border
             c.setFillColor(colors.white)
             c.circle(
