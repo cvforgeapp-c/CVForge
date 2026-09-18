@@ -2088,49 +2088,57 @@ def modern(data,file):
         # Briefcase icon
         cx = x + 5 * mm
         cy = y + 1 * mm
-        c.setStrokeColor(gold)
+        # Experience briefcase icon
+        if "experience" in title.lower():
+
         c.setFillColor(gold)
-        c.setLineWidth(1.4)
+        c.setStrokeColor(gold)
 
-        # Briefcase body
-        c.roundRect(
-            cx - 3.2 * mm,
-            cy - 2.3 * mm,
-            6.4 * mm,
-            4.6 * mm,
-            0.8 * mm,
-            stroke=1,
-            fill=0
-        )
+        # Main solid briefcase
+            c.roundRect(
+                cx - 3.8 * mm,
+                cy - 2.6 * mm,
+                7.6 * mm,
+                5.2 * mm,
+                0.8 * mm,
+                stroke=0,
+                fill=1
+            )
 
-        # Briefcase handle
-        c.line(
-            cx - 1.5 * mm,
-            cy + 2.3 * mm,
-            cx - 1.5 * mm,
-            cy + 3.7 * mm
-        )
+        # Handle
+        c.setLineWidth(1.2)
 
         c.line(
-            cx + 1.5 * mm,
-            cy + 2.3 * mm,
-            cx + 1.5 * mm,
-            cy + 3.7 * mm
+            cx - 1.7 * mm,
+            cy + 2.6 * mm,
+            cx - 1.7 * mm,
+            cy + 4.0 * mm
         )
 
         c.line(
-            cx - 1.5 * mm,
-            cy + 3.7 * mm,
-            cx + 1.5 * mm,
-            cy + 3.7 * mm
+            cx + 1.7 * mm,
+            cy + 2.6 * mm,
+            cx + 1.7 * mm,
+            cy + 4.0 * mm
         )
 
-        # Center clasp
         c.line(
-            cx,
-            cy - 2.3 * mm,
-            cx,
-            cy + 2.3 * mm
+            cx - 1.7 * mm,
+            cy + 4.0 * mm,
+            cx + 1.7 * mm,
+            cy + 4.0 * mm
+        )
+
+        # Small center clasp
+        c.setFillColor(teal)
+
+        c.rect(
+            cx - 0.8 * mm,
+            cy - 0.5 * mm,
+            1.6 * mm,
+            1.0 * mm,
+            stroke=0,
+            fill=1
         )
 
         c.setFillColor(dark)
