@@ -1928,8 +1928,8 @@ def modern(data,file):
     sidebar_color = colors.HexColor(data.get("sidebar_color") or "#173F49")
     gold = colors.HexColor(data.get("accent_color") or "#F2B632")
     white = colors.white
-    dark = colors.HexColor("#222222")
-    muted = colors.HexColor("#687477")
+    dark = colors.HexColor("#123F4A")
+    muted = colors.HexColor("#5E6F73")
 
     # =========================================================
     # PAGE STRUCTURE
@@ -2266,7 +2266,7 @@ def modern(data,file):
     # =========================================================
     name = data.get("name") or "My CV"
 
-    name_size = 25
+    name_size = 28
 
     while (
         name_size > 17
@@ -2300,7 +2300,7 @@ def modern(data,file):
         c.setFillColor(gold)
         c.setFont(
             "Helvetica-Bold",
-            11.5
+            12.5
         )
 
         c.drawString(
@@ -2331,7 +2331,7 @@ def modern(data,file):
             main_x,
             y,
             main_w,
-            size=9.1,
+            size=9.5,
             leading=4.8 * mm,
             color=muted
         )
