@@ -2140,6 +2140,75 @@ def modern(data,file):
             stroke=0,
             fill=1
         )
+
+        elif "education" in title.lower():
+
+        c.setFillColor(gold)
+
+        # Graduation cap top
+        c.saveState()
+
+        c.setLineJoin(1)
+
+        c.line(
+            cx - 5.5 * mm,
+            cy + 1.0 * mm,
+            cx,
+            cy + 4.0 * mm
+        )
+
+        c.line(
+            cx,
+            cy + 4.0 * mm,
+            cx + 5.5 * mm,
+            cy + 1.0 * mm
+        )
+
+        c.line(
+            cx + 5.5 * mm,
+            cy + 1.0 * mm,
+            cx,
+            cy - 2.0 * mm
+        )
+
+        c.line(
+            cx,
+            cy - 2.0 * mm,
+            cx - 5.5 * mm,
+            cy + 1.0 * mm
+        )
+
+        # Cap base
+        c.roundRect(
+            cx - 4.0 * mm,
+            cy - 2.8 * mm,
+            8.0 * mm,
+            1.8 * mm,
+            0.5 * mm,
+            stroke=0,
+            fill=1
+        )
+
+        # Tassel
+        c.setLineWidth(0.8)
+
+        c.line(
+            cx + 5.0 * mm,
+            cy + 1.0 * mm,
+            cx + 5.0 * mm,
+            cy - 2.5 * mm
+        )
+
+        c.circle(
+            cx + 5.0 * mm,
+            cy - 3.0 * mm,
+            0.6 * mm,
+            stroke=0,
+            fill=1
+        )
+
+        c.restoreState()
+    
         c.setFillColor(dark)
         c.setFont(
             "Helvetica-Bold",
