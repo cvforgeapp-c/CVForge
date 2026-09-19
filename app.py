@@ -2538,7 +2538,7 @@ def modern(data,file):
                     bullet=True
                 )
 
-            y -= 3 * mm
+            y -= 1.5 * mm
 
     # =========================================================
     # EDUCATION
