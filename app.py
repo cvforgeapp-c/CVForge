@@ -2096,10 +2096,10 @@ def modern(data,file):
 
         # Main solid briefcase
             c.roundRect(
-                cx - 3.8 * mm,
-                cy - 2.6 * mm,
-                7.6 * mm,
-                5.2 * mm,
+                cx - 4.2 * mm,
+                cy - 3.0 * mm,
+                8.4 * mm,
+                6.0 * mm,
                 0.8 * mm,
                 stroke=0,
                 fill=1
