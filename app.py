@@ -2142,72 +2142,70 @@ def modern(data,file):
         )
         
         if "education" in title.lower():
-            
-            c.setFillColor(gold)
-            
-        # Graduation cap top
-        c.saveState()
 
-        c.setLineJoin(1)
+    c.setFillColor(gold)
 
-        c.line(
-            cx - 5.5 * mm,
-            cy + 1.0 * mm,
-            cx,
-            cy + 4.0 * mm
-        )
+    # Graduation cap
+    c.setLineWidth(1.4)
+    c.setStrokeColor(gold)
 
-        c.line(
-            cx,
-            cy + 4.0 * mm,
-            cx + 5.5 * mm,
-            cy + 1.0 * mm
-        )
+    # Cap diamond
+    c.line(
+        cx - 5.0 * mm,
+        cy + 1.0 * mm,
+        cx,
+        cy + 4.0 * mm
+    )
 
-        c.line(
-            cx + 5.5 * mm,
-            cy + 1.0 * mm,
-            cx,
-            cy - 2.0 * mm
-        )
+    c.line(
+        cx,
+        cy + 4.0 * mm,
+        cx + 5.0 * mm,
+        cy + 1.0 * mm
+    )
 
-        c.line(
-            cx,
-            cy - 2.0 * mm,
-            cx - 5.5 * mm,
-            cy + 1.0 * mm
-        )
+    c.line(
+        cx + 5.0 * mm,
+        cy + 1.0 * mm,
+        cx,
+        cy - 2.0 * mm
+    )
 
-        # Cap base
-        c.roundRect(
-            cx - 4.0 * mm,
-            cy - 2.8 * mm,
-            8.0 * mm,
-            1.8 * mm,
-            0.5 * mm,
-            stroke=0,
-            fill=1
-        )
+    c.line(
+        cx,
+        cy - 2.0 * mm,
+        cx - 5.0 * mm,
+        cy + 1.0 * mm
+    )
 
-        # Tassel
-        c.setLineWidth(0.8)
+    # Cap base
+    c.roundRect(
+        cx - 3.8 * mm,
+        cy - 2.8 * mm,
+        7.6 * mm,
+        1.8 * mm,
+        0.5 * mm,
+        stroke=0,
+        fill=1
+    )
 
-        c.line(
-            cx + 5.0 * mm,
-            cy + 1.0 * mm,
-            cx + 5.0 * mm,
-            cy - 2.5 * mm
-        )
+    # Tassel
+    c.setLineWidth(0.9)
 
-        c.circle(
-            cx + 5.0 * mm,
-            cy - 3.0 * mm,
-            0.6 * mm,
-            stroke=0,
-            fill=1
-        )
+    c.line(
+        cx + 4.5 * mm,
+        cy + 1.0 * mm,
+        cx + 4.5 * mm,
+        cy - 2.5 * mm
+    )
 
-        c.restoreState()
+    c.circle(
+        cx + 4.5 * mm,
+        cy - 3.0 * mm,
+        0.6 * mm,
+        stroke=0,
+        fill=1
+    )
     
         c.setFillColor(dark)
         c.setFont(
