@@ -2225,7 +2225,7 @@ def modern(data,file):
             y - 4.5 * mm
         )
         
-        return y - 8 * mm
+        return y - 5 * mm
 
     # =========================================================
     # HELPER: SIDEBAR SECTION TITLE
