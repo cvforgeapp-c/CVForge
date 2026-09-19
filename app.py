@@ -2142,93 +2142,92 @@ def modern(data,file):
         )
         
         if "education" in title.lower():
+            c.setFillColor(gold)
 
-    c.setFillColor(gold)
+            # Graduation cap
+            c.setLineWidth(1.4)
+            c.setStrokeColor(gold)
 
-    # Graduation cap
-    c.setLineWidth(1.4)
-    c.setStrokeColor(gold)
+            # Cap diamond
+            c.line(
+                cx - 5.0 * mm,
+                cy + 1.0 * mm,
+                cx,
+                cy + 4.0 * mm
+            )
 
-    # Cap diamond
-    c.line(
-        cx - 5.0 * mm,
-        cy + 1.0 * mm,
-        cx,
-        cy + 4.0 * mm
-    )
+            c.line(
+                cx,
+                cy + 4.0 * mm,
+                cx + 5.0 * mm,
+                cy + 1.0 * mm
+            )
 
-    c.line(
-        cx,
-        cy + 4.0 * mm,
-        cx + 5.0 * mm,
-        cy + 1.0 * mm
-    )
+            c.line(
+                cx + 5.0 * mm,
+                cy + 1.0 * mm,
+                cx,
+                cy - 2.0 * mm
+            )
 
-    c.line(
-        cx + 5.0 * mm,
-        cy + 1.0 * mm,
-        cx,
-        cy - 2.0 * mm
-    )
+            c.line(
+                cx,
+                cy - 2.0 * mm,
+                cx - 5.0 * mm,
+                cy + 1.0 * mm
+            )
 
-    c.line(
-        cx,
-        cy - 2.0 * mm,
-        cx - 5.0 * mm,
-        cy + 1.0 * mm
-    )
+            # Cap base
+            c.roundRect(
+                cx - 3.8 * mm,
+                cy - 2.8 * mm,
+                7.6 * mm,
+                1.8 * mm,
+                0.5 * mm,
+                stroke=0,
+                fill=1
+            )
 
-    # Cap base
-    c.roundRect(
-        cx - 3.8 * mm,
-        cy - 2.8 * mm,
-        7.6 * mm,
-        1.8 * mm,
-        0.5 * mm,
-        stroke=0,
-        fill=1
-    )
+            # Tassel
+            c.setLineWidth(0.9)
 
-    # Tassel
-    c.setLineWidth(0.9)
+            c.line(
+                cx + 4.5 * mm,
+                cy + 1.0 * mm,
+                cx + 4.5 * mm,
+                cy - 2.5 * mm
+            )
 
-    c.line(
-        cx + 4.5 * mm,
-        cy + 1.0 * mm,
-        cx + 4.5 * mm,
-        cy - 2.5 * mm
-    )
-
-    c.circle(
-        cx + 4.5 * mm,
-        cy - 3.0 * mm,
-        0.6 * mm,
-        stroke=0,
-        fill=1
-    )
+            c.circle(
+                cx + 4.5 * mm,
+                cy - 3.0 * mm,
+                0.6 * mm,
+                stroke=0,
+                fill=1
+            )
     
-        c.setFillColor(dark)
-        c.setFont(
-            "Helvetica-Bold",
-            11.5
-        )
-        c.drawString(
-            x + 14 * mm,
-            y,
-            title.upper()
-        )
+            c.setFillColor(dark)
+            c.setFont(
+                "Helvetica-Bold",
+                11.5
+            )
+            c.drawString(
+                x + 14 * mm,
+                y,
+                title.upper()
+            )
         
-        c.setStrokeColor(gold)
-        c.setLineWidth(1.1)
+            c.setStrokeColor(gold)
+            c.setLineWidth(1.1)
         
-        c.line(
-            x,
-            y - 4.5 * mm,
-            x + width,
-            y - 4.5 * mm
-        )
-        
-        return y - 8 * mm
+            c.line(
+                x,
+                y - 4.5 * mm,
+                x + width,
+                y - 4.5 * mm
+            )
+
+            return y - 8 * mm
 
     # =========================================================
     # HELPER: SIDEBAR SECTION TITLE
