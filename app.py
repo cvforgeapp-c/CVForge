@@ -2535,7 +2535,7 @@ def modern(data,file):
                     size=8.8,
                     leading=5.2 * mm,
                     color=muted,
-                    bullet=True
+                    bullet=False
                 )
 
             y -= 3 * mm
