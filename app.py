@@ -2533,12 +2533,12 @@ def modern(data,file):
                     y,
                     main_w - 3 * mm,
                     size=8.8,
-                    leading=4.4 * mm,
+                    leading=5.2 * mm,
                     color=muted,
                     bullet=True
                 )
 
-            y -= 1.5 * mm
+            y -= 3 * mm
 
     # =========================================================
     # EDUCATION
