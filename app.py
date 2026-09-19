@@ -2502,6 +2502,8 @@ def modern(data,file):
                     "Helvetica-Bold",
                     10.2
                 )
+                if y is None:
+                    y = H - 55 * mm
 
                 c.drawString(
                     main_x,
