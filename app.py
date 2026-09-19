@@ -2140,6 +2140,67 @@ def modern(data,file):
             stroke=0,
             fill=1
         )
+        elif "education" in title.lower():
+        c.setFillColor(gold)
+
+        # Graduation cap
+        path = c.beginPath()
+
+        path.moveTo(
+            cx - 5.5 * mm,
+            cy + 1.0 * mm
+        )
+        path.lineTo(
+            cx,
+            cy + 4.0 * mm
+        )
+
+        path.lineTo(
+            cx + 5.5 * mm,
+            cy + 1.0 * mm
+        )
+
+        path.lineTo(
+            cx,
+            cy - 2.0 * mm
+        )
+
+        path.close()
+
+        c.drawPath(
+            path,
+            stroke=0,
+            fill=1
+        )
+
+        # Cap base
+        c.roundRect(
+            cx - 3.8 * mm,
+            cy - 2.0 * mm,
+            7.6 * mm,
+            1.8 * mm,
+            0.5 * mm,
+            stroke=0,
+            fill=1
+        )
+
+        # Tassel
+        c.setLineWidth(0.9)
+
+        c.line(
+            cx + 5.0 * mm,
+            cy + 1.0 * mm,
+            cx + 5.0 * mm,
+            cy - 2.0 * mm
+        )
+
+        c.circle(
+            cx + 5.0 * mm,
+            cy - 2.7 * mm,
+            0.7 * mm,
+            stroke=0,
+            fill=1
+        )
 
         c.setFillColor(dark)
         c.setFont(
