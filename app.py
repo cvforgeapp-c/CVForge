@@ -2035,6 +2035,8 @@ def modern(data,file):
         color=dark,
         bullet=False
     ):
+        if y is None:
+            y = A4[1] - 55 * mm
         if not value:
             return y
 
