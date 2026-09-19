@@ -2140,7 +2140,7 @@ def modern(data,file):
             stroke=0,
             fill=1
         )
-        elif "education" in title.lower():
+elif "education" in title.lower():
         c.setFillColor(gold)
 
         # Graduation cap
