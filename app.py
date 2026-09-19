@@ -2141,7 +2141,7 @@ def modern(data,file):
             fill=1
         )
 
-        elif "education" in title.lower():
+        if "education" in title.lower():
 
         c.setFillColor(gold)
 
