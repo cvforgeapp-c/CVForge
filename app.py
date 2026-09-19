@@ -2140,11 +2140,11 @@ def modern(data,file):
             stroke=0,
             fill=1
         )
-
+        
         if "education" in title.lower():
-
-        c.setFillColor(gold)
-
+            
+            c.setFillColor(gold)
+            
         # Graduation cap top
         c.saveState()
 
