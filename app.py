@@ -38,9 +38,6 @@ pdfmetrics.registerFont(
 
 app = Flask(__name__)
 
-app = Flask(__name__)
-
-
 HTML = """
 <!DOCTYPE html>
 <html>
