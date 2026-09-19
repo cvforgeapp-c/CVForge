@@ -2140,93 +2140,28 @@ def modern(data,file):
             stroke=0,
             fill=1
         )
-        if "education" in title.lower():
-            c.setFillColor(gold)
-            
-            # Graduation cap
-            path = c.beginPath()
-
-            path.moveTo(
-                cx - 5.5 * mm,
-                cy + 1.0 * mm
-            )
-            path.lineTo(
-                cx,
-                cy + 4.0 * mm
-            )
-
-            path.lineTo(
-                cx + 5.5 * mm,
-                cy + 1.0 * mm
-            )
-
-            path.lineTo(
-                cx,
-                cy - 2.0 * mm
-            )
-
-            path.close()
-
-            c.drawPath(
-                path,
-                stroke=0,
-                fill=1
-            )
-
-            # Cap base
-            c.roundRect(
-                cx - 3.8 * mm,
-                cy - 2.0 * mm,
-                7.6 * mm,
-                1.8 * mm,
-                0.5 * mm,
-                stroke=0,
-                fill=1
-            )
-
-            # Tassel
-            c.setLineWidth(0.9)
-
-            c.line(
-                cx + 5.0 * mm,
-                cy + 1.0 * mm,
-                cx + 5.0 * mm,
-                cy - 2.0 * mm
-            
-            )
-
-            c.circle(
-                cx + 5.0 * mm,
-                cy - 2.7 * mm,
-                0.7 * mm,
-                stroke=0,
-                fill=1
-            
-            )
-
-            c.setFillColor(dark)
-            c.setFont(
-                "Helvetica-Bold",
-                 11.5
-            )
-
-            c.drawString(
-                x + 14 * mm,
-                y,
-                title.upper()
-            )
-
-            c.setStrokeColor(gold)
-            c.setLineWidth(1.1)
-
-            c.line(
-                x,
-                y - 4.5 * mm,
-                x + width,
-                y - 4.5 * mm
-            )
+        c.setFillColor(dark)
+        c.setFont(
+            "Helvetica-Bold",
+            11.5
+        )
+        c.drawString(
+            x + 14 * mm,
+            y,
+            title.upper()
+        )
         
-            return y - 8 * mm
+        c.setStrokeColor(gold)
+        c.setLineWidth(1.1)
+        
+        c.line(
+            x,
+            y - 4.5 * mm,
+            x + width,
+            y - 4.5 * mm
+        )
+        
+        return y - 8 * mm
 
     # =========================================================
     # HELPER: SIDEBAR SECTION TITLE
