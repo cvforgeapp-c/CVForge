@@ -2158,9 +2158,9 @@ def modern(data,file):
 
         c.line(
             x,
-            y - 2.5 * mm,
+            y - 4.5 * mm,
             x + width,
-            y - 2.5 * mm
+            y - 4.5 * mm
         )
 
         return y - 8 * mm
