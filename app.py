@@ -2204,28 +2204,28 @@ def modern(data,file):
                 fill=1
             )
     
-            c.setFillColor(dark)
-            c.setFont(
-                "Helvetica-Bold",
-                11.5
-            )
-            c.drawString(
-                x + 14 * mm,
-                y,
-                title.upper()
-            )
+        c.setFillColor(dark)
+        c.setFont(
+            "Helvetica-Bold",
+            11.5
+        )
+        c.drawString(
+            x + 14 * mm,
+            y,
+            title.upper()
+        )
         
-            c.setStrokeColor(gold)
-            c.setLineWidth(1.1)
+        c.setStrokeColor(gold)
+        c.setLineWidth(1.1)
         
-            c.line(
-                x,
-                y - 4.5 * mm,
-                x + width,
-                y - 4.5 * mm
-            )
-
-            return y - 8 * mm
+        c.line(
+            x,
+            y - 4.5 * mm,
+            x + width,
+            y - 4.5 * mm
+        )
+        
+        return y - 8 * mm
 
     # =========================================================
     # HELPER: SIDEBAR SECTION TITLE
