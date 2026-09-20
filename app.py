@@ -3457,10 +3457,10 @@ def generate():
         "languages": request.form.get("languages", ""),
         "hobbies": request.form.get("hobbies", ""),
         "references": request.form.get("references", ""),
-        "signature": signature,
         "template": request.form.get("template", "modern"),
 "accent_color": request.form.get("accent_color"),
 "sidebar_color": request.form.get("sidebar_color", "#173F49"),
+        signature = request.files.get("signature")
 
     }
     
