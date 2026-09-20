@@ -2272,46 +2272,107 @@ def modern(data,file):
             
             
             
-                            # =====================================================
+                                    # =====================================================
         # REFERENCES ICON — TWO PERSONS
-        # Front person = WHITE
-        # Back person  = GOLD
+        # Front = WHITE
+        # Back = GOLD
         # =====================================================
         if "reference" in title.lower():
 
-            c.setStrokeColor(gold)
-            c.setLineWidth(1.0)
-
             # -------------------------------------------------
             # BACK PERSON — GOLD
-            # Smaller person positioned to the RIGHT
             # -------------------------------------------------
             c.setFillColor(gold)
 
             # Head
             c.circle(
-                cx + 2.3 * mm,
-                cy + 2.2 * mm,
+                cx + 2.0 * mm,
+                cy + 2.0 * mm,
                 1.15 * mm,
                 stroke=0,
                 fill=1
             )
 
-            # Body / shoulders
+            # Body
             p = c.beginPath()
 
             p.moveTo(
-                cx - 0.1 * mm,
+                cx - 0.2 * mm,
                 cy - 2.8 * mm
             )
 
             p.curveTo(
-                cx - 0.1 * mm,
+                cx - 0.2 * mm,
+                cy - 0.5 * mm,
+                cx + 1.0 * mm,
                 cy - 0.2 * mm,
-                cx + 4.4 * mm,
+                cx + 2.0 * mm,
+                cy - 0.2 * mm
+            )
+
+            p.curveTo(
+                cx + 3.0 * mm,
                 cy - 0.2 * mm,
-                cx + 4.4 * mm,
+                cx + 4.0 * mm,
+                cy - 1.0 * mm,
+                cx + 4.0 * mm,
                 cy - 2.8 * mm
+            )
+
+            p.close()
+
+            c.drawPath(
+                p,
+                fill=1,
+                stroke=0
+            )
+
+            # -------------------------------------------------
+            # FRONT PERSON — WHITE
+            # -------------------------------------------------
+            c.setFillColor(colors.white)
+
+            # Head
+            c.circle(
+                cx - 1.7 * mm,
+                cy + 2.3 * mm,
+                1.35 * mm,
+                stroke=0,
+                fill=1
+            )
+
+            # Body
+            p = c.beginPath()
+
+            p.moveTo(
+                cx - 4.4 * mm,
+                cy - 3.0 * mm
+            )
+
+            p.curveTo(
+                cx - 4.4 * mm,
+                cy - 0.5 * mm,
+                cx - 3.0 * mm,
+                cy + 0.1 * mm,
+                cx - 1.7 * mm,
+                cy + 0.1 * mm
+            )
+
+            p.curveTo(
+                cx - 0.4 * mm,
+                cy + 0.1 * mm,
+                cx + 1.0 * mm,
+                cy - 0.5 * mm,
+                cx + 1.0 * mm,
+                cy - 3.0 * mm
+            )
+
+            p.close()
+
+            c.drawPath(
+                p,
+                fill=1,
+                stroke=0
             )
     
         c.setFillColor(dark)
