@@ -2426,8 +2426,8 @@ def modern(data,file):
         if title.lower() == "skills":
             c.setFillColor(gold)
             c.setLineWidth(2)
-
-        # Gear center
+            
+            # Gear center
             c.circle(
                 x + 4 * mm,
                 y + 1 * mm,
@@ -2435,8 +2435,8 @@ def modern(data,file):
                 stroke=1,
                 fill=0
             )
-
-        # Gear spokes
+            
+            # Gear spokes
             for angle in range(0, 360, 45):
             import math
             
