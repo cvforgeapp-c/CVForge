@@ -3481,6 +3481,11 @@ def generate_pdf(data, filename):
 
     c.save()
 
+if not os.path.exists(file):
+    print("ERROR: Modern PDF was not created:", file)
+else:
+    print("SUCCESS: Modern PDF created:", file)
+
     
 
 
