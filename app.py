@@ -2422,56 +2422,83 @@ def modern(data,file):
     # HELPER: SIDEBAR SECTION TITLE
     # =========================================================
     def sidebar_section(title, x, y, width):
-        # Skills icon
-        if title.lower() == "skills":
-            c.setFillColor(gold)
-            c.setLineWidth(2)
-            
-            # Gear center
-            c.circle(
-                x + 4 * mm,
-                y + 1 * mm,
-                2.5 * mm,
-                stroke=1,
-                fill=0
+
+    # Skills icon
+    if title.lower() == "skills":
+
+        c.setFillColor(gold)
+        c.setLineWidth(2)
+
+        # Gear center
+        c.circle(
+            x + 4 * mm,
+            y + 1 * mm,
+            2.5 * mm,
+            stroke=1,
+            fill=0
+        )
+
+        # Gear spokes
+        for angle in range(0, 360, 45):
+
+            import math
+
+            rad = math.radians(angle)
+
+            x1 = (
+                x + 4 * mm
+                + 3.5 * mm * math.cos(rad)
             )
-            
-            # Gear spokes
-            for angle in range(0, 360, 45):
-                import math
-                
-                rad = math.radians(angle)
-                x1 = x + 4 * mm + 3.5 * mm * math.cos(rad)
-                y1 = y + 1 * mm + 3.5 * mm * math.sin(rad)
 
-                x2 = x + 4 * mm + 5 * mm * math.cos(rad)
-                y2 = y + 1 * mm + 5 * mm * math.sin(rad)
-                
-                c.line(x1, y1, x2, y2)
-            
-                c.setFillColor(gold)
-                c.setFont(
-                    "Helvetica-Bold",
-                    10.5
-                )
+            y1 = (
+                y + 1 * mm
+                + 3.5 * mm * math.sin(rad)
+            )
 
-                c.drawString(
-                    x + 11 * mm if title.lower() == "skills" else x,
-                    y,
-                    title.upper()
-                )
-            
-                c.setStrokeColor(gold)
-                c.setLineWidth(1)
-                line_x = x + 11 * mm if title.lower() == "skills" else x
-                c.line(
-                    line_x,
-                    y - 2.2 * mm,
-                    x + width,
-                    y - 2.2 * mm
-                )
-                
-                return y - 8 * mm
+            x2 = (
+                x + 4 * mm
+                + 5 * mm * math.cos(rad)
+            )
+
+            y2 = (
+                y + 1 * mm
+                + 5 * mm * math.sin(rad)
+            )
+
+            c.line(x1, y1, x2, y2)
+
+    # Section title
+    c.setFillColor(gold)
+    c.setFont(
+        "Helvetica-Bold",
+        10.5
+    )
+
+    title_x = (
+        x + 11 * mm
+        if title.lower() == "skills"
+        else x
+    )
+
+    c.drawString(
+        title_x,
+        y,
+        title.upper()
+    )
+
+    # Section line
+    c.setStrokeColor(gold)
+    c.setLineWidth(1)
+
+    c.line(
+        title_x,
+        y - 2.2 * mm,
+        x + width,
+        y - 2.2 * mm
+    )
+
+    # IMPORTANT: always return a numeric y position
+    return y - 8 * mm
 
     # =========================================================
     # SIDEBAR CONTENT
