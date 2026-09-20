@@ -2852,33 +2852,31 @@ def modern(data,file):
                     color=muted
                 )
 
-                    
-   
-# =========================================================
-# HANDWRITTEN SIGNATURE
-# =========================================================
+        # =========================================================
+        # SIGNATURE AREA
+        # =========================================================
 
-signature_name = clean(data.get("name")) or "Your Name"
+        signature_name = clean(data.get("name")) or "Your Name"
 
-c.setFillColor(dark)
-c.setFont("DancingScript", 18)
+        c.setFillColor(dark)
+        c.setFont("DancingScript", 18)
 
-c.drawString(
-    main_x,
-    y - 4 * mm,
-    signature_name
-)
+        c.drawString(
+            main_x,
+            y - 4 * mm,
+            signature_name
+        )
 
-# Signature underline
-c.setStrokeColor(gold)
-c.setLineWidth(0.8)
+        # Signature underline
+        c.setStrokeColor(gold)
+        c.setLineWidth(0.8)
 
-c.line(
-    main_x,
-    y - 9 * mm,
-    main_x + 45 * mm,
-    y - 9 * mm
-)
+        c.line(
+            main_x,
+            y - 9 * mm,
+            main_x + 45 * mm,
+            y - 9 * mm
+        )
 
     # =========================================================
     # FOOTER
