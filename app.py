@@ -2881,20 +2881,18 @@ def modern(data,file):
     # =========================================================
     # FOOTER
     # =========================================================
+    c.setFillColor(gold)
+    c.setFont(
+        "Helvetica-Bold",
+        7.5
+    )
 
-c.setFillColor(gold)
-c.setFont(
-    "Helvetica-Bold",
-    7.5
-)
-
-c.drawString(
-    main_x,
-    10 * mm,
-    "CVFORGE • PROFESSIONAL CV"
-)
-
-c.save()
+    c.drawString(
+        main_x,
+        10 * mm,
+        "CVFORGE • PROFESSIONAL CV"
+    )
+    c.save()
 
     
 
