@@ -2914,16 +2914,7 @@ def modern(data,file):
                         mask="auto"
                     )
 
-                    # Gold underline
-                    c.setStrokeColor(gold)
-                    c.setLineWidth(0.8)
-
-                    c.line(
-                        main_x,
-                        y - 7 * mm,
-                        main_x + 45 * mm,
-                        y - 7 * mm
-                    )
+            
 
                 # Remove temporary image
                 os.unlink(signature_temp.name)
