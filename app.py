@@ -2859,11 +2859,11 @@ def modern(data,file):
         signature_name = clean(data.get("name")) or "Your Name"
 
         c.setFillColor(dark)
-        c.setFont("DancingScript", 18)
+        c.setFont("DancingScript", 22)
 
         c.drawString(
             main_x,
-            y - 4 * mm,
+            y - 7 * mm,
             signature_name
         )
 
@@ -2874,7 +2874,7 @@ def modern(data,file):
         c.line(
             main_x,
             y - 9 * mm,
-            main_x + 45 * mm,
+            main_x + 55 * mm
             y - 9 * mm
         )
 
