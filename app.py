@@ -3431,7 +3431,7 @@ def home():
 @app.route("/generate", methods=["POST"])
 def generate():
     photo = request.files.get("photo")
-signature = request.files.get("signature")
+    signature = request.files.get("signature")
     data = {
         "name": request.form.get("name", ""),
         "title": request.form.get("title", ""),
