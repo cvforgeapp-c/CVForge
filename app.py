@@ -2272,8 +2272,10 @@ def modern(data,file):
             
             
             
-                    # =====================================================
-        # REFERENCES ICON
+                            # =====================================================
+        # REFERENCES ICON — TWO PERSONS
+        # Front person = WHITE
+        # Back person  = GOLD
         # =====================================================
         if "reference" in title.lower():
 
@@ -2281,66 +2283,35 @@ def modern(data,file):
             c.setLineWidth(1.0)
 
             # -------------------------------------------------
-            # LEFT PERSON — DARK TEAL / BLACK
-            # -------------------------------------------------
-            c.setFillColor(dark)
-
-            # Head
-            c.circle(
-                cx - 2.0 * mm,
-                cy + 2.0 * mm,
-                1.25 * mm,
-                stroke=0,
-                fill=1
-            )
-
-            # Shoulders
-            p = c.beginPath()
-            p.moveTo(
-                cx - 4.0 * mm,
-                cy - 2.8 * mm
-            )
-            p.curveTo(
-                cx - 4.0 * mm,
-                cy - 0.2 * mm,
-                cx - 0.2 * mm,
-                cy - 0.2 * mm,
-                cx - 0.2 * mm,
-                cy - 2.8 * mm
-            )
-            p.close()
-            c.drawPath(p, fill=1, stroke=0)
-
-            # -------------------------------------------------
-            # RIGHT PERSON — GOLD
+            # BACK PERSON — GOLD
+            # Smaller person positioned to the RIGHT
             # -------------------------------------------------
             c.setFillColor(gold)
 
             # Head
             c.circle(
-                cx + 2.0 * mm,
-                cy + 2.0 * mm,
-                1.25 * mm,
+                cx + 2.3 * mm,
+                cy + 2.2 * mm,
+                1.15 * mm,
                 stroke=0,
                 fill=1
             )
 
-            # Shoulders
+            # Body / shoulders
             p = c.beginPath()
+
             p.moveTo(
-                cx - 0.2 * mm,
+                cx - 0.1 * mm,
                 cy - 2.8 * mm
             )
+
             p.curveTo(
-                cx - 0.2 * mm,
+                cx - 0.1 * mm,
                 cy - 0.2 * mm,
-                cx + 4.0 * mm,
+                cx + 4.4 * mm,
                 cy - 0.2 * mm,
-                cx + 4.0 * mm,
+                cx + 4.4 * mm,
                 cy - 2.8 * mm
-            )
-            p.close()
-            c.drawPath(p, fill=1, stroke=0)
     
         c.setFillColor(dark)
         c.setFont(
