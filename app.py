@@ -2272,16 +2272,20 @@ def modern(data,file):
             
             
             
-            # =====================================================
+                    # =====================================================
         # REFERENCES ICON
         # =====================================================
         if "reference" in title.lower():
 
             c.setStrokeColor(gold)
-            c.setFillColor(gold)
             c.setLineWidth(1.0)
 
-            # LEFT PERSON - head
+            # -------------------------------------------------
+            # LEFT PERSON — DARK TEAL / BLACK
+            # -------------------------------------------------
+            c.setFillColor(dark_teal)
+
+            # Head
             c.circle(
                 cx - 2.0 * mm,
                 cy + 2.0 * mm,
@@ -2290,7 +2294,7 @@ def modern(data,file):
                 fill=1
             )
 
-            # LEFT PERSON - shoulders
+            # Shoulders
             p = c.beginPath()
             p.moveTo(
                 cx - 4.0 * mm,
@@ -2307,7 +2311,12 @@ def modern(data,file):
             p.close()
             c.drawPath(p, fill=1, stroke=0)
 
-            # RIGHT PERSON - head
+            # -------------------------------------------------
+            # RIGHT PERSON — GOLD
+            # -------------------------------------------------
+            c.setFillColor(gold)
+
+            # Head
             c.circle(
                 cx + 2.0 * mm,
                 cy + 2.0 * mm,
@@ -2316,7 +2325,7 @@ def modern(data,file):
                 fill=1
             )
 
-            # RIGHT PERSON - shoulders
+            # Shoulders
             p = c.beginPath()
             p.moveTo(
                 cx - 0.2 * mm,
