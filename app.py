@@ -2854,7 +2854,7 @@ def modern(data,file):
                     leading=4.4 * mm,
                     color=muted
                 )
-            y -= 8 * mm
+            
 
                         # =========================================================
         # REAL HANDWRITTEN SIGNATURE
