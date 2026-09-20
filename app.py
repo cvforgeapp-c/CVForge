@@ -2390,7 +2390,7 @@ def modern(data,file):
         c.setLineWidth(1.1)
         
         c.line(
-            x,
+            x + 12 * mm,
             y - 4.5 * mm,
             x + width,
             y - 4.5 * mm
