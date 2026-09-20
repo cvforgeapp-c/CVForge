@@ -2203,6 +2203,119 @@ def modern(data,file):
                 stroke=0,
                 fill=1
             )
+                    # =====================================================
+        # CERTIFICATE ICON
+        # =====================================================
+        if "certificate" in title.lower():
+
+            c.setFillColor(gold)
+            c.setStrokeColor(gold)
+            c.setLineWidth(1.1)
+
+            # Certificate paper
+            c.roundRect(
+                cx - 3.2 * mm,
+                cy - 4.0 * mm,
+                6.4 * mm,
+                8.0 * mm,
+                0.7 * mm,
+                stroke=1,
+                fill=0
+            )
+
+            # Certificate lines
+            c.line(
+                cx - 1.8 * mm,
+                cy + 1.8 * mm,
+                cx + 1.8 * mm,
+                cy + 1.8 * mm
+            )
+
+            c.line(
+                cx - 1.8 * mm,
+                cy + 0.3 * mm,
+                cx + 1.8 * mm,
+                cy + 0.3 * mm
+            )
+
+            c.line(
+                cx - 1.8 * mm,
+                cy - 1.2 * mm,
+                cx + 1.0 * mm,
+                cy - 1.2 * mm
+            )
+
+            # Certificate seal
+            c.circle(
+                cx,
+                cy - 2.7 * mm,
+                1.0 * mm,
+                stroke=1,
+                fill=0
+            )
+
+            # Small ribbon
+            c.line(
+                cx - 0.7 * mm,
+                cy - 3.5 * mm,
+                cx - 1.7 * mm,
+                cy - 5.0 * mm
+            )
+
+            c.line(
+                cx + 0.7 * mm,
+                cy - 3.5 * mm,
+                cx + 1.7 * mm,
+                cy - 5.0 * mm
+            )
+
+
+        # =====================================================
+        # REFERENCES ICON
+        # =====================================================
+        if "reference" in title.lower():
+
+            c.setFillColor(gold)
+            c.setStrokeColor(gold)
+            c.setLineWidth(1.0)
+
+            # Left person
+            c.circle(
+                cx - 2.2 * mm,
+                cy + 2.0 * mm,
+                1.5 * mm,
+                stroke=0,
+                fill=1
+            )
+
+            c.roundRect(
+                cx - 4.2 * mm,
+                cy - 3.0 * mm,
+                4.0 * mm,
+                4.0 * mm,
+                1.4 * mm,
+                stroke=0,
+                fill=1
+            )
+
+            # Right person
+            c.circle(
+                cx + 2.2 * mm,
+                cy + 2.0 * mm,
+                1.5 * mm,
+                stroke=0,
+                fill=1
+            )
+
+            c.roundRect(
+                cx + 0.2 * mm,
+                cy - 3.0 * mm,
+                4.0 * mm,
+                4.0 * mm,
+                1.4 * mm,
+                stroke=0,
+                fill=1
+            )
     
         c.setFillColor(dark)
         c.setFont(
@@ -2663,7 +2776,7 @@ def modern(data,file):
                     leading=4.4 * mm,
                     color=muted
                 )
-                y -= 7 * mm
+                
 
     # =========================================================
     # SIGNATURE AREA
