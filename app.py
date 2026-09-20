@@ -2208,114 +2208,130 @@ def modern(data,file):
         # =====================================================
         if "certificate" in title.lower():
 
-            c.setFillColor(gold)
             c.setStrokeColor(gold)
-            c.setLineWidth(1.1)
+            c.setFillColor(gold)
+            c.setLineWidth(1.0)
 
             # Certificate paper
             c.roundRect(
-                cx - 3.2 * mm,
-                cy - 4.0 * mm,
-                6.4 * mm,
-                8.0 * mm,
-                0.7 * mm,
+                cx - 3.0 * mm,
+                cy - 3.5 * mm,
+                6.0 * mm,
+                7.0 * mm,
+                0.5 * mm,
                 stroke=1,
                 fill=0
             )
 
-            # Certificate lines
+            # Text lines
             c.line(
                 cx - 1.8 * mm,
-                cy + 1.8 * mm,
+                cy + 1.5 * mm,
                 cx + 1.8 * mm,
-                cy + 1.8 * mm
+                cy + 1.5 * mm
             )
 
             c.line(
                 cx - 1.8 * mm,
-                cy + 0.3 * mm,
+                cy,
                 cx + 1.8 * mm,
-                cy + 0.3 * mm
+                cy
             )
 
             c.line(
                 cx - 1.8 * mm,
-                cy - 1.2 * mm,
-                cx + 1.0 * mm,
-                cy - 1.2 * mm
+                cy - 1.5 * mm,
+                cx + 0.8 * mm,
+                cy - 1.5 * mm
             )
 
             # Certificate seal
             c.circle(
                 cx,
                 cy - 2.7 * mm,
-                1.0 * mm,
+                0.9 * mm,
                 stroke=1,
                 fill=0
             )
 
             # Small ribbon
             c.line(
-                cx - 0.7 * mm,
-                cy - 3.5 * mm,
-                cx - 1.7 * mm,
-                cy - 5.0 * mm
+                cx - 0.5 * mm,
+                cy - 3.4 * mm,
+                cx - 1.4 * mm,
+                cy - 4.7 * mm
             )
 
             c.line(
-                cx + 0.7 * mm,
-                cy - 3.5 * mm,
-                cx + 1.7 * mm,
-                cy - 5.0 * mm
+                cx + 0.5 * mm,
+                cy - 3.4 * mm,
+                cx + 1.4 * mm,
+                cy - 4.7 * mm
             )
-
-
-        # =====================================================
+                    
+            
+            
+            
+            # =====================================================
         # REFERENCES ICON
         # =====================================================
         if "reference" in title.lower():
 
-            c.setFillColor(gold)
             c.setStrokeColor(gold)
+            c.setFillColor(gold)
             c.setLineWidth(1.0)
 
-            # Left person
+            # LEFT PERSON - head
             c.circle(
-                cx - 2.2 * mm,
+                cx - 2.0 * mm,
                 cy + 2.0 * mm,
-                1.5 * mm,
+                1.25 * mm,
                 stroke=0,
                 fill=1
             )
 
-            c.roundRect(
-                cx - 4.2 * mm,
-                cy - 3.0 * mm,
-                4.0 * mm,
-                4.0 * mm,
-                1.4 * mm,
-                stroke=0,
-                fill=1
+            # LEFT PERSON - shoulders
+            p = c.beginPath()
+            p.moveTo(
+                cx - 4.0 * mm,
+                cy - 2.8 * mm
             )
+            p.curveTo(
+                cx - 4.0 * mm,
+                cy - 0.2 * mm,
+                cx - 0.2 * mm,
+                cy - 0.2 * mm,
+                cx - 0.2 * mm,
+                cy - 2.8 * mm
+            )
+            p.close()
+            c.drawPath(p, fill=1, stroke=0)
 
-            # Right person
+            # RIGHT PERSON - head
             c.circle(
-                cx + 2.2 * mm,
+                cx + 2.0 * mm,
                 cy + 2.0 * mm,
-                1.5 * mm,
+                1.25 * mm,
                 stroke=0,
                 fill=1
             )
 
-            c.roundRect(
-                cx + 0.2 * mm,
-                cy - 3.0 * mm,
-                4.0 * mm,
-                4.0 * mm,
-                1.4 * mm,
-                stroke=0,
-                fill=1
+            # RIGHT PERSON - shoulders
+            p = c.beginPath()
+            p.moveTo(
+                cx - 0.2 * mm,
+                cy - 2.8 * mm
             )
+            p.curveTo(
+                cx - 0.2 * mm,
+                cy - 0.2 * mm,
+                cx + 4.0 * mm,
+                cy - 0.2 * mm,
+                cx + 4.0 * mm,
+                cy - 2.8 * mm
+            )
+            p.close()
+            c.drawPath(p, fill=1, stroke=0)
     
         c.setFillColor(dark)
         c.setFont(
