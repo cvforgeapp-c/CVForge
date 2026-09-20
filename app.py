@@ -3430,6 +3430,8 @@ def home():
 
 @app.route("/generate", methods=["POST"])
 def generate():
+    photo = request.files.get("photo")
+signature = request.files.get("signature")
     data = {
         "name": request.form.get("name", ""),
         "title": request.form.get("title", ""),
@@ -3446,6 +3448,7 @@ def generate():
         "languages": request.form.get("languages", ""),
         "hobbies": request.form.get("hobbies", ""),
         "references": request.form.get("references", ""),
+        "signature": signature,
         "template": request.form.get("template", "modern"),
 "accent_color": request.form.get("accent_color"),
 "sidebar_color": request.form.get("sidebar_color", "#173F49"),
@@ -3453,8 +3456,6 @@ def generate():
 
     }
     
-    photo = request.files.get("photo")
-    signature = request.files.get("signature")
 
     if photo and photo.filename:
         photo_path = os.path.join(
