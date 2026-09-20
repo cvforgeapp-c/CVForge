@@ -2861,6 +2861,7 @@ def modern(data,file):
         # =========================================================
 
         signature = data.get("signature")
+        print("SIGNATURE DEBUG:", signature, getattr(signature, "filename", None))
 
         if signature and signature.filename:
 
