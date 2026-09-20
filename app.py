@@ -2930,19 +2930,7 @@ def modern(data,file):
             except Exception as e:
                 print("Signature image error:", e)
 
-    # =========================================================
-    # FOOTER
-    # =========================================================
-    c.setFillColor(gold)
-    c.setFont(
-        "Helvetica-Bold",
-        7.5
-    )
-
-    c.drawString(
-        main_x,
-        10 * mm,
-    )
+    
     c.save()
 
     
