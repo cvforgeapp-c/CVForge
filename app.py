@@ -3443,26 +3443,43 @@ def generate_ats(c, data):
 
 
 def generate_pdf(data, filename):
-    c = canvas.Canvas(
-        filename,
-        pagesize=A4
-    )
 
     template = clean(
         data.get("template")
     ).lower()
 
-    if template == "classic":
-        generate_classic(c, data)
-
-    elif template == "ats":
-        generate_ats(c, data)
-    
-    else:
+    # Modern creates and saves its own canvas
+    if template == "modern":
         modern(data, filename)
         return
-        
-        c.save()
+
+    # Classic and ATS use this canvas
+    c = canvas.Canvas(
+        filename,
+        pagesize=A4
+    )
+
+    if template == "classic":
+
+        generate_classic(
+            c,
+            data
+        )
+
+    elif template == "ats":
+
+        generate_ats(
+            c,
+            data
+        )
+
+    else:
+
+        # Default to Modern
+        modern(data, filename)
+        return
+
+    c.save()
 
     
 
