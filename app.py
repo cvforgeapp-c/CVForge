@@ -3464,6 +3464,7 @@ def generate():
     }
     
     photo = request.files.get("photo")
+    signature = request.files.get("signature")
 
     if photo and photo.filename:
         photo_path = os.path.join(
