@@ -467,6 +467,9 @@ Sports"></textarea>
 placeholder="Name - Position - Company
 Email / Phone"></textarea>
 
+<label>Signature (optional)</label>
+<input type="file" name="signature" accept="image/png,image/jpeg,image/jpg">
+
 <div class="buttons">
 <button type="button" class="back" onclick="prevStep()">← Back</button>
 <button type="button" class="next" onclick="nextStep()">Next →</button>
@@ -2852,31 +2855,79 @@ def modern(data,file):
                     color=muted
                 )
 
+                        # =========================================================
+        # REAL HANDWRITTEN SIGNATURE
         # =========================================================
-        # SIGNATURE AREA
-        # =========================================================
 
-        signature_name = clean(data.get("name")) or "Your Name"
+        signature = data.get("signature")
 
-        c.setFillColor(dark)
-        c.setFont("DancingScript", 22)
+        if signature and signature.filename:
 
-        c.drawString(
-            main_x,
-            y - 7 * mm,
-            signature_name
-        )
+            try:
+                signature.seek(0)
 
-        # Signature underline
-        c.setStrokeColor(gold)
-        c.setLineWidth(0.8)
+                signature_image = Image.open(signature)
 
-        c.line(
-            main_x,
-            y - 9 * mm,
-            main_x + 55 * mm,
-            y - 9 * mm
-        )
+                # Convert images with transparency to RGBA
+                if signature_image.mode not in ("RGB", "RGBA"):
+                    signature_image = signature_image.convert("RGBA")
+
+                # Save temporarily because ReportLab needs an image source
+                signature_temp = tempfile.NamedTemporaryFile(
+                    suffix=".png",
+                    delete=False
+                )
+
+                signature_image.save(
+                    signature_temp.name,
+                    format="PNG"
+                )
+
+                signature_temp.close()
+
+                # Desired signature size
+                signature_width = 45 * mm
+                signature_height = 18 * mm
+
+                # Preserve the original aspect ratio
+                img_width, img_height = signature_image.size
+
+                if img_width > 0 and img_height > 0:
+
+                    ratio = min(
+                        signature_width / img_width,
+                        signature_height / img_height
+                    )
+
+                    draw_width = img_width * ratio
+                    draw_height = img_height * ratio
+
+                    c.drawImage(
+                        signature_temp.name,
+                        main_x,
+                        y - draw_height - 3 * mm,
+                        width=draw_width,
+                        height=draw_height,
+                        preserveAspectRatio=True,
+                        mask="auto"
+                    )
+
+                    # Gold underline
+                    c.setStrokeColor(gold)
+                    c.setLineWidth(0.8)
+
+                    c.line(
+                        main_x,
+                        y - 7 * mm,
+                        main_x + 45 * mm,
+                        y - 7 * mm
+                    )
+
+                # Remove temporary image
+                os.unlink(signature_temp.name)
+
+            except Exception as e:
+                print("Signature image error:", e)
 
     # =========================================================
     # FOOTER
@@ -2890,7 +2941,6 @@ def modern(data,file):
     c.drawString(
         main_x,
         10 * mm,
-        "CVFORGE • PROFESSIONAL CV"
     )
     c.save()
 
@@ -3409,6 +3459,7 @@ def generate():
         "template": request.form.get("template", "modern"),
 "accent_color": request.form.get("accent_color"),
 "sidebar_color": request.form.get("sidebar_color", "#173F49"),
+        "include_signature": request.form.get("include_signature") == "on",
 
     }
     
