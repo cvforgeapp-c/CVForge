@@ -2539,6 +2539,8 @@ def modern(data,file):
                 )
 
             y -= 3 * mm
+            # SPACE BETWEEN SECTIONS
+            y -= 5 * mm
 
         # =========================================================
     # EDUCATION
@@ -2600,8 +2602,8 @@ def modern(data,file):
 
                 y -= 5.2 * mm
 
-        # EXTRA SPACE AFTER EDUCATION
-        y -= 6 * mm
+        # SPACE BETWEEN SECTIONS
+        y -= 5 * mm
 
     # =========================================================
     # CERTIFICATES
@@ -2631,6 +2633,8 @@ def modern(data,file):
                     color=muted,
                     bullet=True
                 )
+        # SPACE BETWEEN SECTIONS
+        y -= 5 * mm
 
     # =========================================================
     # REFERENCES
