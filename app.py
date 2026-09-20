@@ -2312,6 +2312,7 @@ def modern(data,file):
                 cy - 0.2 * mm,
                 cx + 4.4 * mm,
                 cy - 2.8 * mm
+            )
     
         c.setFillColor(dark)
         c.setFont(
