@@ -2874,7 +2874,7 @@ def modern(data,file):
         c.line(
             main_x,
             y - 9 * mm,
-            main_x + 55 * mm
+            main_x + 55 * mm,
             y - 9 * mm
         )
 
