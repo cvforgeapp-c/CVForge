@@ -2283,7 +2283,7 @@ def modern(data,file):
             # -------------------------------------------------
             # LEFT PERSON — DARK TEAL / BLACK
             # -------------------------------------------------
-            c.setFillColor(dark_teal)
+            c.setFillColor(dark)
 
             # Head
             c.circle(
