@@ -37,6 +37,21 @@ pdfmetrics.registerFont(
         MONTSERRAT_EXTRA_BOLD
     )
 )
+# ============================================================
+# HANDWRITING FONT — DANCING SCRIPT
+# ============================================================
+
+DANCING_SCRIPT = os.path.join(
+    FONT_DIR,
+    "DancingScript-Regular.ttf"
+)
+
+pdfmetrics.registerFont(
+    TTFont(
+        "DancingScript",
+        DANCING_SCRIPT
+    )
+)
 
 app = Flask(__name__)
 
