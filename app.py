@@ -2957,12 +2957,7 @@ def modern(data,file):
 
 
     # SAVE MODERN PDF
-    c.save()
-
-
-def generate_classic(c, data):
-
-    
+    c.save()   
 
 
 def generate_classic(c, data):
