@@ -2672,7 +2672,7 @@ def modern(data,file):
         y -= 7 * mm
 
 
-    # =========================================================
+        # =========================================================
     # EXPERIENCE
     # =========================================================
     if data.get("experience"):
@@ -2684,58 +2684,97 @@ def modern(data,file):
             main_w
         )
 
-        for block in blocks(
-            data["experience"]
-        ):
+        experience_text = data.get(
+            "experience",
+            ""
+        ).strip()
 
-            parts = [
-                item.strip()
-                for item in block[0].split("|")
-            ]
+        # Split the experience into lines
+        experience_lines = [
+            line.strip()
+            for line in experience_text.splitlines()
+            if line.strip()
+        ]
 
-            job = (
-                parts[0]
-                if parts
-                else ""
-            )
+        current_job = False
 
-            meta = " • ".join(
-                parts[1:]
-            )
+        for line in experience_lines:
 
-            if job:
+            # -------------------------------------------------
+            # A line containing "|" is treated as a job header
+            # Example:
+            # Digital Marketing Specialist |
+            # BrightWave Media | New York, NY | 2022 - Present
+            # -------------------------------------------------
+            if "|" in line:
 
-                c.setFillColor(dark)
-                c.setFont(
-                    "Helvetica-Bold",
-                    10.2
+                parts = [
+                    item.strip()
+                    for item in line.split("|")
+                    if item.strip()
+                ]
+
+                job = (
+                    parts[0]
+                    if parts
+                    else ""
                 )
 
-                c.drawString(
-                    main_x,
-                    y,
-                    job[:85]
+                meta = " • ".join(
+                    parts[1:]
                 )
 
-                y -= 4.5 * mm
+                # Add separation before a new job
+                if current_job:
+                    y -= 4 * mm
 
-            if meta:
+                # Job title
+                if job:
 
-                c.setFillColor(gold)
-                c.setFont(
-                    "Helvetica-Oblique",
-                    8.5
-                )
+                    c.setFillColor(dark)
+                    c.setFont(
+                        "Helvetica-Bold",
+                        10.2
+                    )
 
-                c.drawString(
-                    main_x,
-                    y,
-                    meta[:115]
-                )
+                    c.drawString(
+                        main_x,
+                        y,
+                        job[:85]
+                    )
 
-                y -= 4.5 * mm
+                    y -= 4.5 * mm
 
-            for description in block[1:]:
+                # Company / location / dates
+                if meta:
+
+                    c.setFillColor(gold)
+                    c.setFont(
+                        "Helvetica-Oblique",
+                        8.5
+                    )
+
+                    c.drawString(
+                        main_x,
+                        y,
+                        meta[:115]
+                    )
+
+                    y -= 5 * mm
+
+                current_job = True
+
+            # -------------------------------------------------
+            # Bullet / responsibility
+            # -------------------------------------------------
+            else:
+
+                description = line
+
+                # Remove an existing bullet so CVForge
+                # creates a consistent bullet itself
+                if description.startswith("•"):
+                    description = description[1:].strip()
 
                 y = draw_lines(
                     description,
@@ -2745,12 +2784,12 @@ def modern(data,file):
                     size=8.8,
                     leading=5.2 * mm,
                     color=muted,
-                    bullet=False
+                    bullet=True
                 )
 
-            y -= 3 * mm
+                y -= 0.5 * mm
 
-        # SPACE BETWEEN SECTIONS
+        # Space after the complete Experience section
         y -= 5 * mm
 
 
