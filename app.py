@@ -2430,11 +2430,7 @@ def modern(data,file):
             10.5
         )
 
-        title_x = (
-            x + 11 * mm
-            if title.lower() == "skills"
-            else x
-        )
+        title_x = x  
 
         c.drawString(
             title_x,
