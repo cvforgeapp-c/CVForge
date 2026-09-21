@@ -3487,7 +3487,9 @@ def generate():
     )
 
     generate_pdf(data, filename)
-
+    print("PDF PATH:", filename)
+    print("PDF EXISTS:", os.path.exists(filename))
+    
     with open(filename, "rb") as pdf_file:
         pdf_data = base64.b64encode(
             pdf_file.read()
