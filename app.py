@@ -2795,64 +2795,55 @@ def modern(data,file):
                         # SPACE BETWEEN SECTIONS
                         y -= 5 * mm
 
-    # =========================================================
-    # CERTIFICATES
-    # =========================================================
-    if data.get("certificates"):
+        # =========================================================
+        # CERTIFICATES
+        # =========================================================
+        if data.get("certificates"):
+            y = main_section(
+                "Certificates",
+                main_x,
+                y,
+                main_w
+            )
+            
+            for row in data["certificates"].splitlines():
+                row = row.strip()
+                if row:
+                    y = draw_lines(
+                        row,
+                        main_x,
+                        y,
+                        main_w,
+                        size=8.8,
+                        leading=4.5 * mm,
+                        color=muted,
+                        bullet=True
+                    )
+                    # SPACE BETWEEN SECTIONS
+                    y -= 5 * mm
 
-        y = main_section(
-            "Certificates",
-            main_x,
-            y,
-            main_w
-        )
-
-        for row in data["certificates"].splitlines():
-
-            row = row.strip()
-
-            if row:
-
-                y = draw_lines(
-                    row,
-                    main_x,
-                    y,
-                    main_w,
-                    size=8.8,
-                    leading=4.5 * mm,
-                    color=muted,
-                    bullet=True
-                )
-        # SPACE BETWEEN SECTIONS
-        y -= 5 * mm
-
-    # =========================================================
-    # REFERENCES
-    # =========================================================
-    if data.get("references"):
-
-        y = main_section(
-            "References",
-            main_x,
-            y,
-            main_w
-        )
-
-        for row in data["references"].splitlines():
-
-            row = row.strip()
-
-            if row:
-
-                y = draw_lines(
-                    row,
-                    main_x,
-                    y,
-                    main_w,
-                    size=8.4,
-                    leading=4.4 * mm,
-                    color=muted
-                )
+        # =========================================================
+        # REFERENCES
+        # =========================================================
+        if data.get("references"):
+            y = main_section(
+                "References",
+                main_x,
+                y,
+                main_w
+            )
+            for row in data["references"].splitlines():
+                row = row.strip()
+                if row:
+                    y = draw_lines(
+                        row,
+                        main_x,
+                        y,
+                        main_w,
+                        size=8.4,
+                        leading=4.4 * mm,
+                        color=muted
+                    )
             
 
                         # =========================================================
