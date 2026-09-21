@@ -2787,7 +2787,7 @@ def modern(data,file):
                     bullet=True
                 )
 
-                y -= 0.5 * mm
+                y -= 2 * mm
 
         # Space after the complete Experience section
         y -= 5 * mm
