@@ -2418,29 +2418,30 @@ def modern(data,file):
         
         return y - 11 * mm
 
-    # =========================================================
+        # =========================================================
     # HELPER: SIDEBAR SECTION TITLE
     # =========================================================
     def sidebar_section(title, x, y, width):
-        
+
         # Section title
         c.setFillColor(gold)
         c.setFont(
             "Helvetica-Bold",
             10.5
         )
-        
+
         title_x = (
             x + 11 * mm
             if title.lower() == "skills"
             else x
         )
-        
+
         c.drawString(
             title_x,
             y,
             title.upper()
         )
+
         # Section line
         c.setStrokeColor(gold)
         c.setLineWidth(1)
@@ -2451,137 +2452,108 @@ def modern(data,file):
             x + width,
             y - 2.2 * mm
         )
-        
-        # IMPORTANT: always return a numeric y position
+
         return y - 8 * mm
 
-        # =========================================================
-        # SIDEBAR CONTENT
-        # =========================================================
-        sx = 10 * mm
-        sw = sidebar_w - 20 * mm
-        sy = H - 78 * mm
 
-        # CONTACT
+    # =========================================================
+    # SIDEBAR CONTENT
+    # =========================================================
+    sx = 10 * mm
+    sw = sidebar_w - 20 * mm
+    sy = H - 78 * mm
+
+    # CONTACT
+    sy = sidebar_section(
+        "Contact",
+        sx,
+        sy,
+        sw
+    )
+
+    contact_items = [
+        data.get("phone"),
+        data.get("email"),
+        data.get("location"),
+        data.get("linkedin"),
+        data.get("website")
+    ]
+
+    for value in contact_items:
+
+        if value:
+
+            sy = draw_lines(
+                value,
+                sx,
+                sy,
+                sw,
+                size=8.4,
+                leading=4.5 * mm,
+                color=white
+            )
+
+            sy -= 1.2 * mm
+
+
+    # =========================================================
+    # SKILLS
+    # =========================================================
+    if data.get("skills"):
+
+        sy -= 2 * mm
+
         sy = sidebar_section(
-            "Contact",
+            "Skills",
             sx,
             sy,
             sw
         )
 
-        contact_items = [
-            data.get("phone"),
-            data.get("email"),
-            data.get("location"),
-            data.get("linkedin"),
-            data.get("website")
+        skills = [
+            item.strip()
+            for item in data.get("skills", "").split(",")
+            if item.strip()
         ]
 
-        for value in contact_items:
-            
-            if value:
-                
-                sy = draw_lines(
-                    value,
-                    sx,
-                    sy,
-                    sw,
-                    size=8.4,
-                    leading=4.5 * mm,
-                    color=white
-                )
-                
-                sy -= 1.2 * mm
-                
-        # =========================================================
-        # SKILLS
-        # =========================================================
-        if data.get("skills"):
-            
-            sy -= 2 * mm
-            
-            sy = sidebar_section(
-                "Skills",
+        for skill in skills:
+
+            sy = draw_lines(
+                skill,
                 sx,
                 sy,
-                sw
+                sw,
+                size=8.5,
+                leading=4.4 * mm,
+                color=white,
+                bullet=True
             )
-            
-            skills = [
-                item.strip()
-                for item in data.get("skills", "").split(",")
-                if item.strip()
-            ]
-            
-            for skill in skills:
-                
+
+            sy -= 0.5 * mm
+
+
+    # =========================================================
+    # LANGUAGES
+    # =========================================================
+    if data.get("languages"):
+
+        sy -= 2 * mm
+
+        sy = sidebar_section(
+            "Languages",
+            sx,
+            sy,
+            sw
+        )
+
+        for row in data.get("languages", "").splitlines():
+
+            row = row.strip()
+
+            if row:
+
                 sy = draw_lines(
-                    skill,
-                    sx,
-                    sy,
-                    sw,
-                    size=8.5,
-                    leading=4.4 * mm,
-                    color=white,
-                    bullet=True
-                )
-                
-                sy -= 0.5 * mm
-
-        # =========================================================
-        # LANGUAGES
-        # =========================================================
-        if data.get("languages"):
-            
-            sy -= 2 * mm
-            
-            sy = sidebar_section(
-                "Languages",
-                sx,
-                sy,
-                sw
-            )
-            
-            for row in data.get("languages", "").splitlines():
-                
-                row = row.strip()
-                if row:
-                    
-                    sy = draw_lines(
-                        row,
-                        sx,
-                        sy,
-                        sw,
-                        size=8.5,
-                        leading=4.4 * mm,
-                        color=white,
-                        bullet=True
-                    )
-
-        # =========================================================
-        # INTERESTS
-        # =========================================================
-        if data.get("hobbies"):
-            sy -= 2 * mm
-
-            sy = sidebar_section(
-                "Interests",
-                sx,
-                sy,
-                sw
-            )
-            
-            interests = [
-                item.strip()
-                for item in data.get("hobbies", "").split(",")
-                if item.strip()
-            ]
-            
-            for item in interests:
-                
-                sy = draw_lines(
-                    item,
+                    row,
                     sx,
                     sy,
                     sw,
@@ -2591,319 +2563,404 @@ def modern(data,file):
                     bullet=True
                 )
 
-        # =========================================================
-        # NAME
-        # =========================================================
-        name = (data.get("name") or "My CV").upper() 
-        name_size = 32
 
-        while (
-            name_size > 17
-            and stringWidth(
-                name[:45],
-                "Helvetica-Bold",
-                name_size
-            ) > main_w
+    # =========================================================
+    # INTERESTS
+    # =========================================================
+    if data.get("hobbies"):
+
+        sy -= 2 * mm
+
+        sy = sidebar_section(
+            "Interests",
+            sx,
+            sy,
+            sw
+        )
+
+        interests = [
+            item.strip()
+            for item in data.get("hobbies", "").split(",")
+            if item.strip()
+        ]
+
+        for item in interests:
+
+            sy = draw_lines(
+                item,
+                sx,
+                sy,
+                sw,
+                size=8.5,
+                leading=4.4 * mm,
+                color=white,
+                bullet=True
+            )
+
+
+    # =========================================================
+    # NAME
+    # =========================================================
+    name = (data.get("name") or "My CV").upper()
+
+    name_size = 32
+
+    while (
+        name_size > 17
+        and stringWidth(
+            name[:45],
+            "Helvetica-Bold",
+            name_size
+        ) > main_w
+    ):
+        name_size -= 1
+
+    c.setFillColor(dark)
+    c.setFont(
+        "Helvetica-Bold",
+        name_size
+    )
+
+    c.drawString(
+        main_x,
+        H - 23 * mm,
+        name[:45]
+    )
+
+
+    # =========================================================
+    # PROFESSIONAL TITLE
+    # =========================================================
+    title = data.get("title") or ""
+
+    if title:
+
+        c.setFillColor(gold)
+        c.setFont(
+            "Helvetica-Bold",
+            16
+        )
+
+        c.drawString(
+            main_x,
+            H - 33 * mm,
+            title[:70].upper()
+        )
+
+
+    # =========================================================
+    # MAIN CONTENT
+    # =========================================================
+    y = H - 43 * mm
+
+
+    # =========================================================
+    # SUMMARY
+    # =========================================================
+    if data.get("summary"):
+
+        y = draw_lines(
+            data["summary"],
+            main_x,
+            y,
+            main_w,
+            size=9.5,
+            leading=4.8 * mm,
+            color=muted
+        )
+
+        y -= 7 * mm
+
+
+    # =========================================================
+    # EXPERIENCE
+    # =========================================================
+    if data.get("experience"):
+
+        y = main_section(
+            "Experience",
+            main_x,
+            y,
+            main_w
+        )
+
+        for block in blocks(
+            data["experience"]
         ):
-            name_size -= 1
-            
+
+            parts = [
+                item.strip()
+                for item in block[0].split("|")
+            ]
+
+            job = (
+                parts[0]
+                if parts
+                else ""
+            )
+
+            meta = " • ".join(
+                parts[1:]
+            )
+
+            if job:
+
+                c.setFillColor(dark)
+                c.setFont(
+                    "Helvetica-Bold",
+                    10.2
+                )
+
+                c.drawString(
+                    main_x,
+                    y,
+                    job[:85]
+                )
+
+                y -= 4.5 * mm
+
+            if meta:
+
+                c.setFillColor(gold)
+                c.setFont(
+                    "Helvetica-Oblique",
+                    8.5
+                )
+
+                c.drawString(
+                    main_x,
+                    y,
+                    meta[:115]
+                )
+
+                y -= 4.5 * mm
+
+            for description in block[1:]:
+
+                y = draw_lines(
+                    description,
+                    main_x + 3 * mm,
+                    y,
+                    main_w - 3 * mm,
+                    size=8.8,
+                    leading=5.2 * mm,
+                    color=muted,
+                    bullet=False
+                )
+
+            y -= 3 * mm
+
+        # SPACE BETWEEN SECTIONS
+        y -= 5 * mm
+
+
+    # =========================================================
+    # EDUCATION
+    # =========================================================
+    if data.get("education"):
+
+        y = main_section(
+            "Education",
+            main_x,
+            y,
+            main_w
+        )
+
+        for row in data["education"].splitlines():
+
+            row = row.strip()
+
+            if not row:
+                continue
+
+            parts = [
+                item.strip()
+                for item in row.split("|")
+            ]
+
+            degree = (
+                parts[0]
+                if parts
+                else row
+            )
+
             c.setFillColor(dark)
             c.setFont(
                 "Helvetica-Bold",
-                name_size
+                9.6
             )
-            
+
             c.drawString(
                 main_x,
-                H - 23 * mm,
-                name.upper()[:45]
-            )
-
-        # =========================================================
-        # PROFESSIONAL TITLE
-        # =========================================================
-        title = data.get("title") or ""
-
-        if title:
-            
-            c.setFillColor(gold)
-            c.setFont(
-                "Helvetica-Bold",
-                16
-            )
-            
-            c.drawString(
-                main_x,
-                H - 33 * mm,
-                title[:70].upper()
-            )
-
-        # =========================================================
-        # MAIN CONTENT
-        # =========================================================
-        y = H - 43 * mm
-
-        # =========================================================
-        # SUMMARY
-        # =========================================================
-        if data.get("summary"):
-            y = draw_lines(
-                data["summary"],
-                main_x,
                 y,
-                main_w,
-                size=9.5,
-                leading=4.8 * mm,
-                color=muted
+                degree[:90]
             )
-            y -= 7 * mm
 
-        # =========================================================
-        # EXPERIENCE
-        # =========================================================
-        if data.get("experience"):
-            
-            y = main_section(
-                "Experience",
-                main_x,
-                y,
-                main_w
-            )
-            
-            for block in blocks(
-                data["experience"]
-            ):
-                parts = [
-                    item.strip()
-                    for item in block[0].split("|")
-                ]
-                
-                job = (
-                    parts[0]
-                    if parts
-                    else ""
-                )
-                
-                meta = " • ".join(
-                    parts[1:]
-                )
-                
-                if job:
-                    
-                    c.setFillColor(dark)
-                    c.setFont(
-                        "Helvetica-Bold",
-                        10.2
-                    )
+            y -= 4.3 * mm
 
-                    c.drawString(
-                        main_x,
-                        y,
-                        job[:85]
-                    )
-                    
-                    y -= 4.5 * mm
-                    
-                    if meta:
-                        
-                        c.setFillColor(gold)
-                        c.setFont(
-                            "Helvetica-Oblique",
-                            8.5
-                        )
-                        
-                        c.drawString(
-                            main_x,
-                            y,
-                            meta[:115]
-                        
-                        )
-                        
-                        y -= 4.5 * mm
-                        
-                        for description in block[1:]:
-                            
-                            y = draw_lines(
-                                description,
-                                main_x + 3 * mm,
-                                y,
-                                main_w - 3 * mm,
-                                size=8.8,
-                                leading=5.2 * mm,
-                                color=muted,
-                                bullet=False
-                            
-                            )
-                            
-                
-                            
-                            y -= 5 * mm
+            if len(parts) > 1:
 
-        # =========================================================
-        # EDUCATION
-        # =========================================================
-        if data.get("education"):
-            
-            y = main_section(
-                "Education",
-                main_x,
-                y,
-                main_w
-            
-            )
-            
-            for row in data["education"].splitlines():
-                
-                row = row.strip()
-                if not row:
-                    continue
-                    parts = [
-                        item.strip()
-                        for item in row.split("|")
-                    ]
-                    
-                    degree = (
-                        parts[0]
-                        if parts
-                        else row
-                    )
-                    
-                    c.setFillColor(dark)
-                    c.setFont(
-                        "Helvetica-Bold",
-                        9.6
-                    )
-
-                    c.drawString(
-                        main_x,
-                        y,
-                        degree[:90]
-                    )
-                    y -= 4.3 * mm
-                    if len(parts) > 1:
-                        
-                        c.setFillColor(muted)
-                        c.setFont(
-                            "Helvetica",
-                            8.5
-                        )
-                        c.drawString(
-                            main_x,
-                            y,
-                            " • ".join(parts[1:])[:115]
-                        )
-                        # SPACE BETWEEN SECTIONS
-                        y -= 5 * mm
-
-        # =========================================================
-        # CERTIFICATES
-        # =========================================================
-        if data.get("certificates"):
-            y = main_section(
-                "Certificates",
-                main_x,
-                y,
-                main_w
-            )
-            
-            for row in data["certificates"].splitlines():
-                row = row.strip()
-                if row:
-                    y = draw_lines(
-                        row,
-                        main_x,
-                        y,
-                        main_w,
-                        size=8.8,
-                        leading=4.5 * mm,
-                        color=muted,
-                        bullet=True
-                    )
-                    # SPACE BETWEEN SECTIONS
-                    y -= 5 * mm
-
-        # =========================================================
-        # REFERENCES
-        # =========================================================
-        if data.get("references"):
-            y = main_section(
-                "References",
-                main_x,
-                y,
-                main_w
-            )
-            for row in data["references"].splitlines():
-                row = row.strip()
-                if row:
-                    y = draw_lines(
-                        row,
-                        main_x,
-                        y,
-                        main_w,
-                        size=8.4,
-                        leading=4.4 * mm,
-                        color=muted
-                    )
-            
-
-                        # =========================================================
-        # REAL HANDWRITTEN SIGNATURE
-        # =========================================================
-        signature = data.get("signature")
-        print("SIGNATURE DEBUG:", signature, getattr(signature, "filename", None))
-        if signature and signature.filename:
-            
-            try:
-                signature.seek(0)
-
-                signature_image = Image.open(signature)
-
-                if signature_image.mode not in ("RGB", "RGBA"):
-                    signature_image = signature_image.convert("RGBA")
-
-                signature_temp = tempfile.NamedTemporaryFile(
-                    suffix=".png",
-                    delete=False
+                c.setFillColor(muted)
+                c.setFont(
+                    "Helvetica",
+                    8.5
                 )
 
-                signature_image.save(
+                c.drawString(
+                    main_x,
+                    y,
+                    " • ".join(parts[1:])[:115]
+                )
+
+                y -= 5.2 * mm
+
+        # SPACE BETWEEN SECTIONS
+        y -= 5 * mm
+
+
+    # =========================================================
+    # CERTIFICATES
+    # =========================================================
+    if data.get("certificates"):
+
+        y = main_section(
+            "Certificates",
+            main_x,
+            y,
+            main_w
+        )
+
+        for row in data["certificates"].splitlines():
+
+            row = row.strip()
+
+            if row:
+
+                y = draw_lines(
+                    row,
+                    main_x,
+                    y,
+                    main_w,
+                    size=8.8,
+                    leading=4.5 * mm,
+                    color=muted,
+                    bullet=True
+                )
+
+        # SPACE BETWEEN SECTIONS
+        y -= 5 * mm
+
+
+    # =========================================================
+    # REFERENCES
+    # =========================================================
+    if data.get("references"):
+
+        y = main_section(
+            "References",
+            main_x,
+            y,
+            main_w
+        )
+
+        for row in data["references"].splitlines():
+
+            row = row.strip()
+
+            if row:
+
+                y = draw_lines(
+                    row,
+                    main_x,
+                    y,
+                    main_w,
+                    size=8.4,
+                    leading=4.4 * mm,
+                    color=muted
+                )
+
+        y -= 5 * mm
+
+
+    # =========================================================
+    # REAL HANDWRITTEN SIGNATURE
+    # =========================================================
+    signature = data.get("signature")
+
+    print(
+        "SIGNATURE DEBUG:",
+        signature,
+        getattr(signature, "filename", None)
+    )
+
+    if signature and signature.filename:
+
+        try:
+
+            signature.seek(0)
+
+            signature_image = Image.open(signature)
+
+            # Convert images with transparency to RGBA
+            if signature_image.mode not in ("RGB", "RGBA"):
+                signature_image = signature_image.convert("RGBA")
+
+            # Save temporarily because ReportLab needs an image source
+            signature_temp = tempfile.NamedTemporaryFile(
+                suffix=".png",
+                delete=False
+            )
+
+            signature_image.save(
+                signature_temp.name,
+                format="PNG"
+            )
+
+            signature_temp.close()
+
+            # Desired signature size
+            signature_width = 45 * mm
+            signature_height = 18 * mm
+
+            # Preserve original aspect ratio
+            img_width, img_height = signature_image.size
+
+            if img_width > 0 and img_height > 0:
+
+                ratio = min(
+                    signature_width / img_width,
+                    signature_height / img_height
+                )
+
+                draw_width = img_width * ratio
+                draw_height = img_height * ratio
+
+                c.drawImage(
                     signature_temp.name,
-                    format="PNG"
+                    main_x,
+                    y - draw_height - 3 * mm,
+                    width=draw_width,
+                    height=draw_height,
+                    preserveAspectRatio=True,
+                    mask="auto"
                 )
 
-                signature_temp.close()
+            # Remove temporary image
+            os.unlink(signature_temp.name)
 
-                signature_width = 45 * mm
-                signature_height = 18 * mm
+        except Exception as e:
 
-                img_width, img_height = signature_image.size
+            print(
+                "Signature image error:",
+                e
+            )
 
-                if img_width > 0 and img_height > 0:
 
-                    ratio = min(
-                        signature_width / img_width,
-                        signature_height / img_height
-                    )
-
-                    draw_width = img_width * ratio
-                    draw_height = img_height * ratio
-
-                    c.drawImage(
-                        signature_temp.name,
-                        main_x,
-                        y - draw_height - 3 * mm,
-                        width=draw_width,
-                        height=draw_height,
-                        preserveAspectRatio=True,
-                        mask="auto"
-                    )
-
-                os.unlink(signature_temp.name)
-
-            except Exception as e:
-                print("Signature image error:", e)
-
+    # SAVE MODERN PDF
     c.save()
+
+
+def generate_classic(c, data):
 
     
 
