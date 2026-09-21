@@ -2706,7 +2706,7 @@ def modern(data,file):
             # Digital Marketing Specialist |
             # BrightWave Media | New York, NY | 2022 - Present
             # -------------------------------------------------
-            if "|" in line:
+            if line.count("|") >= 2:
 
                 parts = [
                     item.strip()
