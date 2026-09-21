@@ -2740,67 +2740,60 @@ def modern(data,file):
                             y -= 5 * mm
 
         # =========================================================
-    # EDUCATION
-    # =========================================================
-    if data.get("education"):
-
-        y = main_section(
-            "Education",
-            main_x,
-            y,
-            main_w
-        )
-
-        for row in data["education"].splitlines():
-
-            row = row.strip()
-
-            if not row:
-                continue
-
-            parts = [
-                item.strip()
-                for item in row.split("|")
-            ]
-
-            degree = (
-                parts[0]
-                if parts
-                else row
-            )
-
-            c.setFillColor(dark)
-            c.setFont(
-                "Helvetica-Bold",
-                9.6
-            )
-
-            c.drawString(
+        # EDUCATION
+        # =========================================================
+        if data.get("education"):
+            
+            y = main_section(
+                "Education",
                 main_x,
                 y,
-                degree[:90]
+                main_w
+            
             )
+            
+            for row in data["education"].splitlines():
+                
+                row = row.strip()
+                if not row:
+                    continue
+                    parts = [
+                        item.strip()
+                        for item in row.split("|")
+                    ]
+                    
+                    degree = (
+                        parts[0]
+                        if parts
+                        else row
+                    )
+                    
+                    c.setFillColor(dark)
+                    c.setFont(
+                        "Helvetica-Bold",
+                        9.6
+                    )
 
-            y -= 4.3 * mm
-
-            if len(parts) > 1:
-
-                c.setFillColor(muted)
-                c.setFont(
-                    "Helvetica",
-                    8.5
-                )
-
-                c.drawString(
-                    main_x,
-                    y,
-                    " • ".join(parts[1:])[:115]
-                )
-
-                y -= 5.2 * mm
-
-        # SPACE BETWEEN SECTIONS
-        y -= 5 * mm
+                    c.drawString(
+                        main_x,
+                        y,
+                        degree[:90]
+                    )
+                    y -= 4.3 * mm
+                    if len(parts) > 1:
+                        
+                        c.setFillColor(muted)
+                        c.setFont(
+                            "Helvetica",
+                            8.5
+                        )
+                        c.drawString(
+                            main_x,
+                            y,
+                            " • ".join(parts[1:])[:115]
+                        )
+                        # SPACE BETWEEN SECTIONS
+                        y -= 5 * mm
 
     # =========================================================
     # CERTIFICATES
