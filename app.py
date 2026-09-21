@@ -2422,7 +2422,6 @@ def modern(data,file):
     # HELPER: SIDEBAR SECTION TITLE
     # =========================================================
 def sidebar_section(title, x, y, width):
-
     # Skills icon
     if title.lower() == "skills":
 
@@ -2466,7 +2465,7 @@ def sidebar_section(title, x, y, width):
             )
 
             c.line(x1, y1, x2, y2)
-
+            
     # Section title
     c.setFillColor(gold)
     c.setFont(
