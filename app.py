@@ -2929,7 +2929,7 @@ def sidebar_section(title, x, y, width):
                 os.unlink(signature_temp.name)
             
             except Exception as e:
-        print("Signature image error:", e)
+                print("Signature image error:", e)
 
     c.save()
 
