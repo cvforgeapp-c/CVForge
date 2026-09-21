@@ -2854,7 +2854,7 @@ def modern(data,file):
                 y -= 5.2 * mm
 
         # SPACE BETWEEN SECTIONS
-        y -= 5 * mm
+    y -= 3 * mm
 
 
     # =========================================================
@@ -2887,7 +2887,7 @@ def modern(data,file):
                 )
 
         # SPACE BETWEEN SECTIONS
-        y -= 5 * mm
+    y -= 3 * mm
 
 
     # =========================================================
