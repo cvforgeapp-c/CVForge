@@ -2849,33 +2849,29 @@ def modern(data,file):
                         # =========================================================
         # REAL HANDWRITTEN SIGNATURE
         # =========================================================
-
         signature = data.get("signature")
         print("SIGNATURE DEBUG:", signature, getattr(signature, "filename", None))
-
         if signature and signature.filename:
-
             try:
                 signature.seek(0)
-
                 signature_image = Image.open(signature)
-
+                
                 # Convert images with transparency to RGBA
                 if signature_image.mode not in ("RGB", "RGBA"):
                     signature_image = signature_image.convert("RGBA")
 
                 # Save temporarily because ReportLab needs an image source
-                signature_temp = tempfile.NamedTemporaryFile(
-                    suffix=".png",
-                    delete=False
-                )
-
-                signature_image.save(
-                    signature_temp.name,
-                    format="PNG"
-                )
-
-                signature_temp.close()
+                    signature_temp = tempfile.NamedTemporaryFile(
+                        suffix=".png",
+                        delete=False
+                    )
+                    
+                    signature_image.save(
+                        signature_temp.name,
+                        format="PNG"
+                    )
+                    
+                    signature_temp.close()
 
                 # Desired signature size
                 signature_width = 45 * mm
@@ -2883,18 +2879,18 @@ def modern(data,file):
 
                 # Preserve the original aspect ratio
                 img_width, img_height = signature_image.size
-
                 if img_width > 0 and img_height > 0:
-
+                    
                     ratio = min(
                         signature_width / img_width,
                         signature_height / img_height
                     )
-
+                    
                     draw_width = img_width * ratio
                     draw_height = img_height * ratio
-
+                    
                     c.drawImage(
+                        
                         signature_temp.name,
                         main_x,
                         y - draw_height - 3 * mm,
@@ -2908,8 +2904,8 @@ def modern(data,file):
 
                 # Remove temporary image
                 os.unlink(signature_temp.name)
-            
-            except Exception as e:
+
+                except Exception as e:
                 print("Signature image error:", e)
 
     c.save()
