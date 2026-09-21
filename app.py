@@ -2422,50 +2422,7 @@ def modern(data,file):
     # HELPER: SIDEBAR SECTION TITLE
     # =========================================================
 def sidebar_section(title, x, y, width):
-    # Skills icon
-    if title.lower() == "skills":
-
-        c.setFillColor(gold)
-        c.setLineWidth(2)
-
-        # Gear center
-        c.circle(
-            x + 4 * mm,
-            y + 1 * mm,
-            2.5 * mm,
-            stroke=1,
-            fill=0
-        )
-
-        # Gear spokes
-        for angle in range(0, 360, 45):
-
-            import math
-
-            rad = math.radians(angle)
-
-            x1 = (
-                x + 4 * mm
-                + 3.5 * mm * math.cos(rad)
-            )
-
-            y1 = (
-                y + 1 * mm
-                + 3.5 * mm * math.sin(rad)
-            )
-
-            x2 = (
-                x + 4 * mm
-                + 5 * mm * math.cos(rad)
-            )
-
-            y2 = (
-                y + 1 * mm
-                + 5 * mm * math.sin(rad)
-            )
-
-            c.line(x1, y1, x2, y2)
-            
+    
     # Section title
     c.setFillColor(gold)
     c.setFont(
