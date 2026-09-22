@@ -2544,8 +2544,8 @@ def modern(data,file):
                 fill=1,
                 stroke=0
             )
-
-         c.restoreState()
+            
+        c.restoreState()
 
         # Section title
         c.setFillColor(gold)
