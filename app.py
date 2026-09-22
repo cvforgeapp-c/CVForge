@@ -2459,24 +2459,25 @@ def modern(data,file):
                 0,
                 180
             )
-            
+           
         # phone
         elif kind == "phone":
-        c.setLineWidth(1.5)
+            c.setLineWidth(1.5)
 
-        p = c.beginPath()
-        p.moveTo(cx - 2.8*mm, cy + 2.8*mm)
-        p.curveTo(
-            cx - 3.5*mm, cy + 1.0*mm,
-            cx - 1.5*mm, cy - 2.0*mm,
-            cx + 1.8*mm, cy - 3.0*mm
-        )
-        p.curveTo(
-            cx + 2.8*mm, cy - 3.3*mm,
-            cx + 3.5*mm, cy - 2.2*mm,
-            cx + 3.0*mm, cy - 1.2*mm
-        )
-        c.drawPath(p, fill=0, stroke=1)
+            p = c.beginPath()
+            p.moveTo(cx - 2.8*mm, cy + 2.8*mm)
+            p.curveTo(
+                cx - 3.5*mm, cy + 1.0*mm,
+                cx - 1.5*mm, cy - 2.0*mm,
+                cx + 1.8*mm, cy - 3.0*mm
+            )
+            p.curveTo(
+                cx + 2.8*mm, cy - 3.3*mm,
+                cx + 3.5*mm, cy - 2.2*mm,
+                cx + 3.0*mm, cy - 1.2*mm
+            
+            )
+            c.drawPath(p, fill=0, stroke=1)
 
 
         # email
