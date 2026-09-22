@@ -2424,23 +2424,23 @@ def modern(data,file):
     def sidebar_section(title, x, y, width):
 
         # Sidebar icon
-    icon_kind = {
-        "contact": "person",
-        "skills": "skills",
-        "languages": "globe",
-        "interests": "heart"
-    }.get(title.lower())
+        icon_kind = {
+            "contact": "person",
+            "skills": "skills",
+            "languages": "globe",
+            "interests": "heart"
+        }.get(title.lower())
 
-    # Draw small gold icon
-    if icon_kind:
-        c.saveState()
+        # Draw small gold icon
+        if icon_kind:
+            c.saveState()
 
-        c.setStrokeColor(gold)
-        c.setFillColor(gold)
-        c.setLineWidth(1.1)
-
-        cx = x + 3.5 * mm
-        cy = y + 0.5 * mm
+            c.setStrokeColor(gold)
+            c.setFillColor(gold)
+            c.setLineWidth(1.1)
+            
+            cx = x + 3.5 * mm
+            cy = y + 0.5 * mm
 
         # PERSON
         if icon_kind == "person":
@@ -2460,15 +2460,15 @@ def modern(data,file):
                 180
             )
 
-        # SKILLS / GEAR
-        elif icon_kind == "skills":
-            c.circle(
-                cx,
-                cy,
-                2.0 * mm,
-                stroke=1,
-                fill=0
-            )
+         # SKILLS / GEAR
+         elif icon_kind == "skills":
+             c.circle(
+                 cx,
+                 cy,
+                 2.0 * mm,
+                 stroke=1,
+                 fill=0
+             )
 
             import math
 
@@ -2483,15 +2483,15 @@ def modern(data,file):
 
                 c.line(x1, y1, x2, y2)
 
-        # LANGUAGES / GLOBE
-        elif icon_kind == "globe":
-            c.circle(
-                cx,
-                cy,
-                3.0 * mm,
-                stroke=1,
-                fill=0
-            )
+         # LANGUAGES / GLOBE
+         elif icon_kind == "globe":
+             c.circle(
+                 cx,
+                 cy,
+                 3.0 * mm,
+                 stroke=1,
+                 fill=0
+             )
 
             c.ellipse(
                 cx - 1.5 * mm,
@@ -2509,42 +2509,42 @@ def modern(data,file):
                 cy
             )
 
-        # INTERESTS / HEART
-        elif icon_kind == "heart":
-            p = c.beginPath()
+         # INTERESTS / HEART
+         elif icon_kind == "heart":
+             p = c.beginPath()
 
-            p.moveTo(
-                cx,
-                cy - 3.0 * mm
-            )
+             p.moveTo(
+                 cx,
+                 cy - 3.0 * mm
+             )
 
-            p.curveTo(
-                cx - 5.0 * mm,
-                cy + 0.5 * mm,
-                cx - 2.8 * mm,
-                cy + 3.0 * mm,
-                cx,
-                cy + 1.2 * mm
-            )
+             p.curveTo(
+                 cx - 5.0 * mm,
+                 cy + 0.5 * mm,
+                 cx - 2.8 * mm,
+                 cy + 3.0 * mm,
+                 cx,
+                 cy + 1.2 * mm
+             )
+        
+             p.curveTo(
+                 cx + 2.8 * mm,
+                 cy + 3.0 * mm,
+                 cx + 5.0 * mm,
+                 cy + 0.5 * mm,
+                 cx,
+                 cy - 3.0 * mm
+             )
 
-            p.curveTo(
-                cx + 2.8 * mm,
-                cy + 3.0 * mm,
-                cx + 5.0 * mm,
-                cy + 0.5 * mm,
-                cx,
-                cy - 3.0 * mm
-            )
+             p.close()
 
-            p.close()
+             c.drawPath(
+                 p,
+                 stroke=1,
+                 fill=0
+             )
 
-            c.drawPath(
-                p,
-                stroke=1,
-                fill=0
-            )
-
-        c.restoreState()
+         c.restoreState()
 
         # Section title
         c.setFillColor(gold)
