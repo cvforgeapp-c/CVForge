@@ -2460,8 +2460,8 @@ def modern(data,file):
                 180
             )
             
-    # phone
-    elif kind == "phone":
+        # phone
+        elif kind == "phone":
         c.setLineWidth(1.5)
 
         p = c.beginPath()
@@ -2479,8 +2479,8 @@ def modern(data,file):
         c.drawPath(p, fill=0, stroke=1)
 
 
-    # email
-    elif kind == "email":
+        # email
+        elif kind == "email":
         c.setLineWidth(1.2)
 
         c.roundRect(
@@ -2508,8 +2508,8 @@ def modern(data,file):
         )
 
 
-    # location
-    elif kind == "location":
+        # location
+        elif kind == "location":
         c.setLineWidth(1.2)
 
         c.circle(
@@ -2540,8 +2540,8 @@ def modern(data,file):
         c.drawPath(p, fill=0, stroke=1)
 
 
-    # LinkedIn
-    elif kind == "linkedin":
+        # LinkedIn
+        elif kind == "linkedin":
         c.setFont("Helvetica-Bold", 6.5)
         c.drawCentredString(
             cx,
@@ -2550,8 +2550,8 @@ def modern(data,file):
         )
 
 
-    # website
-    elif kind == "website":
+        # website
+        elif kind == "website":
         c.circle(
             cx,
             cy,
