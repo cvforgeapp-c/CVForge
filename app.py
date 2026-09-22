@@ -2423,6 +2423,17 @@ def modern(data,file):
     # =========================================================
     def sidebar_section(title, x, y, width):
 
+        # Sidebar section icon
+        c.setStrokeColor(gold)
+        c.setLineWidth(1.2)
+        c.circle(
+            x + 3.5 * mm,
+            y + 0.5 * mm,
+            2.5 * mm,
+            stroke=1,
+            fill=0
+        )
+
         # Section title
         c.setFillColor(gold)
         c.setFont(
@@ -2430,7 +2441,7 @@ def modern(data,file):
             10.5
         )
 
-        title_x = x  
+        title_x = x + 8 * mm
 
         c.drawString(
             title_x,
@@ -2449,7 +2460,7 @@ def modern(data,file):
             y - 2.2 * mm
         )
 
-        return y - 8 * mm
+        return y - 9 * mm
 
 
     # =========================================================
