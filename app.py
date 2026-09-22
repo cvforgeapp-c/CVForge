@@ -2508,9 +2508,9 @@ def modern(data,file):
                   cx + 3.0 * mm,
                   cy
               )
-
+            
         # INTERESTS / HEART
-        elif icon_kind == "heart":
+elif icon_kind == "heart":
         p = c.beginPath()
         p.moveTo(
             cx,
