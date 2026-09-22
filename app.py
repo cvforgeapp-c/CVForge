@@ -2469,9 +2469,9 @@ def modern(data,file):
                 stroke=1,
                 fill=0
             )
-
+            
             import math
-
+            
             for angle in range(0, 360, 45):
                 rad = math.radians(angle)
 
