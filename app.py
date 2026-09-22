@@ -2485,30 +2485,30 @@ def modern(data,file):
                 
         
         # LANGUAGES / GLOBE
-            elif icon_kind == "globe":
-                c.circle(
-                    cx,
-                    cy,
-                    3.0 * mm,
-                    stroke=1,
-                    fill=0
-                )
-                c.ellipse(
-                    cx - 1.5 * mm,
-                    cy - 3.0 * mm,
-                    cx + 1.5 * mm,
-                    cy + 3.0 * mm,
-                    stroke=1,
-                    fill=0
-                )
-                
-                c.line(
-                    cx - 3.0 * mm,
-                    cy,
-                    cx + 3.0 * mm,
-                    cy
-                
-                )
+        elif icon_kind == "globe":
+            c.circle(
+                cx,
+                cy,
+                3.0 * mm,
+                stroke=1,
+                fill=0
+            )
+            c.ellipse(
+                cx - 1.5 * mm,
+                cy - 3.0 * mm,
+                cx + 1.5 * mm,
+                cy + 3.0 * mm,
+                stroke=1,
+                fill=0
+            )
+            
+            c.line(
+                cx - 3.0 * mm,
+                cy,
+                cx + 3.0 * mm,
+                cy
+            
+            )
                 
         # INTERESTS / HEART
 
