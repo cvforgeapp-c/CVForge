@@ -2484,7 +2484,7 @@ def modern(data,file):
                 c.line(x1, y1, x2, y2)
                 
         
-        # LANGUAGES / GLOBE
+                # LANGUAGES / GLOBE
         elif icon_kind == "globe":
             c.circle(
                 cx,
@@ -2493,6 +2493,7 @@ def modern(data,file):
                 stroke=1,
                 fill=0
             )
+
             c.ellipse(
                 cx - 1.5 * mm,
                 cy - 3.0 * mm,
@@ -2501,49 +2502,48 @@ def modern(data,file):
                 stroke=1,
                 fill=0
             )
-            
+
             c.line(
                 cx - 3.0 * mm,
                 cy,
                 cx + 3.0 * mm,
                 cy
-            
             )
-                
+
         # INTERESTS / HEART
-
         elif icon_kind == "heart":
-        p = c.beginPath()
-        p.moveTo(
-            cx,
-            cy - 3.0 * mm
-        )
+            p = c.beginPath()
 
-        p.curveTo(
-            cx - 5.0 * mm,
-            cy + 0.5 * mm,
-            cx - 2.8 * mm,
-            cy + 3.0 * mm,
-            cx,
-            cy + 1.2 * mm
-        )
-        
-        p.curveTo(
-            cx + 2.8 * mm,
-            cy + 3.0 * mm,
-            cx + 5.0 * mm,
-            cy + 0.5 * mm,
-            cx,
-            cy - 3.0 * mm
-        )
+            p.moveTo(
+                cx,
+                cy - 3.0 * mm
+            )
 
-        p.close()
+            p.curveTo(
+                cx - 5.0 * mm,
+                cy + 0.5 * mm,
+                cx - 2.8 * mm,
+                cy + 3.0 * mm,
+                cx,
+                cy + 1.2 * mm
+            )
 
-        c.drawPath(
-            p,
-            stroke=1,
-            fill=0
-        )
+            p.curveTo(
+                cx + 2.8 * mm,
+                cy + 3.0 * mm,
+                cx + 5.0 * mm,
+                cy + 0.5 * mm,
+                cx,
+                cy - 3.0 * mm
+            )
+
+            p.close()
+
+            c.drawPath(
+                p,
+                fill=1,
+                stroke=0
+            )
 
          c.restoreState()
 
