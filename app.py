@@ -2423,16 +2423,128 @@ def modern(data,file):
     # =========================================================
     def sidebar_section(title, x, y, width):
 
-        # Sidebar section icon
+        # Sidebar icon
+    icon_kind = {
+        "contact": "person",
+        "skills": "skills",
+        "languages": "globe",
+        "interests": "heart"
+    }.get(title.lower())
+
+    # Draw small gold icon
+    if icon_kind:
+        c.saveState()
+
         c.setStrokeColor(gold)
-        c.setLineWidth(1.2)
-        c.circle(
-            x + 3.5 * mm,
-            y + 0.5 * mm,
-            2.5 * mm,
-            stroke=1,
-            fill=0
-        )
+        c.setFillColor(gold)
+        c.setLineWidth(1.1)
+
+        cx = x + 3.5 * mm
+        cy = y + 0.5 * mm
+
+        # PERSON
+        if icon_kind == "person":
+            c.circle(
+                cx,
+                cy + 1.8 * mm,
+                1.4 * mm,
+                stroke=1,
+                fill=0
+            )
+            c.arc(
+                cx - 3.0 * mm,
+                cy - 3.0 * mm,
+                cx + 3.0 * mm,
+                cy + 2.0 * mm,
+                0,
+                180
+            )
+
+        # SKILLS / GEAR
+        elif icon_kind == "skills":
+            c.circle(
+                cx,
+                cy,
+                2.0 * mm,
+                stroke=1,
+                fill=0
+            )
+
+            import math
+
+            for angle in range(0, 360, 45):
+                rad = math.radians(angle)
+
+                x1 = cx + math.cos(rad) * 2.5 * mm
+                y1 = cy + math.sin(rad) * 2.5 * mm
+
+                x2 = cx + math.cos(rad) * 3.5 * mm
+                y2 = cy + math.sin(rad) * 3.5 * mm
+
+                c.line(x1, y1, x2, y2)
+
+        # LANGUAGES / GLOBE
+        elif icon_kind == "globe":
+            c.circle(
+                cx,
+                cy,
+                3.0 * mm,
+                stroke=1,
+                fill=0
+            )
+
+            c.ellipse(
+                cx - 1.5 * mm,
+                cy - 3.0 * mm,
+                cx + 1.5 * mm,
+                cy + 3.0 * mm,
+                stroke=1,
+                fill=0
+            )
+
+            c.line(
+                cx - 3.0 * mm,
+                cy,
+                cx + 3.0 * mm,
+                cy
+            )
+
+        # INTERESTS / HEART
+        elif icon_kind == "heart":
+            p = c.beginPath()
+
+            p.moveTo(
+                cx,
+                cy - 3.0 * mm
+            )
+
+            p.curveTo(
+                cx - 5.0 * mm,
+                cy + 0.5 * mm,
+                cx - 2.8 * mm,
+                cy + 3.0 * mm,
+                cx,
+                cy + 1.2 * mm
+            )
+
+            p.curveTo(
+                cx + 2.8 * mm,
+                cy + 3.0 * mm,
+                cx + 5.0 * mm,
+                cy + 0.5 * mm,
+                cx,
+                cy - 3.0 * mm
+            )
+
+            p.close()
+
+            c.drawPath(
+                p,
+                stroke=1,
+                fill=0
+            )
+
+        c.restoreState()
 
         # Section title
         c.setFillColor(gold)
