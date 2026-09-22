@@ -2592,28 +2592,38 @@ def modern(data,file):
     )
 
     contact_items = [
-        data.get("phone"),
-        data.get("email"),
-        data.get("location"),
-        data.get("linkedin"),
-        data.get("website")
-    ]
+    ("phone", data.get("phone")),
+    ("email", data.get("email")),
+    ("location", data.get("location")),
+    ("linkedin", data.get("linkedin")),
+    ("website", data.get("website"))
+]
 
-    for value in contact_items:
+for icon_kind, value in contact_items:
 
-        if value:
+    if value:
 
-            sy = draw_lines(
-                value,
-                sx,
-                sy,
-                sw,
-                size=9,
-                leading=4.5 * mm,
-                color=white
-            )
+        # Contact icon
+        modern_icon(
+            c,
+            icon_kind,
+            sx + 3.2 * mm,
+            sy + 0.8 * mm,
+            r=3.0 * mm
+        )
 
-            sy -= 2 * mm
+        # Contact text
+        sy = draw_lines(
+            value,
+            sx + 8 * mm,
+            sy,
+            sw - 8 * mm,
+            size=8.2,
+            leading=4.5 * mm,
+            color=white
+        )
+
+        sy -= 1.2 * mm
 
 
     # =========================================================
