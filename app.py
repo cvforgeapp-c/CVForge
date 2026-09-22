@@ -2482,35 +2482,37 @@ def modern(data,file):
                 y2 = cy + math.sin(rad) * 3.5 * mm
 
                 c.line(x1, y1, x2, y2)
-
+                
+        
         # LANGUAGES / GLOBE
-        elif icon_kind == "globe":
-              c.circle(
-                  cx,
-                  cy,
-                  3.0 * mm,
-                  stroke=1,
-                  fill=0
-              )
-              c.ellipse(
-                  cx - 1.5 * mm,
-                  cy - 3.0 * mm,
-                  cx + 1.5 * mm,
-                  cy + 3.0 * mm,
-                  stroke=1,
-                  fill=0
-              
-              )
-
-              c.line(
-                  cx - 3.0 * mm,
-                  cy,
-                  cx + 3.0 * mm,
-                  cy
-              )
-            
+            elif icon_kind == "globe":
+                c.circle(
+                    cx,
+                    cy,
+                    3.0 * mm,
+                    stroke=1,
+                    fill=0
+                )
+                c.ellipse(
+                    cx - 1.5 * mm,
+                    cy - 3.0 * mm,
+                    cx + 1.5 * mm,
+                    cy + 3.0 * mm,
+                    stroke=1,
+                    fill=0
+                )
+                
+                c.line(
+                    cx - 3.0 * mm,
+                    cy,
+                    cx + 3.0 * mm,
+                    cy
+                
+                )
+                
         # INTERESTS / HEART
-elif icon_kind == "heart":
+
+        elif icon_kind == "heart":
         p = c.beginPath()
         p.moveTo(
             cx,
