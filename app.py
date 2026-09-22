@@ -2460,6 +2460,122 @@ def modern(data,file):
                 180
             )
 
+            # phone
+    elif kind == "phone":
+        c.setLineWidth(1.5)
+
+        p = c.beginPath()
+        p.moveTo(cx - 2.8*mm, cy + 2.8*mm)
+        p.curveTo(
+            cx - 3.5*mm, cy + 1.0*mm,
+            cx - 1.5*mm, cy - 2.0*mm,
+            cx + 1.8*mm, cy - 3.0*mm
+        )
+        p.curveTo(
+            cx + 2.8*mm, cy - 3.3*mm,
+            cx + 3.5*mm, cy - 2.2*mm,
+            cx + 3.0*mm, cy - 1.2*mm
+        )
+        c.drawPath(p, fill=0, stroke=1)
+
+
+    # email
+    elif kind == "email":
+        c.setLineWidth(1.2)
+
+        c.roundRect(
+            cx - 3.8*mm,
+            cy - 2.7*mm,
+            7.6*mm,
+            5.4*mm,
+            0.8*mm,
+            fill=0,
+            stroke=1
+        )
+
+        c.line(
+            cx - 3.5*mm,
+            cy + 2.3*mm,
+            cx,
+            cy - 0.2*mm
+        )
+
+        c.line(
+            cx,
+            cy - 0.2*mm,
+            cx + 3.5*mm,
+            cy + 2.3*mm
+        )
+
+
+    # location
+    elif kind == "location":
+        c.setLineWidth(1.2)
+
+        c.circle(
+            cx,
+            cy + 1.2*mm,
+            2.0*mm,
+            fill=0,
+            stroke=1
+        )
+
+        p = c.beginPath()
+        p.moveTo(cx - 3.2*mm, cy + 1.0*mm)
+        p.curveTo(
+            cx - 3.2*mm, cy - 1.8*mm,
+            cx,
+            cy - 4.0*mm,
+            cx,
+            cy - 4.0*mm
+        )
+        p.curveTo(
+            cx,
+            cy - 4.0*mm,
+            cx + 3.2*mm,
+            cy - 1.8*mm,
+            cx + 3.2*mm,
+            cy + 1.0*mm
+        )
+        c.drawPath(p, fill=0, stroke=1)
+
+
+    # LinkedIn
+    elif kind == "linkedin":
+        c.setFont("Helvetica-Bold", 6.5)
+        c.drawCentredString(
+            cx,
+            cy - 2.2*mm,
+            "in"
+        )
+
+
+    # website
+    elif kind == "website":
+        c.circle(
+            cx,
+            cy,
+            3.5*mm,
+            fill=0,
+            stroke=1
+        )
+
+        c.ellipse(
+            cx - 1.7*mm,
+            cy - 3.5*mm,
+            cx + 1.7*mm,
+            cy + 3.5*mm,
+            fill=0,
+            stroke=1
+        )
+
+        c.line(
+            cx - 3.5*mm,
+            cy,
+            cx + 3.5*mm,
+            cy
+        )
+
         # SKILLS / GEAR
         elif icon_kind == "skills":
             c.circle(
