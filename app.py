@@ -2460,15 +2460,15 @@ def modern(data,file):
                 180
             )
 
-         # SKILLS / GEAR
-         elif icon_kind == "skills":
-             c.circle(
-                 cx,
-                 cy,
-                 2.0 * mm,
-                 stroke=1,
-                 fill=0
-             )
+        # SKILLS / GEAR
+        elif icon_kind == "skills":
+            c.circle(
+                cx,
+                cy,
+                2.0 * mm,
+                stroke=1,
+                fill=0
+            )
 
             import math
 
