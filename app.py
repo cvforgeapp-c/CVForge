@@ -2484,8 +2484,8 @@ def modern(data,file):
                 sx,
                 sy,
                 sw,
-                size=8.4,
-                leading=4.5 * mm,
+                size=9,
+                leading=5 * mm,
                 color=white
             )
 
@@ -2519,8 +2519,8 @@ def modern(data,file):
                 sx,
                 sy,
                 sw,
-                size=8.5,
-                leading=4.4 * mm,
+                size=9,
+                leading=4.8 * mm,
                 color=white,
                 bullet=True
             )
@@ -2553,8 +2553,8 @@ def modern(data,file):
                     sx,
                     sy,
                     sw,
-                    size=8.5,
-                    leading=4.4 * mm,
+                    size=9,
+                    leading=4.8 * mm,
                     color=white,
                     bullet=True
                 )
@@ -2587,8 +2587,8 @@ def modern(data,file):
                 sx,
                 sy,
                 sw,
-                size=8.5,
-                leading=4.4 * mm,
+                size=9,
+                leading=4.8 * mm,
                 color=white,
                 bullet=True
             )
