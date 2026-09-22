@@ -2609,11 +2609,11 @@ def modern(data,file):
                 sy,
                 sw,
                 size=9,
-                leading=5 * mm,
+                leading=5.2 * mm,
                 color=white
             )
 
-            sy -= 1.2 * mm
+            sy -= 8 * mm
 
 
     # =========================================================
@@ -2621,7 +2621,7 @@ def modern(data,file):
     # =========================================================
     if data.get("skills"):
 
-        sy -= 2 * mm
+        sy -= 8 * mm
 
         sy = sidebar_section(
             "Skills",
@@ -2644,7 +2644,7 @@ def modern(data,file):
                 sy,
                 sw,
                 size=9,
-                leading=4.8 * mm,
+                leading=5.2 * mm,
                 color=white,
                 bullet=True
             )
@@ -2657,7 +2657,7 @@ def modern(data,file):
     # =========================================================
     if data.get("languages"):
 
-        sy -= 2 * mm
+        sy -= 8 * mm
 
         sy = sidebar_section(
             "Languages",
@@ -2678,7 +2678,7 @@ def modern(data,file):
                     sy,
                     sw,
                     size=9,
-                    leading=4.8 * mm,
+                    leading=5.2 * mm,
                     color=white,
                     bullet=True
                 )
@@ -2689,7 +2689,7 @@ def modern(data,file):
     # =========================================================
     if data.get("hobbies"):
 
-        sy -= 2 * mm
+        sy -= 8 * mm
 
         sy = sidebar_section(
             "Interests",
@@ -2712,7 +2712,7 @@ def modern(data,file):
                 sy,
                 sw,
                 size=9,
-                leading=4.8 * mm,
+                leading=5.2 * mm,
                 color=white,
                 bullet=True
             )
