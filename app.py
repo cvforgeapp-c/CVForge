@@ -2459,8 +2459,8 @@ def modern(data,file):
                 0,
                 180
             )
-
-            # phone
+            
+    # phone
     elif kind == "phone":
         c.setLineWidth(1.5)
 
