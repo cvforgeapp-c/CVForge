@@ -2601,7 +2601,7 @@ def modern(data,file):
                 c.line(x1, y1, x2, y2)
                 
         
-                # LANGUAGES / GLOBE
+        # LANGUAGES / GLOBE
         elif icon_kind == "globe":
             c.circle(
                 cx,
