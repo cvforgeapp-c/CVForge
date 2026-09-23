@@ -3057,9 +3057,9 @@ def modern(data,file):
             # Contact text
             sy = draw_lines(
                 value,
-                sx + 8 * mm,
+                sx + 2 * mm,
                 sy,
-                sw - 8 * mm,
+                sw - 2 * mm,
                 size=8.2,
                 leading=4.5 * mm,
                 color=white
