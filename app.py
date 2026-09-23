@@ -3061,11 +3061,11 @@ def modern(data,file):
                 sy,
                 sw - 2 * mm,
                 size=8.2,
-                leading=4.5 * mm,
+                leading=4.8 * mm,
                 color=white
             )
             
-    sy -= 1.5 * mm
+    sy -= 2.0 * mm
 
 
     # =========================================================
