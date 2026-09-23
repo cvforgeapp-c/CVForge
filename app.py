@@ -2482,31 +2482,31 @@ def modern(data,file):
 
         # email
         elif kind == "email":
-        c.setLineWidth(1.2)
+            c.setLineWidth(1.2)
 
-        c.roundRect(
-            cx - 3.8*mm,
-            cy - 2.7*mm,
-            7.6*mm,
-            5.4*mm,
-            0.8*mm,
-            fill=0,
-            stroke=1
-        )
+            c.roundRect(
+                cx - 3.8*mm,
+                cy - 2.7*mm,
+                7.6*mm,
+                5.4*mm,
+                0.8*mm,
+                fill=0,
+                stroke=1
+            )
 
-        c.line(
-            cx - 3.5*mm,
-            cy + 2.3*mm,
-            cx,
-            cy - 0.2*mm
-        )
+            c.line(
+                cx - 3.5*mm,
+                cy + 2.3*mm,
+                cx,
+                cy - 0.2*mm
+            )
 
-        c.line(
-            cx,
-            cy - 0.2*mm,
-            cx + 3.5*mm,
-            cy + 2.3*mm
-        )
+            c.line(
+                cx,
+                cy - 0.2*mm,
+                cx + 3.5*mm,
+                cy + 2.3*mm
+            )
 
 
         # location
