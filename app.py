@@ -3054,14 +3054,6 @@ def modern(data,file):
 
         if value:
 
-            # Contact icon
-            modern_contact_icon(
-                c,
-                icon_kind,
-                sx + 4.0 * mm,
-                sy + 0.8 * mm
-            )
-
             # Contact text
             sy = draw_lines(
                 value,
