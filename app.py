@@ -2716,29 +2716,29 @@ def modern(data,file):
     ("website", data.get("website"))
 ]
 
-for icon_kind, value in contact_items:
+    for icon_kind, value in contact_items:
 
-    if value:
+        if value:
 
-        # Contact icon
-        modern_icon(
-            c,
-            icon_kind,
-            sx + 3.2 * mm,
-            sy + 0.8 * mm,
-            r=3.0 * mm
-        )
+            # Contact icon
+            modern_icon(
+                c,
+                icon_kind,
+                sx + 3.2 * mm,
+                sy + 0.8 * mm,
+                r=3.0 * mm
+            )
 
-        # Contact text
-        sy = draw_lines(
-            value,
-            sx + 8 * mm,
-            sy,
-            sw - 8 * mm,
-            size=8.2,
-            leading=4.5 * mm,
-            color=white
-        )
+            # Contact text
+            sy = draw_lines(
+                value,
+                sx + 8 * mm,
+                sy,
+                sw - 8 * mm,
+                size=8.2,
+                leading=4.5 * mm,
+                color=white
+            )
 
         sy -= 1.2 * mm
 
