@@ -1778,6 +1778,130 @@ def modern_icon(c, kind, cx, cy, r=5.2*mm):
             0, 180
         )
 
+    # PHONE
+    elif kind == "phone":
+        c.setLineWidth(1.4)
+        p = c.beginPath()
+        p.moveTo(cx - 2.5*mm, cy + 2.5*mm)
+        p.curveTo(
+            cx - 3.5*mm, cy + 1.0*mm,
+            cx - 1.5*mm, cy - 2.0*mm,
+            cx + 1.5*mm, cy - 2.8*mm
+        )
+        p.curveTo(
+            cx + 2.5*mm, cy - 3.0*mm,
+            cx + 3.2*mm, cy - 2.0*mm,
+            cx + 2.5*mm, cy - 1.0*mm
+        )
+        c.drawPath(p, fill=0, stroke=1)
+
+    # EMAIL
+    elif kind == "email":
+        c.setLineWidth(1.1)
+        c.roundRect(
+            cx - 3.5*mm,
+            cy - 2.5*mm,
+            7.0*mm,
+            5.0*mm,
+            0.7*mm,
+            fill=0,
+            stroke=1
+        )
+        c.line(
+            cx - 3.2*mm,
+            cy + 2.0*mm,
+            cx,
+            cy - 0.2*mm
+        )
+        c.line(
+            cx,
+            cy - 0.2*mm,
+            cx + 3.2*mm,
+            cy + 2.0*mm
+        )
+
+    # LOCATION
+    elif kind == "location":
+        c.setLineWidth(1.2)
+        c.circle(
+            cx,
+            cy + 1.0*mm,
+            2.2*mm,
+            fill=0,
+            stroke=1
+        )
+        c.circle(
+            cx,
+            cy + 1.0*mm,
+            0.7*mm,
+            fill=1,
+            stroke=0
+        )
+        p = c.beginPath()
+        p.moveTo(cx - 2.2*mm, cy)
+        p.curveTo(
+            cx - 2.2*mm,
+            cy - 2.5*mm,
+            cx,
+            cy - 4.0*mm,
+            cx,
+            cy - 4.0*mm
+        )
+        p.curveTo(
+            cx,
+            cy - 4.0*mm,
+            cx + 2.2*mm,
+            cy - 2.5*mm,
+            cx + 2.2*mm,
+            cy
+        )
+        c.drawPath(p, fill=0, stroke=1)
+
+    # LINKEDIN
+    elif kind == "linkedin":
+        c.setFillColor(white)
+        c.roundRect(
+            cx - 3.5*mm,
+            cy - 3.5*mm,
+            7.0*mm,
+            7.0*mm,
+            0.8*mm,
+            fill=1,
+            stroke=0
+        )
+        c.setFillColor(blue)
+        c.setFont("Helvetica-Bold", 6.5)
+        c.drawCentredString(
+            cx,
+            cy - 2.2*mm,
+            "in"
+        )
+
+    # WEBSITE
+    elif kind == "website":
+        c.setLineWidth(1.1)
+        c.circle(
+            cx,
+            cy,
+            3.3*mm,
+            fill=0,
+            stroke=1
+        )
+        c.ellipse(
+            cx - 1.6*mm,
+            cy - 3.3*mm,
+            cx + 1.6*mm,
+            cy + 3.3*mm,
+            fill=0,
+            stroke=1
+        )
+        c.line(
+            cx - 3.3*mm,
+            cy,
+            cx + 3.3*mm,
+            cy
+        )
+
     c.restoreState()
 
 
