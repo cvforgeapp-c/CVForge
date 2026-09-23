@@ -3057,15 +3057,15 @@ def modern(data,file):
             # Contact text
             sy = draw_lines(
                 value,
-                sx + 13 * mm,
+                sx + 8 * mm,
                 sy,
-                sw - 13 * mm,
+                sw - 8 * mm,
                 size=8.2,
                 leading=4.5 * mm,
                 color=white
             )
             
-    sy -= 2.5 * mm
+    sy -= 1.5 * mm
 
 
     # =========================================================
