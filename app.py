@@ -2461,7 +2461,7 @@ def modern(data,file):
             )
            
         # phone
-        elif kind == "phone":
+        elif icon_kind == "phone":
             c.setLineWidth(1.5)
 
             p = c.beginPath()
@@ -2481,7 +2481,7 @@ def modern(data,file):
 
 
         # email
-        elif kind == "email":
+        elif icon_kind == "email":
             c.setLineWidth(1.2)
 
             c.roundRect(
@@ -2510,7 +2510,7 @@ def modern(data,file):
 
 
         # location
-        elif kind == "location":
+        elif icon_kind == "location":
             c.setLineWidth(1.2)
 
             c.circle(
@@ -2542,7 +2542,7 @@ def modern(data,file):
 
 
         # LinkedIn
-        elif kind == "linkedin":
+        elif icon_kind == "linkedin":
             c.setFont("Helvetica-Bold", 6.5)
             c.drawCentredString(
                 cx,
@@ -2552,7 +2552,7 @@ def modern(data,file):
 
 
         # website
-        elif kind == "website":
+        elif icon_kind == "website":
             c.circle(
                 cx,
                 cy,
