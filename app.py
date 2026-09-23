@@ -2845,12 +2845,11 @@ def modern(data,file):
         if value:
 
             # Contact icon
-            modern_icon(
+            modern_contact_icon(
                 c,
                 icon_kind,
                 sx + 3.2 * mm,
-                sy + 0.8 * mm,
-                r=3.0 * mm
+                sy + 0.8 * mm
             )
 
             # Contact text
