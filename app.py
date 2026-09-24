@@ -440,7 +440,14 @@ def draw_icon_badge(c, x, y, icon_type, badge_color, icon_color):
         c.rect(x - 2.5 * mm, y - 2 * mm, 5 * mm, 3.5 * mm, stroke=1, fill=0)
         c.rect(x - 1.2 * mm, y + 1.5 * mm, 2.4 * mm, 1 * mm, stroke=1, fill=0)
     elif icon_type == "education":
-        c.polygon([x, y + 2.2 * mm, x + 3 * mm, y, x, y - 2.2 * mm, x - 3 * mm, y], stroke=1, fill=1)
+        # Draw diamond cap using beginPath instead of polygon
+        p = c.beginPath()
+        p.moveTo(x, y + 2.2 * mm)
+        p.lineTo(x + 3 * mm, y)
+        p.lineTo(x, y - 2.2 * mm)
+        p.lineTo(x - 3 * mm, y)
+        p.close()
+        c.drawPath(p, stroke=1, fill=1)
         c.line(x + 2 * mm, y - 0.5 * mm, x + 2 * mm, y - 2.8 * mm)
     elif icon_type == "certificates":
         c.rect(x - 2 * mm, y - 2.5 * mm, 4 * mm, 5 * mm, stroke=1, fill=0)
@@ -450,6 +457,7 @@ def draw_icon_badge(c, x, y, icon_type, badge_color, icon_color):
         c.circle(x - 1 * mm, y + 1 * mm, 1.2 * mm, stroke=1, fill=0)
         c.circle(x + 1.5 * mm, y + 1 * mm, 1 * mm, stroke=1, fill=0)
         c.arc(x - 3 * mm, y - 2.5 * mm, x + 1 * mm, y + 0.5 * mm, 0, 180)
+
 
 # ============================================================
 # 4. PDF LAYOUT GENERATORS
