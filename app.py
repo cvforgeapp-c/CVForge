@@ -932,15 +932,59 @@ document.querySelectorAll("textarea[data-limit]").forEach(function(textarea) {
 </script>
 
 <script>
-document.querySelectorAll('[data-char-counter]').forEach(function (field) {
-    const counter = field.nextElementSibling;
+/* =========================================================
+   CVFORGE — CHARACTER LIMIT + LIVE COUNTER
+   ========================================================= */
 
-    function updateCounter() {
-        counter.textContent =
-            `${field.value.length} / ${field.maxLength} characters`;
+document.querySelectorAll("textarea[maxlength], input[maxlength]").forEach(function(field) {
+
+    const limit = parseInt(field.getAttribute("maxlength"), 10);
+
+    if (!limit) {
+        return;
     }
 
-    field.addEventListener('input', updateCounter);
+    /* Find existing counter */
+    let counter = field.nextElementSibling;
+
+    /* If there is no proper counter, create one */
+    if (!counter || !counter.classList.contains("char-counter")) {
+        counter = document.createElement("div");
+        counter.className = "char-counter";
+        field.parentNode.insertBefore(counter, field.nextSibling);
+    }
+
+    function updateCounter() {
+
+        /* HARD LIMIT */
+        if (field.value.length > limit) {
+            field.value = field.value.substring(0, limit);
+        }
+
+        const length = field.value.length;
+
+        counter.textContent = length + " / " + limit + " characters";
+
+        /* Counter color */
+        counter.classList.remove("warning", "limit");
+
+        if (length >= limit) {
+            counter.classList.add("limit");
+        }
+        else if (length >= limit * 0.9) {
+            counter.classList.add("warning");
+        }
+    }
+
+    /* Typing */
+    field.addEventListener("input", updateCounter);
+
+    /* Paste */
+    field.addEventListener("paste", function() {
+        setTimeout(updateCounter, 0);
+    });
+
+    /* Initial value */
     updateCounter();
 });
 </script>
