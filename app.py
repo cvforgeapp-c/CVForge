@@ -374,7 +374,7 @@ button {
     maxlength="500"
     placeholder="Write a short professional summary about yourself..."
 ></textarea>
-<div id="summaryCount">0 / 500 characters</div>
+
 
 <div class="buttons">
 <button type="button" class="back" onclick="prevStep()">← Back</button>
