@@ -373,7 +373,15 @@ placeholder="Write a short professional summary about yourself..."></textarea>
     <span>0</span> / 500 characters
 </div>
 <label>Limitations</label>
-<textarea name="limitations" placeholder="Enter any relevant limitations"></textarea>
+<textarea
+    name="limitations"
+    maxlength="500"
+    data-limit="500"
+    placeholder="Enter any relevant limitations..."></textarea>
+
+<div class="char-counter">
+    <span>0</span> / 500 characters
+</div>
 
 <div class="buttons">
 <button type="button" class="back" onclick="prevStep()">← Back</button>
@@ -386,8 +394,6 @@ placeholder="Write a short professional summary about yourself..."></textarea>
 <h2>3. Work Experience</h2>
 
 <label>Experience</label>
-<label>Limitations</label>
-<textarea name="limitations" placeholder="Enter any relevant limitations"></textarea>
 <textarea name="experience"
 maxlength="1200"
 placeholder="Job Title - Company - Dates
@@ -2877,7 +2883,10 @@ def modern(data,file):
             y - 4.5 * mm
         )
         
-        return y - 11 * mm
+        # Fixed distance between section line and first content line
+        SECTION_CONTENT_GAP = 7 * mm
+        
+        return y - 4.5 * mm - SECTION_CONTENT_GAP
 
         # =========================================================
     # HELPER: SIDEBAR SECTION TITLE
@@ -4218,28 +4227,31 @@ def generate():
     limitations = request.form.get("limitations", "").strip()
    
     data = {
-        "name": request.form.get("name", ""),
-        "title": request.form.get("title", ""),
-        "phone": request.form.get("phone", ""),
-        "email": request.form.get("email", ""),
-        "location": request.form.get("location", ""),
-        "linkedin": request.form.get("linkedin", ""),
-        "website": request.form.get("website", ""),
-        "summary": request.form.get("summary", ""),
-        "experience": request.form.get("experience", ""),
-        "education": request.form.get("education", ""),
-        "skills": request.form.get("skills", ""),
-        "certificates": request.form.get("certificates", ""),
-        "languages": request.form.get("languages", ""),
-        "hobbies": request.form.get("hobbies", ""),
-        "references": request.form.get("references", ""),
-        "signature": signature,
-        "template": request.form.get("template", "modern"),
-"accent_color": request.form.get("accent_color"),
-"sidebar_color": request.form.get("sidebar_color", "#173F49"),
-        
+    "name": form_limit("name", 100),
+    "title": form_limit("title", 70),
+    "phone": form_limit("phone", 50),
+    "email": form_limit("email", 100),
+    "location": form_limit("location", 100),
+    "linkedin": form_limit("linkedin", 200),
+    "website": form_limit("website", 200),
+    "summary": form_limit("summary", 500),
+    "limitations": form_limit("limitations", 300),
+    "experience": form_limit("experience", 1200),
+    "education": form_limit("education", 600),
+    "skills": form_limit("skills", 400),
+    "certificates": form_limit("certificates", 500),
+    "languages": form_limit("languages", 250),
+    "hobbies": form_limit("hobbies", 250),
+    "references": form_limit("references", 500),
+    "signature": signature,
+    "template": request.form.get("template", "modern"),
+    "accent_color": request.form.get("accent_color"),
+    "sidebar_color": request.form.get(
+        "sidebar_color",
+        "#173F49"
+    ),
+}
 
-    }
     
 
     if photo and photo.filename:
