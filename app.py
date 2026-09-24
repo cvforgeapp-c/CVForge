@@ -290,6 +290,21 @@ button {
 }
 </style>
 </head>
+.char-counter {
+    text-align: right;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #777;
+}
+
+.char-counter.warning {
+    color: #b07a00;
+}
+
+.char-counter.limit {
+    color: #b00020;
+    font-weight: bold;
+}
 
 <body>
 <div class="container">
@@ -354,6 +369,9 @@ button {
 <textarea name="summary"
 maxlength="500"
 placeholder="Write a short professional summary about yourself..."></textarea>
+<div class="char-counter">
+    <span>0</span> / 500 characters
+</div>
 
 <div class="buttons">
 <button type="button" class="back" onclick="prevStep()">← Back</button>
@@ -373,6 +391,9 @@ placeholder="Job Title - Company - Dates
 Describe your responsibilities and achievements.
 
 Add another position below if needed."></textarea>
+<div class="char-counter">
+    <span>0</span> / 1200 characters
+</div>
 
 <div class="buttons">
 <button type="button" class="back" onclick="prevStep()">← Back</button>
@@ -390,6 +411,9 @@ maxlength="600"
 placeholder="Degree - Institution - Year
 
 Add your education history here."></textarea>
+<div class="char-counter">
+    <span>0</span> / 600 characters
+</div>
 
 <div class="buttons">
 <button type="button" class="back" onclick="prevStep()">← Back</button>
@@ -846,6 +870,61 @@ function prevStep() {
         showStep(currentStep);
     }
 }
+// =========================================================
+// INPUT LIMIT ENFORCEMENT + CHARACTER COUNTERS
+// =========================================================
+
+document.querySelectorAll("textarea[data-limit]").forEach(function(textarea) {
+
+    const counter = textarea.parentElement.querySelector(".char-counter");
+    const number = counter ? counter.querySelector("span") : null;
+
+    const limit = parseInt(
+        textarea.dataset.limit,
+        10
+    );
+
+    function updateCounter() {
+
+        if (textarea.value.length > limit) {
+            textarea.value = textarea.value.substring(0, limit);
+        }
+
+        const length = textarea.value.length;
+
+        if (number) {
+            number.textContent = length;
+        }
+
+        if (counter) {
+            counter.classList.remove(
+                "warning",
+                "limit"
+            );
+
+            if (length >= limit) {
+                counter.classList.add("limit");
+            }
+            else if (length >= limit * 0.9) {
+                counter.classList.add("warning");
+            }
+        }
+    }
+
+    textarea.addEventListener(
+        "input",
+        updateCounter
+    );
+
+    textarea.addEventListener(
+        "paste",
+        function() {
+            setTimeout(updateCounter, 0);
+        }
+    );
+
+    updateCounter();
+});
 </script>
 
 </body>
@@ -2271,7 +2350,7 @@ def modern_wave_footer(c, W):
     c.setFillColor(colors.HexColor("#07509B"))
     c.drawPath(p3, fill=1, stroke=0)
 
-def modern_limit(text, max_chars):
+def limit_text(text, max_chars):
     if not text:
         return ""
 
@@ -2280,7 +2359,9 @@ def modern_limit(text, max_chars):
     if len(text) <= max_chars:
         return text
 
-    return text[:max_chars].rsplit(" ", 1)[0] + "..."
+    shortened = text[:max_chars].rsplit(" ", 1)[0].strip()
+
+    return shortened + "..."
 
 
 def modern(data,file):
@@ -2289,16 +2370,28 @@ def modern(data,file):
     c = canvas.Canvas(file, pagesize=A4)
     global _modern_canvas
     _modern_canvas = c
-    # Protect Modern template layout from excessive input
-    data["title"] = modern_limit(data.get("title"), 70)
-    data["summary"] = modern_limit(data.get("summary"), 500)
-    data["experience"] = modern_limit(data.get("experience"), 1200)
-    data["education"] = modern_limit(data.get("education"), 600)
-    data["skills"] = modern_limit(data.get("skills"), 400)
-    data["certificates"] = modern_limit(data.get("certificates"), 500)
-    data["languages"] = modern_limit(data.get("languages"), 250)
-    data["hobbies"] = modern_limit(data.get("hobbies"), 250)
-    data["references"] = modern_limit(data.get("references"), 500)
+    # =========================================================
+    # MODERN TEMPLATE CONTENT LIMITS
+    # Protect the fixed one-page design
+    # =========================================================
+
+    data["title"] = limit_text(data.get("title"), 55)
+
+    data["summary"] = limit_text(data.get("summary"), 320)
+
+    data["experience"] = limit_text(data.get("experience"), 850)
+
+    data["education"] = limit_text(data.get("education"), 420)
+
+    data["skills"] = limit_text(data.get("skills"), 300)
+
+    data["certificates"] = limit_text(data.get("certificates"), 350)
+
+    data["languages"] = limit_text(data.get("languages"), 180)
+
+    data["hobbies"] = limit_text(data.get("hobbies"), 180)
+
+    data["references"] = limit_text(data.get("references"), 300)
     c.setTitle("CV - " + (data.get("name") or "My CV"))
 
     # =========================================================
@@ -4109,6 +4202,15 @@ def home():
 def generate():
     photo = request.files.get("photo")
     signature = request.files.get("signature")
+    # =========================================================
+    # SERVER-SIDE INPUT LIMITS
+    # Browser limits can be bypassed, so enforce them here too.
+    # =========================================================
+
+    def form_limit(name, maximum):
+        value = request.form.get(name, "")
+        return value[:maximum]
+   
     data = {
         "name": request.form.get("name", ""),
         "title": request.form.get("title", ""),
