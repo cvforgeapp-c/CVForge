@@ -3687,15 +3687,15 @@ def modern(data,file):
 
 
     # Safe Signature Handling (Windows Friendly & Clean File Lock Management)
-signature = data.get("signature")
+    signature = data.get("signature")
 
-if signature and getattr(signature, "filename", None):
-    signature_temp_path = None
-    try:
-        signature.seek(0)
-        signature_image = Image.open(signature)
-
-        if signature_image.mode not in ("RGB", "RGBA"):
+    if signature and getattr(signature, "filename", None):
+        signature_temp_path = None
+        try:
+            signature.seek(0)
+            signature_image = Image.open(signature)
+            
+            if signature_image.mode not in ("RGB", "RGBA"):
             signature_image = signature_image.convert("RGBA")
 
         # Create temporary file safely
