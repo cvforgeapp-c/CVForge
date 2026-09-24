@@ -3696,7 +3696,7 @@ def modern(data,file):
             signature_image = Image.open(signature)
             
             if signature_image.mode not in ("RGB", "RGBA"):
-            signature_image = signature_image.convert("RGBA")
+                signature_image = signature_image.convert("RGBA")
 
         # Create temporary file safely
         temp_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
