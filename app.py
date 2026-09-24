@@ -3445,7 +3445,8 @@ def modern(data,file):
     # EXPERIENCE
     # =========================================================
     if data.get("experience"):
-        y = check_page_overflow(c, y, 15 * mm,
+        y = check_page_overflow(c, y, 15 * mm, "modern", sidebar_color, accent_color)
+
 
 
         y = main_section(
@@ -3635,7 +3636,8 @@ def modern(data,file):
     # CERTIFICATES
     # =========================================================
     if data.get("certificates"):
-        y = check_page_overflow(c, y, 15 * mm,
+        y = check_page_overflow(c, y, 15 * mm, "modern", sidebar_color, accent_color)
+
 
 
         y = main_section(
@@ -3670,7 +3672,8 @@ def modern(data,file):
     # REFERENCES
     # =========================================================
     if data.get("references"):
-        y = check_page_overflow(c, y, 15 * mm,
+        y = check_page_overflow(c, y, 15 * mm, "modern", sidebar_color, accent_color)
+
 
 
         y = main_section(
