@@ -372,6 +372,8 @@ placeholder="Write a short professional summary about yourself..."></textarea>
 <div class="char-counter">
     <span>0</span> / 500 characters
 </div>
+<label>Limitations</label>
+<textarea name="limitations" placeholder="Enter any relevant limitations"></textarea>
 
 <div class="buttons">
 <button type="button" class="back" onclick="prevStep()">← Back</button>
@@ -384,6 +386,8 @@ placeholder="Write a short professional summary about yourself..."></textarea>
 <h2>3. Work Experience</h2>
 
 <label>Experience</label>
+<label>Limitations</label>
+<textarea name="limitations" placeholder="Enter any relevant limitations"></textarea>
 <textarea name="experience"
 maxlength="1200"
 placeholder="Job Title - Company - Dates
@@ -394,6 +398,7 @@ Add another position below if needed."></textarea>
 <div class="char-counter">
     <span>0</span> / 1200 characters
 </div>
+
 
 <div class="buttons">
 <button type="button" class="back" onclick="prevStep()">← Back</button>
@@ -4210,6 +4215,7 @@ def generate():
     def form_limit(name, maximum):
         value = request.form.get(name, "")
         return value[:maximum]
+    limitations = request.form.get("limitations", "").strip()
    
     data = {
         "name": request.form.get("name", ""),
