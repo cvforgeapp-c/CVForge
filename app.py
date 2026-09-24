@@ -374,16 +374,6 @@ placeholder="Write a short professional summary about yourself..."></textarea>
 <div class="char-counter">
     <span>0</span> / 500 characters
 </div>
-<label>Limitations</label>
-<textarea
-    name="limitations"
-    maxlength="500"
-    data-limit="500"
-    placeholder="Enter any relevant limitations..."></textarea>
-
-<div class="char-counter">
-    <span>0</span> / 500 characters
-</div>
 
 <div class="buttons">
 <button type="button" class="back" onclick="prevStep()">← Back</button>
