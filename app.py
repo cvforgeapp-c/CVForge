@@ -2271,6 +2271,17 @@ def modern_wave_footer(c, W):
     c.setFillColor(colors.HexColor("#07509B"))
     c.drawPath(p3, fill=1, stroke=0)
 
+def modern_limit(text, max_chars):
+    if not text:
+        return ""
+
+    text = str(text).strip()
+
+    if len(text) <= max_chars:
+        return text
+
+    return text[:max_chars].rsplit(" ", 1)[0] + "..."
+
 
 def modern(data,file):
     W, H = A4
@@ -2278,6 +2289,17 @@ def modern(data,file):
     c = canvas.Canvas(file, pagesize=A4)
     global _modern_canvas
     _modern_canvas = c
+    # Protect Modern template layout from excessive input
+data["title"] = modern_limit(data.get("title"), 70)
+data["summary"] = modern_limit(data.get("summary"), 500)
+data["experience"] = modern_limit(data.get("experience"), 1200)
+data["education"] = modern_limit(data.get("education"), 600)
+data["skills"] = modern_limit(data.get("skills"), 400)
+data["certificates"] = modern_limit(data.get("certificates"), 500)
+data["languages"] = modern_limit(data.get("languages"), 250)
+data["hobbies"] = modern_limit(data.get("hobbies"), 250)
+data["references"] = modern_limit(data.get("references"), 500)
+    
     c.setTitle("CV - " + (data.get("name") or "My CV"))
 
     # =========================================================
