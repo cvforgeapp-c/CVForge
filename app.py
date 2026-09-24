@@ -321,7 +321,7 @@ button {
 <input name="name" required>
 
 <label>Professional Title</label>
-<input name="title" placeholder="e.g. Software Developer">
+<input name="title" maxlength="70" placeholder="e.g. Software Developer">
 
 <label>Profile Photo</label>
 <input type="file" name="photo" accept="image/*">
@@ -352,6 +352,7 @@ button {
 
 <label>Summary</label>
 <textarea name="summary"
+maxlength="500"
 placeholder="Write a short professional summary about yourself..."></textarea>
 
 <div class="buttons">
@@ -366,6 +367,7 @@ placeholder="Write a short professional summary about yourself..."></textarea>
 
 <label>Experience</label>
 <textarea name="experience"
+maxlength="1200"
 placeholder="Job Title - Company - Dates
 
 Describe your responsibilities and achievements.
@@ -384,6 +386,7 @@ Add another position below if needed."></textarea>
 
 <label>Education</label>
 <textarea name="education"
+maxlength="600"
 placeholder="Degree - Institution - Year
 
 Add your education history here."></textarea>
@@ -400,6 +403,7 @@ Add your education history here."></textarea>
 
 <label>Skills</label>
 <textarea name="skills"
+maxlength="400"
 placeholder="Python
 Flask
 Microsoft Office
@@ -418,6 +422,7 @@ Leadership"></textarea>
 
 <label>Certificates</label>
 <textarea name="certificates"
+maxlength="500"
 placeholder="Certificate Name - Organization - Year"></textarea>
 
 <div class="buttons">
@@ -432,8 +437,9 @@ placeholder="Certificate Name - Organization - Year"></textarea>
 
 <label>Languages</label>
 <textarea name="languages"
+maxlength="250"
 placeholder="English - Fluent
-spanish - Native"></textarea>
+Spanish - Native"></textarea>
 
 <div class="buttons">
 <button type="button" class="back" onclick="prevStep()">← Back</button>
@@ -447,6 +453,7 @@ spanish - Native"></textarea>
 
 <label>Interests & Hobbies</label>
 <textarea name="hobbies"
+maxlength="250"
 placeholder="Technology
 Reading
 Travel
@@ -464,6 +471,7 @@ Sports"></textarea>
 
 <label>References</label>
 <textarea name="references"
+maxlength="500"
 placeholder="Name - Position - Company
 Email / Phone"></textarea>
 
