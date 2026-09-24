@@ -536,23 +536,25 @@ def modern(data, file):
         c.line(x + 14 * mm, y - 4 * mm, x + width, y - 4 * mm)
         return y - 11.5 * mm
 
-    def sidebar_section(title, x, y, width):
+    def sidebar_section(title, icon_type, x, y, width):
+        draw_icon_badge(c, x + 3 * mm, y + 1 * mm, icon_type, gold, sidebar_color)
         c.setFillColor(gold)
         c.setFont("Helvetica-Bold", 10.5)
-        title_x = x + 2 * mm
+        title_x = x + 10 * mm
         c.drawString(title_x, y, title.upper())
         c.setStrokeColor(gold)
         c.setLineWidth(1)
         c.line(title_x, y - 2.2 * mm, x + width, y - 2.2 * mm)
         return y - 9 * mm
 
-    # Sidebar
+    # Sidebar Positioning
     sx = 10 * mm
     sw = sidebar_w - 20 * mm
     sy = H - 78 * mm
 
+    # 1. Contact Section (Explicitly Starts with Phone Number)
     sy = check_page_overflow(c, sy, 6 * mm, "modern", sidebar_color, gold)
-    sy = sidebar_section("Contact", sx, sy, sw)
+    sy = sidebar_section("Contact", "references", sx, sy, sw)
 
     contact_items = [
         data.get("phone"),
@@ -563,45 +565,53 @@ def modern(data, file):
     ]
 
     for val in contact_items:
-        if val:
+        if val and val.strip():
             sy = draw_lines(val, sx + 2 * mm, sy, sw - 2 * mm, size=8.2, leading=4.8 * mm, color=white)
     sy -= 2.0 * mm
 
+    # 2. Skills Section
     if data.get("skills"):
         sy = check_page_overflow(c, sy, 6 * mm, "modern", sidebar_color, gold)
         sy -= 4 * mm
-        sy = sidebar_section("Skills", sx, sy, sw)
+        sy = sidebar_section("Skills", "certificates", sx, sy, sw)
         for skill in data["skills"].splitlines():
             if skill.strip():
                 sy = draw_lines(skill.strip(), sx, sy, sw, size=9, leading=5 * mm, color=white, bullet=True)
 
+    # 3. Languages Section
     if data.get("languages"):
         sy = check_page_overflow(c, sy, 6 * mm, "modern", sidebar_color, gold)
         sy -= 4 * mm
-        sy = sidebar_section("Languages", sx, sy, sw)
+        sy = sidebar_section("Languages", "education", sx, sy, sw)
         for lang in data["languages"].splitlines():
             if lang.strip():
                 sy = draw_lines(lang.strip(), sx, sy, sw, size=9, leading=5 * mm, color=white, bullet=True)
 
+    # 4. Interests / Hobbies Section
     if data.get("hobbies"):
         sy = check_page_overflow(c, sy, 6 * mm, "modern", sidebar_color, gold)
         sy -= 4 * mm
-        sy = sidebar_section("Interests", sx, sy, sw)
+        sy = sidebar_section("Interests", "experience", sx, sy, sw)
         for hobby in data["hobbies"].splitlines():
             if hobby.strip():
                 sy = draw_lines(hobby.strip(), sx, sy, sw, size=9, leading=5 * mm, color=white, bullet=True)
 
-    # Main Area
+    # Main Area - Candidate Name
     name = (data.get("name") or "My CV").upper()
     c.setFillColor(dark)
     c.setFont("Helvetica-Bold", 22)
     c.drawString(main_x, H - 23 * mm, name[:45])
 
-    title = data.get("title") or ""
+    # Main Area - Full Professional Title (Wrapped to fit long titles)
+    title = (data.get("title") or "").upper()
     if title:
         c.setFillColor(gold)
-        c.setFont("Helvetica-Bold", 13)
-        c.drawString(main_x, H - 31 * mm, title[:70].upper())
+        c.setFont("Helvetica-Bold", 12)
+        title_lines = wrap(title, "Helvetica-Bold", 12, main_w)
+        title_y = H - 31 * mm
+        for line in title_lines:
+            c.drawString(main_x, title_y, line)
+            title_y -= 4.5 * mm
 
     y = H - 43 * mm
 
@@ -653,6 +663,7 @@ def modern(data, file):
         c.line(main_x, y - 3 * mm, main_x + 55 * mm, y - 3 * mm)
 
     c.save()
+
 
 def classic(data, file):
     W, H = A4
