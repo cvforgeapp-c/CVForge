@@ -2445,28 +2445,6 @@ def modern(data,file):
     c = canvas.Canvas(file, pagesize=A4)
     global _modern_canvas
     _modern_canvas = c
-    # =========================================================
-    # MODERN TEMPLATE CONTENT LIMITS
-    # Protect the fixed one-page design
-    # =========================================================
-
-    data["title"] = limit_text(data.get("title"), 55)
-
-    data["summary"] = limit_text(data.get("summary"), 320)
-
-    data["experience"] = limit_text(data.get("experience"), 850)
-
-    data["education"] = limit_text(data.get("education"), 420)
-
-    data["skills"] = limit_text(data.get("skills"), 300)
-
-    data["certificates"] = limit_text(data.get("certificates"), 350)
-
-    data["languages"] = limit_text(data.get("languages"), 180)
-
-    data["hobbies"] = limit_text(data.get("hobbies"), 180)
-
-    data["references"] = limit_text(data.get("references"), 300)
     c.setTitle("CV - " + (data.get("name") or "My CV"))
 
     # =========================================================
