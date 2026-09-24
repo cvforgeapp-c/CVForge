@@ -3281,7 +3281,7 @@ def modern(data,file):
     # LANGUAGES
     # =========================================================
     if data.get("languages"):
-         y_side = check_page_overflow(c, y_side, 6 * mm, "modern", sidebar_color, accent_color)
+        y_side = check_page_overflow(c, y_side, 6 * mm, "modern", sidebar_color, accent_color)
 
         sy -= 8 * mm
 
