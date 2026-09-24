@@ -3731,7 +3731,7 @@ def modern(data,file):
         if signature_temp_path and os.path.exists(signature_temp_path):
             try:
                 os.unlink(signature_temp_path)
-                except OSError:
+            except OSError:
                 pass
 
 
