@@ -288,8 +288,7 @@ button {
     .card { padding: 18px; }
     .buttons { flex-direction: column; }
 }
-</style>
-</head>
+
 .char-counter {
     text-align: right;
     margin-top: 5px;
@@ -305,6 +304,9 @@ button {
     color: #b00020;
     font-weight: bold;
 }
+
+</style>
+</head>
 
 <body>
 <div class="container">
@@ -3378,6 +3380,28 @@ def modern(data,file):
         )
 
         y -= 7 * mm
+        # =========================================================
+        # LIMITATIONS
+        # =========================================================
+        if data.get("limitations"):
+            y = main_section(
+                "Limitations",
+                main_x,
+                y,
+                main_w
+            )
+
+            y = draw_lines(
+                data["limitations"],
+                main_x,
+                y,
+                main_w,
+                size=8.8,
+                leading=5.0 * mm,
+                color=muted
+            )
+            
+            y -= 5 * mm
 
 
         # =========================================================
