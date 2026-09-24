@@ -368,12 +368,9 @@ button {
 <h2>2. Professional Summary</h2>
 
 <label>Summary</label>
-<textarea name="summary"
-maxlength="500"
+<textarea id="summary" name="summary" maxlength="500"></textarea>
 placeholder="Write a short professional summary about yourself..."></textarea>
-<div class="char-counter">
-    <span>0</span> / 500 characters
-</div>
+<div id="summaryCount">0 / 500 characters</div>
 
 <div class="buttons">
 <button type="button" class="back" onclick="prevStep()">← Back</button>
@@ -927,6 +924,15 @@ document.querySelectorAll("textarea[data-limit]").forEach(function(textarea) {
     );
 
     updateCounter();
+});
+</script>
+
+<script>
+const summary = document.getElementById("summary");
+const summaryCount = document.getElementById("summaryCount");
+
+summary.addEventListener("input", function () {
+    summaryCount.textContent = `${this.value.length} / 500 characters`;
 });
 </script>
 
