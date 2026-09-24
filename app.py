@@ -2,7 +2,6 @@ import os
 import tempfile
 import base64
 import uuid
-import math
 from io import BytesIO
 from PIL import Image
 from flask import Flask, request, render_template_string, send_file
@@ -17,14 +16,13 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import stringWidth
 
 # ============================================================
-# 1. CLEAN IMPORTS & ROBUST FONT / EXCEPTION HANDLING
+# 1. FONT & PATH CONFIGURATION WITH SAFE FALLBACKS
 # ============================================================
 
 FONT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts")
 MONTSERRAT_EXTRA_BOLD = os.path.join(FONT_DIR, "Montserrat-ExtraBold.ttf")
 DANCING_SCRIPT = os.path.join(FONT_DIR, "DancingScript-Regular.ttf")
 
-# Safely register custom fonts with fallbacks to avoid application crashes
 HAS_MONTSERRAT = False
 HAS_DANCING = False
 
@@ -44,7 +42,6 @@ if os.path.exists(DANCING_SCRIPT):
 
 app = Flask(__name__)
 
-# Global canvas reference for helper calculations
 _modern_canvas = None
 
 PAGE_HEIGHT = 297 * mm  # A4 Height
@@ -52,7 +49,7 @@ PAGE_WIDTH = 210 * mm   # A4 Width
 BOTTOM_MARGIN = 20 * mm
 
 # ============================================================
-# 2. UI / FRONTEND IMPROVEMENTS & STEP FORM STYLING
+# 2. UI / FRONTEND TEMPLATES (FORM & PREVIEW)
 # ============================================================
 
 HTML = """
@@ -182,7 +179,13 @@ button { flex: 1; padding: 14px; border: none; border-radius: 10px; font-size: 1
 </div>
 
 <div class="step">
-<h2>11. Choose Template & Styling</h2>
+<h2>11. Digital Signature (Optional)</h2>
+<label>Signature Text</label><input name="signature_name" maxlength="100" placeholder="e.g. John Doe">
+<div class="buttons"><button type="button" class="back" onclick="prevStep()">← Back</button><button type="button" class="next" onclick="nextStep()">Next →</button></div>
+</div>
+
+<div class="step">
+<h2>12. Choose Template & Styling</h2>
 <input type="hidden" name="template" id="templateInput" value="modern">
 <div class="template-grid">
 <button type="button" class="template-option selected" data-template="modern" onclick="selectTemplate(this)">
@@ -216,9 +219,9 @@ button { flex: 1; padding: 14px; border: none; border-radius: 10px; font-size: 1
 
 <div class="color-section">
 <h3>Sidebar Theme (Modern Template)</h3>
-<input type="hidden" name="sidebar_color" id="sidebarColorInput" value="#173F49">
+<input type="hidden" name="sidebar_color" id="sidebarColorInput" value="#053D47">
 <div class="color-grid">
-<button type="button" class="color-option selected" data-sidebar-color="#173F49" style="background:#173F49" onclick="selectSidebarColor(this)"></button>
+<button type="button" class="color-option selected" data-sidebar-color="#053D47" style="background:#053D47" onclick="selectSidebarColor(this)"></button>
 <button type="button" class="color-option" data-sidebar-color="#1F2937" style="background:#1F2937" onclick="selectSidebarColor(this)"></button>
 <button type="button" class="color-option" data-sidebar-color="#123B2A" style="background:#123B2A" onclick="selectSidebarColor(this)"></button>
 </div>
@@ -231,7 +234,7 @@ button { flex: 1; padding: 14px; border: none; border-radius: 10px; font-size: 1
 </div>
 
 <div class="step">
-<h2>12. Generate Your CV</h2>
+<h2>13. Generate Your CV</h2>
 <p>Your resume data is fully set. Click below to generate your downloadable PDF document.</p>
 <div class="buttons">
 <button type="button" class="back" onclick="prevStep()">← Back</button>
@@ -378,7 +381,7 @@ renderPDF();
 """
 
 # ============================================================
-# 3. TEXT WRAPPING & MULTI-PAGE OVERFLOW UTILITIES
+# 3. HELPER UTILITIES & WRAPPERS
 # ============================================================
 
 def clean(text):
@@ -425,8 +428,31 @@ def check_page_overflow(c, y, required_space, template_type, sidebar_color, acce
         return new_y
     return y
 
+def draw_icon_badge(c, x, y, icon_type, badge_color, icon_color):
+    c.setFillColor(badge_color)
+    c.circle(x, y, 4.8 * mm, stroke=0, fill=1)
+    
+    c.setFillColor(icon_color)
+    c.setStrokeColor(icon_color)
+    c.setLineWidth(0.8)
+    
+    if icon_type == "experience":
+        c.rect(x - 2.5 * mm, y - 2 * mm, 5 * mm, 3.5 * mm, stroke=1, fill=0)
+        c.rect(x - 1.2 * mm, y + 1.5 * mm, 2.4 * mm, 1 * mm, stroke=1, fill=0)
+    elif icon_type == "education":
+        c.polygon([x, y + 2.2 * mm, x + 3 * mm, y, x, y - 2.2 * mm, x - 3 * mm, y], stroke=1, fill=1)
+        c.line(x + 2 * mm, y - 0.5 * mm, x + 2 * mm, y - 2.8 * mm)
+    elif icon_type == "certificates":
+        c.rect(x - 2 * mm, y - 2.5 * mm, 4 * mm, 5 * mm, stroke=1, fill=0)
+        c.line(x - 1 * mm, y + 1 * mm, x + 1 * mm, y + 1 * mm)
+        c.line(x - 1 * mm, y - 0.5 * mm, x + 1 * mm, y - 0.5 * mm)
+    elif icon_type == "references":
+        c.circle(x - 1 * mm, y + 1 * mm, 1.2 * mm, stroke=1, fill=0)
+        c.circle(x + 1.5 * mm, y + 1 * mm, 1 * mm, stroke=1, fill=0)
+        c.arc(x - 3 * mm, y - 2.5 * mm, x + 1 * mm, y + 0.5 * mm, 0, 180)
+
 # ============================================================
-# 4. REFACTORED PDF TEMPLATES (MODERN, CLASSIC, ATS)
+# 4. PDF LAYOUT GENERATORS
 # ============================================================
 
 def modern(data, file):
@@ -437,11 +463,11 @@ def modern(data, file):
     c.setTitle("CV - " + (data.get("name") or "My CV"))
 
     teal = colors.HexColor("#053D47")
-    sidebar_color = colors.HexColor(data.get("sidebar_color") or "#173F49")
+    sidebar_color = colors.HexColor(data.get("sidebar_color") or "#053D47")
     gold = colors.HexColor(data.get("accent_color") or "#F2B632")
     white = colors.white
-    dark = colors.HexColor("#123F4A")
-    muted = colors.HexColor("#5E6F73")
+    dark = colors.HexColor("#0A2540")
+    muted = colors.HexColor("#444444")
 
     sidebar_w = 78 * mm
     main_x = sidebar_w + 14 * mm
@@ -473,7 +499,7 @@ def modern(data, file):
         except Exception as e:
             print(f"Error drawing photo: {e}")
 
-    def draw_lines(value, x, y, width, font="Helvetica", size=8.8, leading=4.6 * mm, color=dark, bullet=False):
+    def draw_lines(value, x, y, width, font="Helvetica", size=8.8, leading=5.0 * mm, color=dark, bullet=False):
         if not value:
             return y
         c.setFillColor(color)
@@ -492,15 +518,14 @@ def modern(data, file):
                 y -= leading
         return y
 
-    def main_section(title, x, y, width):
-        c.setFillColor(teal)
-        c.circle(x + 5 * mm, y + 1 * mm, 5.2 * mm, stroke=0, fill=1)
+    def main_section(title, icon_type, x, y, width):
+        draw_icon_badge(c, x + 5 * mm, y + 1 * mm, icon_type, teal, gold)
         c.setFillColor(dark)
-        c.setFont("Helvetica-Bold", 11.5)
+        c.setFont("Helvetica-Bold", 12)
         c.drawString(x + 14 * mm, y, title.upper())
         c.setStrokeColor(gold)
         c.setLineWidth(1.1)
-        c.line(x + 12 * mm, y - 4.5 * mm, x + width, y - 4.5 * mm)
+        c.line(x + 14 * mm, y - 4 * mm, x + width, y - 4 * mm)
         return y - 11.5 * mm
 
     def sidebar_section(title, x, y, width):
@@ -513,7 +538,7 @@ def modern(data, file):
         c.line(title_x, y - 2.2 * mm, x + width, y - 2.2 * mm)
         return y - 9 * mm
 
-    # Sidebar Content
+    # Sidebar
     sx = 10 * mm
     sw = sidebar_w - 20 * mm
     sy = H - 78 * mm
@@ -550,7 +575,15 @@ def modern(data, file):
             if lang.strip():
                 sy = draw_lines(lang.strip(), sx, sy, sw, size=9, leading=5 * mm, color=white, bullet=True)
 
-    # Main Column Content
+    if data.get("hobbies"):
+        sy = check_page_overflow(c, sy, 6 * mm, "modern", sidebar_color, gold)
+        sy -= 4 * mm
+        sy = sidebar_section("Interests", sx, sy, sw)
+        for hobby in data["hobbies"].splitlines():
+            if hobby.strip():
+                sy = draw_lines(hobby.strip(), sx, sy, sw, size=9, leading=5 * mm, color=white, bullet=True)
+
+    # Main Area
     name = (data.get("name") or "My CV").upper()
     c.setFillColor(dark)
     c.setFont("Helvetica-Bold", 22)
@@ -559,7 +592,7 @@ def modern(data, file):
     title = data.get("title") or ""
     if title:
         c.setFillColor(gold)
-        c.setFont("Helvetica-Bold", 14)
+        c.setFont("Helvetica-Bold", 13)
         c.drawString(main_x, H - 31 * mm, title[:70].upper())
 
     y = H - 43 * mm
@@ -570,32 +603,46 @@ def modern(data, file):
 
     if data.get("experience"):
         y = check_page_overflow(c, y, 15 * mm, "modern", sidebar_color, gold)
-        y = main_section("Experience", main_x, y, main_w)
+        y = main_section("Experience", "experience", main_x, y, main_w)
         y = draw_lines(data["experience"], main_x, y, main_w, size=8.8, leading=5.0 * mm, color=muted)
         y -= 5 * mm
 
     if data.get("projects"):
         y = check_page_overflow(c, y, 15 * mm, "modern", sidebar_color, gold)
-        y = main_section("Projects", main_x, y, main_w)
+        y = main_section("Projects", "experience", main_x, y, main_w)
         y = draw_lines(data["projects"], main_x, y, main_w, size=8.8, leading=5.0 * mm, color=muted)
         y -= 5 * mm
 
     if data.get("education"):
         y = check_page_overflow(c, y, 15 * mm, "modern", sidebar_color, gold)
-        y = main_section("Education", main_x, y, main_w)
+        y = main_section("Education", "education", main_x, y, main_w)
         y = draw_lines(data["education"], main_x, y, main_w, size=8.8, leading=5.0 * mm, color=muted)
         y -= 5 * mm
 
     if data.get("certificates"):
         y = check_page_overflow(c, y, 15 * mm, "modern", sidebar_color, gold)
-        y = main_section("Certificates", main_x, y, main_w)
+        y = main_section("Certificates", "certificates", main_x, y, main_w)
         y = draw_lines(data["certificates"], main_x, y, main_w, size=8.8, leading=5.0 * mm, color=muted)
         y -= 5 * mm
 
     if data.get("references"):
         y = check_page_overflow(c, y, 15 * mm, "modern", sidebar_color, gold)
-        y = main_section("References", main_x, y, main_w)
+        y = main_section("References", "references", main_x, y, main_w)
         y = draw_lines(data["references"], main_x, y, main_w, size=8.8, leading=5.0 * mm, color=muted)
+        y -= 5 * mm
+
+    signature_text = data.get("signature_name") or data.get("signature")
+    if signature_text:
+        y = check_page_overflow(c, y, 20 * mm, "modern", sidebar_color, gold)
+        y -= 6 * mm
+        font_sig = "DancingScript" if HAS_DANCING else "Helvetica-BoldOblique"
+        c.setFont(font_sig, 18 if HAS_DANCING else 14)
+        c.setFillColor(dark)
+        c.drawString(main_x, y, signature_text)
+        
+        c.setStrokeColor(gold)
+        c.setLineWidth(1.1)
+        c.line(main_x, y - 3 * mm, main_x + 55 * mm, y - 3 * mm)
 
     c.save()
 
@@ -614,7 +661,6 @@ def classic(data, file):
     w = W - 36 * mm
     y = H - 22 * mm
 
-    # Full-width Top Header
     c.setFillColor(primary)
     c.setFont("Helvetica-Bold", 24)
     c.drawString(x, y, (data.get("name") or "My CV").upper())
@@ -631,7 +677,6 @@ def classic(data, file):
     c.line(x, y, x + w, y)
     y -= 6 * mm
 
-    # Contact Info Bar
     contacts = [val for val in [data.get("phone"), data.get("email"), data.get("location"), data.get("linkedin")] if val]
     if contacts:
         c.setFillColor(dark)
@@ -741,7 +786,6 @@ def ats(data, file):
 
     c.save()
 
-# Dispatcher selecting requested layout
 def generate_pdf(data, filename):
     template = clean(data.get("template")).lower()
     if template == "classic":
@@ -752,7 +796,7 @@ def generate_pdf(data, filename):
         modern(data, filename)
 
 # ============================================================
-# 5. FLASK ROUTES WITH SAFE WINDOWS FILE HANDLES
+# 5. FLASK ROUTING
 # ============================================================
 
 @app.route("/")
@@ -783,9 +827,10 @@ def generate():
         "languages": form_limit("languages", 250),
         "hobbies": form_limit("hobbies", 250),
         "references": form_limit("references", 500),
+        "signature_name": form_limit("signature_name", 100),
         "template": request.form.get("template", "modern"),
         "accent_color": request.form.get("accent_color", "#F2B632"),
-        "sidebar_color": request.form.get("sidebar_color", "#173F49"),
+        "sidebar_color": request.form.get("sidebar_color", "#053D47"),
     }
 
     if photo and photo.filename:
@@ -798,7 +843,6 @@ def generate():
     filename = os.path.join(tempfile.gettempdir(), "CVForge_" + uuid.uuid4().hex + ".pdf")
     generate_pdf(data, filename)
 
-    # Read binary safely without file locking issues on Windows
     with open(filename, "rb") as pdf_file:
         pdf_bytes = pdf_file.read()
 
@@ -810,7 +854,6 @@ def generate():
     with open(preview_file, "wb") as output:
         output.write(pdf_bytes)
 
-    # Safely clean up uploaded temp photo file
     if data["photo"] and os.path.exists(data["photo"]):
         try:
             os.remove(data["photo"])
