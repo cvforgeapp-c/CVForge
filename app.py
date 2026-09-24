@@ -3206,7 +3206,7 @@ def modern(data,file):
     sy = H - 78 * mm
 
     # CONTACT
-    y = check_page_overflow(c, y, 6 * mm, "modern", sidebar_color, accent_color)
+    y_side = check_page_overflow(c, y_side, 6 * mm, "modern", sidebar_color, accent_color)
     sy = sidebar_section(
         "Contact",
         sx,
@@ -3244,7 +3244,7 @@ def modern(data,file):
     # SKILLS
     # =========================================================
     if data.get("skills"):
-        y = check_page_overflow(c, y, 6 * mm, "modern", sidebar_color, accent_color)
+        y_side = check_page_overflow(c, y_side, 6 * mm, "modern", sidebar_color, accent_color)
 
         sy -= 8 * mm
 
@@ -3281,7 +3281,7 @@ def modern(data,file):
     # LANGUAGES
     # =========================================================
     if data.get("languages"):
-        y = check_page_overflow(c, y, 6 * mm, "modern", sidebar_color, accent_color)
+         y_side = check_page_overflow(c, y_side, 6 * mm, "modern", sidebar_color, accent_color)
 
         sy -= 8 * mm
 
@@ -3314,7 +3314,7 @@ def modern(data,file):
     # INTERESTS
     # =========================================================
     if data.get("hobbies"):
-        y = check_page_overflow(c, y, 6 * mm, "modern", sidebar_color, accent_color)
+        y_side = check_page_overflow(c, y_side, 6 * mm, "modern", sidebar_color, accent_color)
 
         sy -= 8 * mm
 
