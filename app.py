@@ -368,8 +368,12 @@ button {
 <h2>2. Professional Summary</h2>
 
 <label>Summary</label>
-<textarea id="summary" name="summary" maxlength="500"></textarea>
-placeholder="Write a short professional summary about yourself..."></textarea>
+<textarea
+    id="summary"
+    name="summary"
+    maxlength="500"
+    placeholder="Write a short professional summary about yourself..."
+></textarea>
 <div id="summaryCount">0 / 500 characters</div>
 
 <div class="buttons">
