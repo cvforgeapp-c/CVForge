@@ -2299,8 +2299,7 @@ data["certificates"] = modern_limit(data.get("certificates"), 500)
 data["languages"] = modern_limit(data.get("languages"), 250)
 data["hobbies"] = modern_limit(data.get("hobbies"), 250)
 data["references"] = modern_limit(data.get("references"), 500)
-    
-    c.setTitle("CV - " + (data.get("name") or "My CV"))
+c.setTitle("CV - " + (data.get("name") or "My CV"))
 
     # =========================================================
     # COLORS
