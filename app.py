@@ -932,11 +932,16 @@ document.querySelectorAll("textarea[data-limit]").forEach(function(textarea) {
 </script>
 
 <script>
-const summary = document.getElementById("summary");
-const summaryCount = document.getElementById("summaryCount");
+document.querySelectorAll('[data-char-counter]').forEach(function (field) {
+    const counter = field.nextElementSibling;
 
-summary.addEventListener("input", function () {
-    summaryCount.textContent = `${this.value.length} / 500 characters`;
+    function updateCounter() {
+        counter.textContent =
+            `${field.value.length} / ${field.maxLength} characters`;
+    }
+
+    field.addEventListener('input', updateCounter);
+    updateCounter();
 });
 </script>
 
