@@ -1231,6 +1231,19 @@ async function renderPDF() {
 renderPDF();
 
 </script>
+<script>
+document.querySelectorAll('[data-char-counter]').forEach(function (field) {
+    const counter = field.nextElementSibling;
+
+    function updateCounter() {
+        counter.textContent =
+            field.value.length + " / " + field.maxLength + " characters";
+    }
+
+    field.addEventListener("input", updateCounter);
+    updateCounter();
+});
+</script>
 
 </body>
 </html>
