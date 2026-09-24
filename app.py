@@ -2290,16 +2290,16 @@ def modern(data,file):
     global _modern_canvas
     _modern_canvas = c
     # Protect Modern template layout from excessive input
-data["title"] = modern_limit(data.get("title"), 70)
-data["summary"] = modern_limit(data.get("summary"), 500)
-data["experience"] = modern_limit(data.get("experience"), 1200)
-data["education"] = modern_limit(data.get("education"), 600)
-data["skills"] = modern_limit(data.get("skills"), 400)
-data["certificates"] = modern_limit(data.get("certificates"), 500)
-data["languages"] = modern_limit(data.get("languages"), 250)
-data["hobbies"] = modern_limit(data.get("hobbies"), 250)
-data["references"] = modern_limit(data.get("references"), 500)
-c.setTitle("CV - " + (data.get("name") or "My CV"))
+    data["title"] = modern_limit(data.get("title"), 70)
+    data["summary"] = modern_limit(data.get("summary"), 500)
+    data["experience"] = modern_limit(data.get("experience"), 1200)
+    data["education"] = modern_limit(data.get("education"), 600)
+    data["skills"] = modern_limit(data.get("skills"), 400)
+    data["certificates"] = modern_limit(data.get("certificates"), 500)
+    data["languages"] = modern_limit(data.get("languages"), 250)
+    data["hobbies"] = modern_limit(data.get("hobbies"), 250)
+    data["references"] = modern_limit(data.get("references"), 500)
+    c.setTitle("CV - " + (data.get("name") or "My CV"))
 
     # =========================================================
     # COLORS
