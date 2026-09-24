@@ -3698,7 +3698,7 @@ def modern(data,file):
             if signature_image.mode not in ("RGB", "RGBA"):
                 signature_image = signature_image.convert("RGBA")
 
-        # Create temporary file safely
+    # Create temporary file safely
         temp_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
         signature_temp_path = temp_file.name
         temp_file.close()  # Close handle immediately so PIL & ReportLab can access it without file lock errors
@@ -3726,7 +3726,7 @@ def modern(data,file):
     except Exception as e:
         print(f"Signature rendering error: {e}")
     finally:
-        # Guarantee cleanup of temporary signature file
+    # Guarantee cleanup of temporary signature file
         if signature_temp_path and os.path.exists(signature_temp_path):
             try:
                 os.unlink(signature_temp_path)
