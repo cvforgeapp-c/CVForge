@@ -3206,7 +3206,7 @@ def modern(data,file):
     sy = H - 78 * mm
 
     # CONTACT
-    sy = check_page_overflow(c, sy, 6 * mm, "modern", sidebar_color, accent_color)
+    sy = check_page_overflow(c, sy, 6 * mm, "modern", sidebar_color, accent)
     sy = sidebar_section(
         "Contact",
         sx,
@@ -3244,7 +3244,7 @@ def modern(data,file):
     # SKILLS
     # =========================================================
     if data.get("skills"):
-        sy = check_page_overflow(c, sy, 6 * mm, "modern", sidebar_color, accent_color)
+        sy = check_page_overflow(c, sy, 6 * mm, "modern", sidebar_color, accent)
 
         sy -= 8 * mm
 
@@ -3281,7 +3281,7 @@ def modern(data,file):
     # LANGUAGES
     # =========================================================
     if data.get("languages"):
-        sy = check_page_overflow(c, sy, 6 * mm, "modern", sidebar_color, accent_color)
+        sy = check_page_overflow(c, sy, 6 * mm, "modern", sidebar_color, accent)
 
         sy -= 8 * mm
 
@@ -3314,7 +3314,7 @@ def modern(data,file):
     # INTERESTS
     # =========================================================
     if data.get("hobbies"):
-        sy = check_page_overflow(c, sy, 6 * mm, "modern", sidebar_color, accent_color)
+        sy = check_page_overflow(c, sy, 6 * mm, "modern", sidebar_color, accent)
 
         sy -= 8 * mm
 
@@ -3445,7 +3445,7 @@ def modern(data,file):
     # EXPERIENCE
     # =========================================================
     if data.get("experience"):
-        y = check_page_overflow(c, y, 15 * mm, "modern", sidebar_color, accent_color)
+        y = check_page_overflow(c, y, 15 * mm, "modern", sidebar_color, accent)
 
 
 
@@ -3571,7 +3571,7 @@ def modern(data,file):
     # EDUCATION
     # =========================================================
     if data.get("education"):
-        y = check_page_overflow(c, y, 15 * mm, "modern", sidebar_color, accent_color)
+        y = check_page_overflow(c, y, 15 * mm, "modern", sidebar_color, accent)
 
         y = main_section(
             "Education",
@@ -3636,7 +3636,7 @@ def modern(data,file):
     # CERTIFICATES
     # =========================================================
     if data.get("certificates"):
-        y = check_page_overflow(c, y, 15 * mm, "modern", sidebar_color, accent_color)
+        y = check_page_overflow(c, y, 15 * mm, "modern", sidebar_color, accent)
 
 
 
@@ -3672,7 +3672,7 @@ def modern(data,file):
     # REFERENCES
     # =========================================================
     if data.get("references"):
-        y = check_page_overflow(c, y, 15 * mm, "modern", sidebar_color, accent_color)
+        y = check_page_overflow(c, y, 15 * mm, "modern", sidebar_color, accent)
 
 
 
@@ -3709,7 +3709,7 @@ def modern(data,file):
 
 
     if signature and getattr(signature, "filename", None):
-        y = check_page_overflow(c, y, 35 * mm, "modern", sidebar_color, accent_color)
+        y = check_page_overflow(c, y, 35 * mm, "modern", sidebar_color, accent)
 
         signature_temp_path = None
         try:
