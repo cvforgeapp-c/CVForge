@@ -3686,78 +3686,53 @@ def modern(data,file):
         y -= 3 * mm
 
 
-    # =========================================================
-    # REAL HANDWRITTEN SIGNATURE
-    # =========================================================
-    signature = data.get("signature")
+    # Safe Signature Handling (Windows Friendly & Clean File Lock Management)
+signature = data.get("signature")
 
-    print(
-        "SIGNATURE DEBUG:",
-        signature,
-        getattr(signature, "filename", None)
-    )
+if signature and getattr(signature, "filename", None):
+    signature_temp_path = None
+    try:
+        signature.seek(0)
+        signature_image = Image.open(signature)
 
-    if signature and signature.filename:
+        if signature_image.mode not in ("RGB", "RGBA"):
+            signature_image = signature_image.convert("RGBA")
 
-        try:
+        # Create temporary file safely
+        temp_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+        signature_temp_path = temp_file.name
+        temp_file.close()  # Close handle immediately so PIL & ReportLab can access it without file lock errors
 
-            signature.seek(0)
+        signature_image.save(signature_temp_path, format="PNG")
 
-            signature_image = Image.open(signature)
+        signature_width = 45 * mm
+        signature_height = 18 * mm
+        img_width, img_height = signature_image.size
 
-            # Convert images with transparency to RGBA
-            if signature_image.mode not in ("RGB", "RGBA"):
-                signature_image = signature_image.convert("RGBA")
+        if img_width > 0 and img_height > 0:
+            ratio = min(signature_width / img_width, signature_height / img_height)
+            draw_width = img_width * ratio
+            draw_height = img_height * ratio
 
-            # Save temporarily because ReportLab needs an image source
-            signature_temp = tempfile.NamedTemporaryFile(
-                suffix=".png",
-                delete=False
+            c.drawImage(
+                signature_temp_path,
+                main_x,
+                y - draw_height - 3 * mm,
+                width=draw_width,
+                height=draw_height,
+                preserveAspectRatio=True,
+                mask="auto"
             )
+    except Exception as e:
+        print(f"Signature rendering error: {e}")
+    finally:
+        # Guarantee cleanup of temporary signature file
+        if signature_temp_path and os.path.exists(signature_temp_path):
+            try:
+                os.unlink(signature_temp_path)
+            except OSError:
+                pass
 
-            signature_image.save(
-                signature_temp.name,
-                format="PNG"
-            )
-
-            signature_temp.close()
-
-            # Desired signature size
-            signature_width = 45 * mm
-            signature_height = 18 * mm
-
-            # Preserve original aspect ratio
-            img_width, img_height = signature_image.size
-
-            if img_width > 0 and img_height > 0:
-
-                ratio = min(
-                    signature_width / img_width,
-                    signature_height / img_height
-                )
-
-                draw_width = img_width * ratio
-                draw_height = img_height * ratio
-
-                c.drawImage(
-                    signature_temp.name,
-                    main_x,
-                    y - draw_height - 3 * mm,
-                    width=draw_width,
-                    height=draw_height,
-                    preserveAspectRatio=True,
-                    mask="auto"
-                )
-
-            # Remove temporary image
-            os.unlink(signature_temp.name)
-
-        except Exception as e:
-
-            print(
-                "Signature image error:",
-                e
-            )
 
 
     # SAVE MODERN PDF
