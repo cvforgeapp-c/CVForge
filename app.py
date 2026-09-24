@@ -1,4 +1,11 @@
+import os
+import tempfile
+import base64
+import uuid
+from io import BytesIO
+from PIL import Image
 from flask import Flask, request, render_template_string, send_file
+
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
@@ -7,18 +14,9 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import stringWidth
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-import os
-import tempfile
-import base64
-import uuid
-from PIL import Image
-from io import BytesIO
-from io import BytesIO
 
 # ============================================================
-# CUSTOM FONT — MONTSERRAT EXTRA BOLD
+# SAFE CUSTOM FONT REGISTRATION WITH FALLBACKS
 # ============================================================
 
 FONT_DIR = os.path.join(
@@ -26,34 +24,29 @@ FONT_DIR = os.path.join(
     "fonts"
 )
 
-MONTSERRAT_EXTRA_BOLD = os.path.join(
-    FONT_DIR,
-    "Montserrat-ExtraBold.ttf"
-)
+MONTSERRAT_EXTRA_BOLD = os.path.join(FONT_DIR, "Montserrat-ExtraBold.ttf")
+DANCING_SCRIPT = os.path.join(FONT_DIR, "DancingScript-Regular.ttf")
 
-pdfmetrics.registerFont(
-    TTFont(
-        "Montserrat-ExtraBold",
-        MONTSERRAT_EXTRA_BOLD
-    )
-)
-# ============================================================
-# HANDWRITING FONT — DANCING SCRIPT
-# ============================================================
+# Register Montserrat
+if os.path.exists(MONTSERRAT_EXTRA_BOLD):
+    try:
+        pdfmetrics.registerFont(TTFont("Montserrat-ExtraBold", MONTSERRAT_EXTRA_BOLD))
+    except Exception as e:
+        print(f"Warning: Could not register Montserrat font: {e}")
+else:
+    print("Notice: Montserrat-ExtraBold.ttf not found in fonts/. Using standard Helvetica fallback.")
 
-DANCING_SCRIPT = os.path.join(
-    FONT_DIR,
-    "DancingScript-Regular.ttf"
-)
-
-pdfmetrics.registerFont(
-    TTFont(
-        "DancingScript",
-        DANCING_SCRIPT
-    )
-)
+# Register Dancing Script
+if os.path.exists(DANCING_SCRIPT):
+    try:
+        pdfmetrics.registerFont(TTFont("DancingScript", DANCING_SCRIPT))
+    except Exception as e:
+        print(f"Warning: Could not register DancingScript font: {e}")
+else:
+    print("Notice: DancingScript-Regular.ttf not found in fonts/. Using standard Helvetica fallback.")
 
 app = Flask(__name__)
+
 
 HTML = """
 <!DOCTYPE html>
