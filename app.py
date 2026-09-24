@@ -2926,7 +2926,7 @@ def modern(data,file):
         # =========================================================
     # HELPER: SIDEBAR SECTION TITLE
     # =========================================================
-    def sidebar_section(title, x, y, width):
+    def sidebar_section(title, x, y_side, width):
 
         # Sidebar icon
         icon_kind = {
@@ -2945,7 +2945,7 @@ def modern(data,file):
             c.setLineWidth(1.1)
             
             cx = x + 3.5 * mm
-            cy = y + 0.5 * mm
+            cy = y_side + 0.5 * mm
 
         # PERSON
         if icon_kind == "person":
@@ -3098,12 +3098,12 @@ def modern(data,file):
                 rad = math.radians(angle)
 
                 x1 = cx + math.cos(rad) * 2.5 * mm
-                y1 = cy + math.sin(rad) * 2.5 * mm
+                y_side1 = cy + math.sin(rad) * 2.5 * mm
 
                 x2 = cx + math.cos(rad) * 3.5 * mm
-                y2 = cy + math.sin(rad) * 3.5 * mm
+                y_side2 = cy + math.sin(rad) * 3.5 * mm
 
-                c.line(x1, y1, x2, y2)
+                c.line(x1, y_side1, x2, y_side2)
                 
         
         # LANGUAGES / GLOBE
@@ -3180,7 +3180,7 @@ def modern(data,file):
 
         c.drawString(
             title_x,
-            y,
+            y_side,
             title.upper()
         )
 
@@ -3190,12 +3190,12 @@ def modern(data,file):
 
         c.line(
             title_x,
-            y - 2.2 * mm,
+            y_side - 2.2 * mm,
             x + width,
-            y - 2.2 * mm
+            y_side - 2.2 * mm
         )
 
-        return y - 9 * mm
+        return y_side - 9 * mm
 
 
     # =========================================================
