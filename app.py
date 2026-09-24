@@ -3206,6 +3206,7 @@ def modern(data,file):
     sy = H - 78 * mm
 
     # CONTACT
+    y = check_page_overflow(c, y, 6 * mm, "modern", sidebar_color, accent_color)
     sy = sidebar_section(
         "Contact",
         sx,
@@ -3243,6 +3244,7 @@ def modern(data,file):
     # SKILLS
     # =========================================================
     if data.get("skills"):
+        y = check_page_overflow(c, y, 6 * mm, "modern", sidebar_color, accent_color)
 
         sy -= 8 * mm
 
@@ -3279,6 +3281,7 @@ def modern(data,file):
     # LANGUAGES
     # =========================================================
     if data.get("languages"):
+        y = check_page_overflow(c, y, 6 * mm, "modern", sidebar_color, accent_color)
 
         sy -= 8 * mm
 
@@ -3311,6 +3314,7 @@ def modern(data,file):
     # INTERESTS
     # =========================================================
     if data.get("hobbies"):
+        y = check_page_overflow(c, y, 6 * mm, "modern", sidebar_color, accent_color)
 
         sy -= 8 * mm
 
@@ -3441,6 +3445,8 @@ def modern(data,file):
     # EXPERIENCE
     # =========================================================
     if data.get("experience"):
+        y = check_page_overflow(c, y, 15 * mm,
+
 
         y = main_section(
             "Experience",
@@ -3555,13 +3561,16 @@ def modern(data,file):
                 y -= 1 * mm
 
         # Space after the complete Experience section
+       
         y -= 5 * mm
+        
 
 
     # =========================================================
     # EDUCATION
     # =========================================================
     if data.get("education"):
+        y = check_page_overflow(c, y, 15 * mm, "modern", sidebar_color, accent_color)
 
         y = main_section(
             "Education",
@@ -3626,6 +3635,8 @@ def modern(data,file):
     # CERTIFICATES
     # =========================================================
     if data.get("certificates"):
+        y = check_page_overflow(c, y, 15 * mm,
+
 
         y = main_section(
             "Certificates",
@@ -3659,6 +3670,8 @@ def modern(data,file):
     # REFERENCES
     # =========================================================
     if data.get("references"):
+        y = check_page_overflow(c, y, 15 * mm,
+
 
         y = main_section(
             "References",
@@ -3691,7 +3704,10 @@ def modern(data,file):
     # ============================================================
     signature = data.get("signature")
 
+
     if signature and getattr(signature, "filename", None):
+        y = check_page_overflow(c, y, 35 * mm, "modern", sidebar_color, accent_color)
+
         signature_temp_path = None
         try:
             signature.seek(0)
@@ -4202,6 +4218,40 @@ def generate_ats(c, data):
         7 * mm,
         "Created with CVForge"
     )
+
+# ============================================================
+# MULTI-PAGE LAYOUT & OVERFLOW HELPERS
+# ============================================================
+
+PAGE_HEIGHT = 297 * mm  # A4 Height (297mm)
+PAGE_WIDTH = 210 * mm   # A4 Width (210mm)
+BOTTOM_MARGIN = 20 * mm
+
+def check_page_overflow(c, y, required_space, template_type, sidebar_color, accent_color):
+    """
+    Checks if there is enough vertical space left on the page.
+    If y - required_space falls below BOTTOM_MARGIN, it starts a new page
+    and re-renders the appropriate template background layout.
+    """
+    if y - required_space < BOTTOM_MARGIN:
+        c.showPage()  # Commit current page and create a fresh page
+        
+        # Reset y back near the top margin on the new page
+        new_y = PAGE_HEIGHT - 20 * mm
+        
+        # Re-render background elements based on template type
+        if template_type == "modern":
+            # Draw left sidebar background for Page 2+
+            c.setFillColor(sidebar_color)
+            c.rect(0, 0, 70 * mm, PAGE_HEIGHT, fill=True, stroke=False)
+        elif template_type == "classic":
+            # Draw top header bar for Page 2+
+            c.setFillColor(accent_color)
+            c.rect(0, PAGE_HEIGHT - 8 * mm, PAGE_WIDTH, 8 * mm, fill=True, stroke=False)
+            
+        return new_y
+    return y
+
 
 
 def generate_pdf(data, filename):
