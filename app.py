@@ -507,6 +507,40 @@ def modern(data, file):
         except Exception as e:
             print(f"Error drawing photo: {e}")
 
+    def safe_wrap_text(text, font, size, max_width):
+        """Helper to break down overly long words or strings exceeding max width."""
+        c.setFont(font, size)
+        words = text.split()
+        wrapped_lines = []
+        current_line = ""
+
+        for word in words:
+            # If a single word is longer than the entire width, break it down by character
+            if c.stringWidth(word, font, size) > max_width:
+                if current_line:
+                    wrapped_lines.append(current_line)
+                    current_line = ""
+                sub_word = ""
+                for char in word:
+                    if c.stringWidth(sub_word + char, font, size) <= max_width:
+                        sub_word += char
+                    else:
+                        wrapped_lines.append(sub_word)
+                        sub_word = char
+                if sub_word:
+                    current_line = sub_word
+                continue
+
+            test_line = f"{current_line} {word}".strip()
+            if c.stringWidth(test_line, font, size) <= max_width:
+                current_line = test_line
+            else:
+                wrapped_lines.append(current_line)
+                current_line = word
+        if current_line:
+            wrapped_lines.append(current_line)
+        return wrapped_lines
+
     def draw_lines(value, x, y, width, font="Helvetica", size=9.2, leading=5.5 * mm, color=dark, bullet=False):
         if not value:
             return y
@@ -519,7 +553,7 @@ def modern(data, file):
                 y -= leading * 0.5
                 continue
 
-            lines = wrap(paragraph, font, size, width)
+            lines = safe_wrap_text(paragraph, font, size, width - (10 if bullet else 0))
             for index, line in enumerate(lines):
                 prefix = "• " if (bullet and index == 0) else ("  " if bullet else "")
                 c.drawString(x, y, prefix + line)
@@ -608,18 +642,9 @@ def modern(data, file):
     if title:
         c.setFillColor(gold)
         c.setFont("Helvetica-Bold", 11.5)
-        words = title.split()
-        current_line = ""
-        for word in words:
-            test_line = f"{current_line} {word}".strip()
-            if c.stringWidth(test_line, "Helvetica-Bold", 11.5) <= main_w:
-                current_line = test_line
-            else:
-                c.drawString(main_x, y_start, current_line)
-                y_start -= 4.8 * mm
-                current_line = word
-        if current_line:
-            c.drawString(main_x, y_start, current_line)
+        title_lines = safe_wrap_text(title, "Helvetica-Bold", 11.5, main_w)
+        for line in title_lines:
+            c.drawString(main_x, y_start, line)
             y_start -= 4.8 * mm
 
     y = y_start - 5 * mm
@@ -672,6 +697,7 @@ def modern(data, file):
         c.line(main_x, y - 2.5 * mm, main_x + 55 * mm, y - 2.5 * mm)
 
     c.save()
+
 
 
 
