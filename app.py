@@ -506,13 +506,13 @@ def modern(data, file):
             c.restoreState()
         except Exception as e:
             print(f"Error drawing photo: {e}")
-
+            
     def safe_wrap_text(text, font, size, max_width):
-    """Wraps text cleanly and forces character breaks on long unspaced strings."""
-    c.setFont(font, size)
-    words = text.split(" ")
-    wrapped_lines = []
-    current_line = ""
+        """Wraps text cleanly and forces character breaks on long unspaced strings."""
+        c.setFont(font, size)
+        words = text.split(" ")
+        wrapped_lines = []
+        current_line = ""
 
     for word in words:
         # If a single word is wider than the allowed width, break it down character-by-character
