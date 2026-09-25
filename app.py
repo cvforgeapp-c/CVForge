@@ -4,6 +4,7 @@ import base64
 import uuid
 import math
 import re
+import fitz  # PyMuPDF for converting PDF pages to images in pure Python
 from flask import Flask, request, render_template_string, send_file, redirect, url_for
 
 from reportlab.lib import colors
@@ -117,19 +118,14 @@ HTML = """
             <input type="file" name="photo" accept="image/*">
 
             <label>Professional Summary</label>
-            <textarea name="summary">Results-driven Digital Marketing Specialist with 5+ years of experience developing data-driven marketing campaigns, increasing online engagement, and improving customer acquisition. Skilled in SEO, social media marketing, content strategy, Google Analytics, and paid advertising. Strong communicator with a proven ability to manage multiple projects and deliver measurable results.</textarea>
+            <textarea name="summary">Results-driven Digital Marketing Specialist with 5+ years of experience developing data-driven marketing campaigns, increasing online engagement, and improving customer acquisition. Skilled in SEO, social media marketing, content strategy, Google Analytics, and paid advertising.</textarea>
 
             <label>Work Experience (One per line)</label>
             <textarea name="experience">Digital Marketing Specialist | BrightWave Media | New York, NY | 2022 - Present
 Developed and managed digital marketing campaigns across Google, Instagram, Facebook, and LinkedIn.
 Increased website traffic by 45% through SEO and content marketing strategies.
-Managed monthly advertising budgets and analyzed campaign performance.
-Collaborated with designers and content writers to produce marketing materials.
 Marketing Coordinator | NovaTech Solutions | New York, NY | 2019 - 2022
-Supported digital marketing campaigns and social media activities.
-Created weekly performance reports using Google Analytics.
-Improved social media engagement by 30% within one year.
-Assisted with email marketing and customer research.</textarea>
+Supported digital marketing campaigns and social media activities.</textarea>
 
             <label>Education</label>
             <textarea name="education">Bachelor of Business Administration | New York University | New York, NY | 2015 - 2019</textarea>
@@ -139,29 +135,20 @@ Assisted with email marketing and customer research.</textarea>
 Search Engine Optimization (SEO)
 Social Media Marketing
 Google Analytics
-Content Marketing
-Email Marketing
-Google Ads
-Microsoft Office
-Data Analysis
-Project Management</textarea>
+Content Marketing</textarea>
 
             <label>Certificates (One per line)</label>
             <textarea name="certificates">Google Analytics Certification | Google | 2023
-Google Ads Search Certification | Google | 2023
 HubSpot Content Marketing Certification | HubSpot Academy | 2022</textarea>
 
             <label>Languages (One per line)</label>
             <textarea name="languages">English – Native
-Spanish – Professional Working Proficiency
-French – Basic</textarea>
+Spanish – Professional Working Proficiency</textarea>
 
             <label>Interests / Hobbies (One per line)</label>
             <textarea name="hobbies">Technology and AI
 Photography
-Traveling
-Reading
-Entrepreneurship</textarea>
+Traveling</textarea>
 
             <label>References (One per line)</label>
             <textarea name="references">References available upon request.</textarea>
@@ -193,13 +180,12 @@ PREVIEW_HTML = """
     <title>CV Preview</title>
     <style>
         body { margin: 0; background: #2b2b2b; display: flex; flex-direction: column; align-items: center; min-height: 100vh; font-family: Arial, sans-serif; }
-        .controls { width: 100%; max-width: 900px; padding: 15px; display: flex; justify-content: space-between; box-sizing: border-box; }
+        .controls { width: 100%; max-width: 850px; padding: 15px; display: flex; justify-content: space-between; box-sizing: border-box; }
         a { text-decoration: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; }
         .btn-back { background: #555; color: #fff; }
         .btn-download { background: #E5A93C; color: #02353C; }
-        .preview-container { width: 100%; max-width: 900px; height: 85vh; background: #fff; }
-        object { width: 100%; height: 100%; }
-        .fallback { padding: 20px; text-align: center; color: #fff; }
+        .preview-container { width: 100%; max-width: 850px; padding: 10px 15px 30px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px; align-items: center; }
+        .cv-page-img { width: 100%; max-width: 800px; height: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border-radius: 4px; background: #fff; }
     </style>
 </head>
 <body>
@@ -208,12 +194,9 @@ PREVIEW_HTML = """
         <a href="/download/{{ token }}" class="btn-download">Download PDF</a>
     </div>
     <div class="preview-container">
-        <object data="/preview/{{ token }}" type="application/pdf">
-            <div class="fallback">
-                <p>Your browser doesn't support direct PDF preview in mobile view.</p>
-                <a href="/preview/{{ token }}" target="_blank" style="color: #E5A93C;">Open PDF in New Tab</a>
-            </div>
-        </object>
+        {% for img_base64 in pages %}
+            <img class="cv-page-img" src="data:image/png;base64,{{ img_base64 }}" alt="CV Page {{ loop.index }}">
+        {% endfor %}
     </div>
 </body>
 </html>
@@ -237,7 +220,6 @@ def draw_circle_icon(c, x, y, radius, bg_color, icon_type):
         c.rect(x - r*0.7, y - r*0.5, r*1.4, r*1.0, stroke=1, fill=0)
         c.rect(x - r*0.3, y + r*0.5, r*0.6, r*0.3, stroke=1, fill=0)
         c.line(x - r*0.7, y + r*0.1, x + r*0.7, y + r*0.1)
-
     elif icon_type == "education":
         p = c.beginPath()
         p.moveTo(x - r*0.9, y)
@@ -247,20 +229,16 @@ def draw_circle_icon(c, x, y, radius, bg_color, icon_type):
         p.close()
         c.drawPath(p, stroke=1, fill=1)
         c.rect(x - r*0.5, y - r*0.7, r*1.0, r*0.4, stroke=0, fill=1)
-
     elif icon_type == "certificates":
         c.rect(x - r*0.6, y - r*0.7, r*1.2, r*1.4, stroke=1, fill=0)
         c.line(x - r*0.3, y + r*0.3, x + r*0.3, y + r*0.3)
         c.line(x - r*0.3, y, x + r*0.3, y)
-        c.line(x - r*0.3, y - r*0.3, x + r*0.1, y - r*0.3)
-
     elif icon_type == "references":
         c.circle(x, y + r*0.3, r*0.35, stroke=1, fill=1)
         p = c.beginPath()
         p.moveTo(x - r*0.6, y - r*0.6)
         p.curveTo(x - r*0.6, y - r*0.1, x + r*0.6, y - r*0.1, x + r*0.6, y - r*0.6)
         c.drawPath(p, stroke=1, fill=1)
-
     elif icon_type == "contact":
         c.circle(x, y + r*0.2, r*0.4, stroke=1, fill=0)
         p = c.beginPath()
@@ -268,18 +246,15 @@ def draw_circle_icon(c, x, y, radius, bg_color, icon_type):
         p.lineTo(x, y - r*0.6)
         p.lineTo(x + r*0.3, y + r*0.1)
         c.drawPath(p, stroke=1, fill=1)
-
     elif icon_type == "skills":
         c.circle(x, y, r*0.4, stroke=1, fill=0)
         for angle in range(0, 360, 45):
             rad = math.radians(angle)
             c.line(x + r*0.4*math.cos(rad), y + r*0.4*math.sin(rad), x + r*0.75*math.cos(rad), y + r*0.75*math.sin(rad))
-
     elif icon_type == "languages":
         c.circle(x, y, r*0.7, stroke=1, fill=0)
         c.line(x - r*0.7, y, x + r*0.7, y)
         c.line(x, y - r*0.7, x, y + r*0.7)
-
     elif icon_type == "interests":
         p = c.beginPath()
         p.moveTo(x, y - r*0.6)
@@ -299,7 +274,6 @@ def draw_sidebar_contact_icon(c, x, y, icon_type, color):
     if icon_type == "phone":
         c.rect(x - r*0.4, y - r*0.7, r*0.8, r*1.4, stroke=1, fill=0)
         c.circle(x, y - r*0.4, 0.4, stroke=0, fill=1)
-
     elif icon_type == "email":
         c.rect(x - r*0.7, y - r*0.5, r*1.4, r*1.0, stroke=1, fill=0)
         p = c.beginPath()
@@ -307,7 +281,6 @@ def draw_sidebar_contact_icon(c, x, y, icon_type, color):
         p.lineTo(x, y)
         p.lineTo(x + r*0.7, y + r*0.5)
         c.drawPath(p, stroke=1, fill=0)
-
     elif icon_type == "location":
         c.circle(x, y + r*0.2, r*0.4, stroke=1, fill=0)
         p = c.beginPath()
@@ -315,12 +288,10 @@ def draw_sidebar_contact_icon(c, x, y, icon_type, color):
         p.lineTo(x, y - r*0.6)
         p.lineTo(x + r*0.3, y + r*0.1)
         c.drawPath(p, stroke=1, fill=1)
-
     elif icon_type == "linkedin":
         c.rect(x - r*0.6, y - r*0.6, r*1.2, r*1.2, stroke=1, fill=0)
         c.setFont("Helvetica-Bold", 5)
         c.drawString(x - r*0.3, y - r*0.3, "in")
-
     elif icon_type == "website":
         c.circle(x, y, r*0.6, stroke=1, fill=0)
         c.line(x - r*0.6, y, x + r*0.6, y)
@@ -329,14 +300,13 @@ def draw_sidebar_contact_icon(c, x, y, icon_type, color):
     c.restoreState()
 
 # ============================================================
-# 4. TEXT WRAPPING & PAGINATION UTILITIES
+# 4. TEXT WRAPPING & FORMATTING UTILITIES
 # ============================================================
 
 def clean(text):
     return str(text).strip() if text else ""
 
 def strip_existing_bullets(text):
-    """Removes pre-existing bullet characters or hyphens at the start of strings."""
     return re.sub(r'^[•\-\*\s]+', '', text.strip())
 
 def wrap_text(c, text, font, size, max_width):
@@ -373,7 +343,7 @@ def check_page_overflow(c, y, required_space, sidebar_color):
     return y
 
 # ============================================================
-# 5. MODERN TEMPLATE GENERATOR
+# 5. REPORTLAB PDF BUILDER
 # ============================================================
 
 def modern(data, file):
@@ -417,7 +387,7 @@ def modern(data, file):
             c.drawImage(ImageReader(photo), photo_x, photo_y, width=photo_size, height=photo_size, preserveAspectRatio=True, anchor="c", mask="auto")
             c.restoreState()
         except Exception as e:
-            print(f"Photo render error: {e}")
+            print(f"Photo error: {e}")
 
     def draw_lines(value, x, y, width, font="Helvetica", size=9, leading=4.8 * mm, color=dark, bullet=False):
         if not value:
@@ -431,7 +401,6 @@ def modern(data, file):
                 y -= leading * 0.5
                 continue
 
-            # Clean pre-existing bullet characters from user input to eliminate double bullets
             clean_para = strip_existing_bullets(paragraph) if bullet else paragraph
             lines = wrap(clean_para, font, size, width)
 
@@ -556,11 +525,24 @@ def modern(data, file):
 
     c.save()
 
-def generate_pdf(data, filename):
-    modern(data, filename)
+# ============================================================
+# 6. PDF TO IMAGE PREVIEW GENERATOR
+# ============================================================
+
+def pdf_to_base64_images(pdf_path):
+    """Converts each page of a PDF file into a base64 encoded PNG string."""
+    image_list = []
+    doc = fitz.open(pdf_path)
+    for page in doc:
+        pix = page.get_pixmap(dpi=150)
+        img_bytes = pix.tobytes("png")
+        base64_encoded = base64.b64encode(img_bytes).decode("utf-8")
+        image_list.append(base64_encoded)
+    doc.close()
+    return image_list
 
 # ============================================================
-# 6. FLASK CONTROLLERS & ROUTES
+# 7. FLASK ROUTES
 # ============================================================
 
 @app.route("/")
@@ -600,21 +582,19 @@ def generate():
         data["photo"] = photo_path
 
     token = str(uuid.uuid4())
-    preview_file = os.path.join(tempfile.gettempdir(), "CV_" + token + ".pdf")
-    generate_pdf(data, preview_file)
+    pdf_path = os.path.join(tempfile.gettempdir(), f"CV_{token}.pdf")
+    
+    # 1. Generate PDF
+    modern(data, pdf_path)
 
-    return render_template_string(PREVIEW_HTML, token=token)
+    # 2. Convert PDF pages to base64 images for inline browser preview
+    page_images = pdf_to_base64_images(pdf_path)
 
-@app.route("/preview/<token>")
-def preview_pdf(token):
-    filename = os.path.join(tempfile.gettempdir(), "CV_" + token + ".pdf")
-    if not os.path.exists(filename):
-        return "CV not found.", 404
-    return send_file(filename, mimetype="application/pdf")
+    return render_template_string(PREVIEW_HTML, token=token, pages=page_images)
 
 @app.route("/download/<token>")
 def download_pdf(token):
-    filename = os.path.join(tempfile.gettempdir(), "CV_" + token + ".pdf")
+    filename = os.path.join(tempfile.gettempdir(), f"CV_{token}.pdf")
     if not os.path.exists(filename):
         return "CV not found.", 404
     return send_file(filename, as_attachment=True, download_name="KEDIR_ABDELA_CV.pdf", mimetype="application/pdf")
