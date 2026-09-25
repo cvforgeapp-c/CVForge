@@ -591,8 +591,14 @@ render();
 def home():
     return render_template_string(HTML)
 
-@app.route("/generate", methods=["POST"])
+from flask import Flask, request, render_template_string, send_file, redirect, url_for
+
+@app.route("/generate", methods=["GET", "POST"])
 def generate():
+    # If accessed via GET (e.g. page refresh or direct link access), safely redirect to form
+    if request.method == "GET":
+        return redirect(url_for("home"))
+
     data = {
         "name": request.form.get("name", "KEDIR ABDELA"),
         "title": request.form.get("title", "BUSINESS MARKETING"),
@@ -621,7 +627,12 @@ def generate():
     with open(filename, "rb") as f:
         pdf_bytes = f.read()
 
-    return render_template_string(PREVIEW_HTML, pdf_data=base64.b64encode(pdf_bytes).decode("utf-8"), token=token)
+    return render_template_string(
+        PREVIEW_HTML, 
+        pdf_data=base64.b64encode(pdf_bytes).decode("utf-8"), 
+        token=token
+    )
+
 
 @app.route("/download/<token>")
 def download_pdf(token):
