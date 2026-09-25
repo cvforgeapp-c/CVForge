@@ -552,12 +552,12 @@ def modern(data, file):
     sw = sidebar_w - 20 * mm
     sy = H - 78 * mm
 
-    # 1. Contact Section (Explicitly Starts with Phone Number)
+    # 1. Contact Section (Strictly phone number, email, location, linkedin, website)
     sy = check_page_overflow(c, sy, 6 * mm, "modern", sidebar_color, gold)
     sy = sidebar_section("Contact", "references", sx, sy, sw)
 
     contact_items = [
-        data.get("phone"),
+        data.get("phone"),     # Phone number input directly
         data.get("email"),
         data.get("location"),
         data.get("linkedin"),
@@ -565,8 +565,8 @@ def modern(data, file):
     ]
 
     for val in contact_items:
-        if val and val.strip():
-            sy = draw_lines(val, sx + 2 * mm, sy, sw - 2 * mm, size=8.2, leading=4.8 * mm, color=white)
+        if val and str(val).strip():
+            sy = draw_lines(str(val).strip(), sx + 2 * mm, sy, sw - 2 * mm, size=8.2, leading=4.8 * mm, color=white)
     sy -= 2.0 * mm
 
     # 2. Skills Section
@@ -599,21 +599,31 @@ def modern(data, file):
     # Main Area - Candidate Name
     name = (data.get("name") or "My CV").upper()
     c.setFillColor(dark)
-    c.setFont("Helvetica-Bold", 22)
+    c.setFont("Helvetica-Bold", 20)
     c.drawString(main_x, H - 23 * mm, name[:45])
 
-    # Main Area - Full Professional Title (Wrapped to fit long titles)
+    # Main Area - Full Professional Title (Dynamic Y-positioning directly under name)
     title = (data.get("title") or "").upper()
+    y_start = H - 30 * mm
     if title:
         c.setFillColor(gold)
-        c.setFont("Helvetica-Bold", 12)
-        title_lines = wrap(title, "Helvetica-Bold", 12, main_w)
-        title_y = H - 31 * mm
-        for line in title_lines:
-            c.drawString(main_x, title_y, line)
-            title_y -= 4.5 * mm
+        c.setFont("Helvetica-Bold", 11)
+        # Using string width calculation to properly fit within right margin
+        words = title.split()
+        current_line = ""
+        for word in words:
+            test_line = f"{current_line} {word}".strip()
+            if c.stringWidth(test_line, "Helvetica-Bold", 11) <= main_w:
+                current_line = test_line
+            else:
+                c.drawString(main_x, y_start, current_line)
+                y_start -= 4.5 * mm
+                current_line = word
+        if current_line:
+            c.drawString(main_x, y_start, current_line)
+            y_start -= 4.5 * mm
 
-    y = H - 43 * mm
+    y = y_start - 5 * mm
 
     if data.get("summary"):
         y = draw_lines(data["summary"], main_x, y, main_w, size=9.5, leading=4.8 * mm, color=muted)
@@ -651,8 +661,8 @@ def modern(data, file):
 
     signature_text = data.get("signature_name") or data.get("signature")
     if signature_text:
-        y = check_page_overflow(c, y, 20 * mm, "modern", sidebar_color, gold)
-        y -= 6 * mm
+        y = check_page_overflow(c, y, 15 * mm, "modern", sidebar_color, gold)
+        y -= 5 * mm
         font_sig = "DancingScript" if HAS_DANCING else "Helvetica-BoldOblique"
         c.setFont(font_sig, 18 if HAS_DANCING else 14)
         c.setFillColor(dark)
@@ -663,6 +673,7 @@ def modern(data, file):
         c.line(main_x, y - 3 * mm, main_x + 55 * mm, y - 3 * mm)
 
     c.save()
+
 
 
 def classic(data, file):
