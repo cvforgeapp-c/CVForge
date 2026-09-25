@@ -309,21 +309,53 @@ def strip_bullets(text):
     return re.sub(r'^[•\-\*\s]+', '', text.strip())
 
 def wrap_text(c, text, font, size, max_width):
-    words = clean(text).split()
+    if not text:
+        return []
+
     lines = []
-    current = ""
-    for word in words:
-        test = word if not current else current + " " + word
-        w = c.stringWidth(test, font, size) if c else stringWidth(test, font, size)
-        if w <= max_width:
-            current = test
-        else:
-            if current:
-                lines.append(current)
-            current = word
-    if current:
-        lines.append(current)
+    # Split paragraphs by space or manual breaks
+    for paragraph in str(text).splitlines():
+        words = paragraph.strip().split(" ")
+        current_line = ""
+
+        for word in words:
+            # Check if a single word exceeds max_width (e.g. unbroken strings)
+            word_w = c.stringWidth(word, font, size) if c else stringWidth(word, font, size)
+            
+            if word_w > max_width:
+                # Force-split continuous character string across lines
+                if current_line:
+                    lines.append(current_line)
+                    current_line = ""
+                
+                sub_str = ""
+                for char in word:
+                    test_sub = sub_str + char
+                    test_w = c.stringWidth(test_sub, font, size) if c else stringWidth(test_sub, font, size)
+                    if test_w <= max_width:
+                        sub_str = test_sub
+                    else:
+                        lines.append(sub_str)
+                        sub_str = char
+                if sub_str:
+                    current_line = sub_str
+                continue
+
+            # Standard word wrapping
+            test_line = word if not current_line else current_line + " " + word
+            test_w = c.stringWidth(test_line, font, size) if c else stringWidth(test_line, font, size)
+
+            if test_w <= max_width:
+                current_line = test_line
+            else:
+                lines.append(current_line)
+                current_line = word
+
+        if current_line:
+            lines.append(current_line)
+
     return lines
+
 
 def wrap(text, font, size, width):
     if not text:
