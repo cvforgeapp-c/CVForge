@@ -49,8 +49,14 @@ MAIN_MARGIN_LEFT = SIDEBAR_WIDTH + 10 * mm
 MAIN_WIDTH = PAGE_WIDTH - MAIN_MARGIN_LEFT - 10 * mm
 BOTTOM_MARGIN = 15 * mm
 
+# Standardized Spacing Rules (Fixed Section Heights)
+SECTION_GAP = 7 * mm    # Space above a section header
+HEADER_GAP = 6 * mm     # Space below a section header line
+ITEM_GAP = 3.5 * mm     # Space between separate entries/jobs
+LINE_LEADING = 4.5 * mm # Line spacing for multi-line body text
+
 # ============================================================
-# HTML TEMPLATES
+# HTML TEMPLATES (OPTIMIZED BUTTONS & PREVIEW)
 # ============================================================
 HTML = """
 <!DOCTYPE html>
@@ -60,18 +66,26 @@ HTML = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CV Generator</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #02353C; margin-bottom: 20px; }
-        label { font-weight: bold; display: block; margin-top: 15px; color: #333; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef2f5; margin: 0; padding: 30px; }
+        .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+        h1 { text-align: center; color: #02353C; margin-bottom: 25px; font-weight: 700; }
+        label { font-weight: 600; display: block; margin-top: 15px; color: #444; font-size: 14px; }
         input[type="text"], textarea, input[type="file"], input[type="color"] {
-            width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;
+            width: 100%; padding: 12px; margin-top: 6px; border: 1.5px solid #dcdfe6; border-radius: 6px; box-sizing: border-box; font-size: 14px; transition: border 0.2s;
         }
-        textarea { height: 80px; resize: vertical; }
-        .row { display: flex; gap: 15px; }
+        input[type="text"]:focus, textarea:focus { border-color: #02353C; outline: none; }
+        textarea { height: 90px; resize: vertical; line-height: 1.4; }
+        .row { display: flex; gap: 20px; }
         .row > div { flex: 1; }
-        button { margin-top: 25px; width: 100%; padding: 12px; background: #02353C; color: #fff; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
-        button:hover { background: #053D47; }
+        
+        /* Modern Button Styling */
+        .btn-submit {
+            margin-top: 30px; width: 100%; padding: 14px; background: linear-gradient(135deg, #02353C 0%, #05535E 100%);
+            color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(2, 53, 60, 0.25); transition: all 0.25s ease;
+        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(2, 53, 60, 0.35); background: linear-gradient(135deg, #05535E 0%, #02353C 100%); }
+        .btn-submit:active { transform: translateY(0); }
     </style>
 </head>
 <body>
@@ -166,7 +180,7 @@ Traveling</textarea>
                 </div>
             </div>
 
-            <button type="submit">Generate PDF CV</button>
+            <button type="submit" class="btn-submit">Generate PDF CV</button>
         </form>
     </div>
 </body>
@@ -181,19 +195,35 @@ PREVIEW_HTML = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CV Preview</title>
     <style>
-        body { margin: 0; background: #2b2b2b; display: flex; flex-direction: column; align-items: center; min-height: 100vh; font-family: Arial, sans-serif; }
-        .controls { width: 100%; max-width: 850px; padding: 15px; display: flex; justify-content: space-between; box-sizing: border-box; }
-        a { text-decoration: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; }
-        .btn-back { background: #555; color: #fff; }
-        .btn-download { background: #E5A93C; color: #02353C; }
-        .preview-container { width: 100%; max-width: 850px; padding: 10px 15px 30px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px; align-items: center; }
-        .cv-page-img { width: 100%; max-width: 800px; height: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border-radius: 4px; background: #fff; }
+        body { margin: 0; background: #1e1e24; display: flex; flex-direction: column; align-items: center; min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        .controls-bar { 
+            position: sticky; top: 0; z-index: 100; width: 100%; background: #02353C; padding: 15px 0; 
+            display: flex; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .controls-inner { width: 100%; max-width: 850px; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
+        
+        /* Interactive Action Buttons */
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 22px; 
+            border-radius: 6px; font-weight: 600; font-size: 14px; transition: all 0.25s ease; cursor: pointer;
+        }
+        .btn-back { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.25); }
+        .btn-back:hover { background: rgba(255,255,255,0.28); transform: translateX(-2px); }
+        
+        .btn-download { background: #E5A93C; color: #02353C; border: none; box-shadow: 0 3px 10px rgba(229,169,60,0.3); }
+        .btn-download:hover { background: #f0b446; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(229,169,60,0.45); }
+        
+        .preview-container { width: 100%; max-width: 850px; padding: 30px 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 25px; align-items: center; }
+        .cv-page-img { width: 100%; max-width: 800px; height: auto; box-shadow: 0 8px 30px rgba(0,0,0,0.4); border-radius: 6px; background: #fff; }
     </style>
 </head>
 <body>
-    <div class="controls">
-        <a href="/" class="btn-back">← Edit Details</a>
-        <a href="/download/{{ token }}" class="btn-download">Download PDF</a>
+    <div class="controls-bar">
+        <div class="controls-inner">
+            <a href="/" class="btn btn-back">← Edit Details</a>
+            <a href="/download/{{ token }}" class="btn btn-download">Download PDF Document</a>
+        </div>
     </div>
     <div class="preview-container">
         {% for img_base64 in pages %}
@@ -300,7 +330,7 @@ def draw_sidebar_contact_icon(c, x, y, icon_type, color):
     c.restoreState()
 
 # ============================================================
-# TEXT FORMATTING UTILITIES
+# TEXT WRAPPING & FORMATTING UTILITIES
 # ============================================================
 def clean(text):
     return str(text).strip() if text else ""
@@ -313,21 +343,20 @@ def wrap_text(c, text, font, size, max_width):
         return []
 
     lines = []
-    # Split paragraphs by space or manual breaks
     for paragraph in str(text).splitlines():
-        words = paragraph.strip().split(" ")
+        paragraph = paragraph.strip()
+        if not paragraph:
+            continue
+
+        words = paragraph.split(" ")
         current_line = ""
 
         for word in words:
-            # Check if a single word exceeds max_width (e.g. unbroken strings)
             word_w = c.stringWidth(word, font, size) if c else stringWidth(word, font, size)
-            
             if word_w > max_width:
-                # Force-split continuous character string across lines
                 if current_line:
                     lines.append(current_line)
                     current_line = ""
-                
                 sub_str = ""
                 for char in word:
                     test_sub = sub_str + char
@@ -341,7 +370,6 @@ def wrap_text(c, text, font, size, max_width):
                     current_line = sub_str
                 continue
 
-            # Standard word wrapping
             test_line = word if not current_line else current_line + " " + word
             test_w = c.stringWidth(test_line, font, size) if c else stringWidth(test_line, font, size)
 
@@ -356,13 +384,11 @@ def wrap_text(c, text, font, size, max_width):
 
     return lines
 
-
 def wrap(text, font, size, width):
     if not text:
         return []
     return wrap_text(_modern_canvas, text, font, size, width)
 
-# Multi-page safe page check
 def check_overflow(c, y, space_needed, sidebar_color):
     if y - space_needed < BOTTOM_MARGIN:
         c.showPage()
@@ -372,7 +398,7 @@ def check_overflow(c, y, space_needed, sidebar_color):
     return y
 
 # ============================================================
-# PDF GENERATOR
+# PDF GENERATOR WITH OPTIMIZED TYPOGRAPHY & FIXED SPACING
 # ============================================================
 def modern(data, file):
     c = canvas.Canvas(file, pagesize=A4)
@@ -414,8 +440,8 @@ def modern(data, file):
         except Exception as e:
             print(f"Photo error: {e}")
 
-    # 2. Rendering Helper Functions
-    def draw_lines(value, x, y, width, font="Helvetica", size=9.5, leading=4.8 * mm, color=text_dark, bullet=False):
+    # 2. Rendering Helper Functions with Fixed Line Height
+    def draw_lines(value, x, y, width, font="Helvetica", size=9, leading=LINE_LEADING, color=text_dark, bullet=False):
         if not value:
             return y
         c.setFillColor(color)
@@ -439,25 +465,26 @@ def modern(data, file):
         return y
 
     def main_section_header(title, icon_type, x, y):
+        y -= SECTION_GAP  # Standardized uniform margin before header
         draw_circle_icon(c, x + 5 * mm, y + 1.5 * mm, 5 * mm, dark, icon_type)
         c.setFillColor(dark)
-        c.setFont("Helvetica-Bold", 12)
+        c.setFont("Helvetica-Bold", 11.5)
         c.drawString(x + 12 * mm, y, title.upper())
         c.setStrokeColor(gold)
         c.setLineWidth(1.2)
         c.line(x + 12 * mm, y - 3.5 * mm, x + MAIN_WIDTH, y - 3.5 * mm)
-        return y - 9 * mm
+        return y - HEADER_GAP
 
     def sidebar_section_header(title, icon_type, x, y):
         sw = SIDEBAR_WIDTH - 16 * mm
         draw_circle_icon(c, x + 3 * mm, y + 1.2 * mm, 4 * mm, gold, icon_type)
         c.setFillColor(gold)
-        c.setFont("Helvetica-Bold", 10.5)
+        c.setFont("Helvetica-Bold", 10)
         c.drawString(x + 9 * mm, y, title.upper())
         c.setStrokeColor(gold)
         c.setLineWidth(1)
         c.line(x, y - 3 * mm, x + sw, y - 3 * mm)
-        return y - 8 * mm
+        return y - 7 * mm
 
     # 3. Sidebar Content
     sx = 8 * mm
@@ -481,12 +508,12 @@ def modern(data, file):
 
     for title, key, icon in [("Skills", "skills", "skills"), ("Languages", "languages", "languages"), ("Interests", "hobbies", "interests")]:
         if data.get(key):
-            sy -= 3 * mm
+            sy -= 2 * mm
             sy = check_overflow(c, sy, 20 * mm, sidebar_color)
             sy = sidebar_section_header(title, icon, sx, sy)
             for item in data[key].splitlines():
                 if item.strip():
-                    sy = draw_lines(item.strip(), sx, sy, sw, size=8.8, leading=4.5 * mm, color=white, bullet=True)
+                    sy = draw_lines(item.strip(), sx, sy, sw, size=8.5, leading=4.2 * mm, color=white, bullet=True)
 
     # 4. Main Body Header
     name_font = "Montserrat-ExtraBold" if HAS_MONTSERRAT else "Helvetica-Bold"
@@ -498,15 +525,14 @@ def modern(data, file):
 
     title = (data.get("title") or "BUSINESS MARKETING").upper()
     c.setFillColor(gold)
-    c.setFont("Helvetica-Bold", 12)
+    c.setFont("Helvetica-Bold", 11.5)
     c.drawString(MAIN_MARGIN_LEFT, PAGE_HEIGHT - 28 * mm, title)
 
     my = PAGE_HEIGHT - 38 * mm
 
     # 5. Professional Summary
     if data.get("summary"):
-        my = draw_lines(data["summary"], MAIN_MARGIN_LEFT, my, MAIN_WIDTH, size=9.5, leading=4.8 * mm, color=text_dark)
-        my -= 6 * mm
+        my = draw_lines(data["summary"], MAIN_MARGIN_LEFT, my, MAIN_WIDTH, size=9, leading=LINE_LEADING, color=text_dark)
 
     # 6. Work Experience Section
     if data.get("experience"):
@@ -520,14 +546,11 @@ def modern(data, file):
                 continue
 
             if "|" in line:
-                my -= 2 * mm
-                c.setFont("Helvetica-Bold", 10)
-                c.setFillColor(dark)
-                c.drawString(MAIN_MARGIN_LEFT, my, line)
-                my -= 5 * mm
+                my -= ITEM_GAP
+                my = draw_lines(line, MAIN_MARGIN_LEFT, my, MAIN_WIDTH, font="Helvetica-Bold", size=9.5, leading=LINE_LEADING, color=dark, bullet=False)
+                my -= 1 * mm
             else:
-                my = draw_lines(line, MAIN_MARGIN_LEFT, my, MAIN_WIDTH, size=9, leading=4.5 * mm, color=text_dark, bullet=True)
-        my -= 4 * mm
+                my = draw_lines(line, MAIN_MARGIN_LEFT, my, MAIN_WIDTH, size=8.8, leading=LINE_LEADING, color=text_dark, bullet=True)
 
     # 7. Education Section
     if data.get("education"):
@@ -536,13 +559,11 @@ def modern(data, file):
         for line in data["education"].splitlines():
             if line.strip():
                 if "|" in line:
-                    c.setFont("Helvetica-Bold", 9.5)
-                    c.setFillColor(dark)
-                    c.drawString(MAIN_MARGIN_LEFT, my, line.strip())
-                    my -= 5 * mm
+                    my -= ITEM_GAP
+                    my = draw_lines(line.strip(), MAIN_MARGIN_LEFT, my, MAIN_WIDTH, font="Helvetica-Bold", size=9.5, leading=LINE_LEADING, color=dark, bullet=False)
+                    my -= 1 * mm
                 else:
-                    my = draw_lines(line.strip(), MAIN_MARGIN_LEFT, my, MAIN_WIDTH, size=9, leading=4.5 * mm, color=text_dark, bullet=True)
-        my -= 4 * mm
+                    my = draw_lines(line.strip(), MAIN_MARGIN_LEFT, my, MAIN_WIDTH, size=8.8, leading=LINE_LEADING, color=text_dark, bullet=True)
 
     # 8. Certificates Section
     if data.get("certificates"):
@@ -550,23 +571,21 @@ def modern(data, file):
         my = main_section_header("Certificates", "certificates", MAIN_MARGIN_LEFT, my)
         for line in data["certificates"].splitlines():
             if line.strip():
-                my = draw_lines(line.strip(), MAIN_MARGIN_LEFT, my, MAIN_WIDTH, size=9, leading=4.5 * mm, color=text_dark, bullet=True)
-        my -= 4 * mm
+                my = draw_lines(line.strip(), MAIN_MARGIN_LEFT, my, MAIN_WIDTH, size=8.8, leading=LINE_LEADING, color=text_dark, bullet=True)
 
     # 9. References Section & Signature
     if data.get("references"):
         my = check_overflow(c, my, 20 * mm, sidebar_color)
         my = main_section_header("References", "references", MAIN_MARGIN_LEFT, my)
-        my = draw_lines(data["references"], MAIN_MARGIN_LEFT, my, MAIN_WIDTH, size=9, leading=4.5 * mm, color=text_dark, bullet=True)
-        my -= 6 * mm
+        my = draw_lines(data["references"], MAIN_MARGIN_LEFT, my, MAIN_WIDTH, size=8.8, leading=LINE_LEADING, color=text_dark, bullet=True)
 
     sig_font = "DancingScript" if HAS_DANCING else "Helvetica-Oblique"
     c.setFillColor(dark)
-    c.setFont(sig_font, 24)
-    c.drawString(MAIN_MARGIN_LEFT, my - 2 * mm, name.title())
+    c.setFont(sig_font, 22)
+    c.drawString(MAIN_MARGIN_LEFT, my - 6 * mm, name.title())
     c.setStrokeColor(gold)
     c.setLineWidth(1)
-    c.line(MAIN_MARGIN_LEFT, my - 4 * mm, MAIN_MARGIN_LEFT + 60 * mm, my - 4 * mm)
+    c.line(MAIN_MARGIN_LEFT, my - 8 * mm, MAIN_MARGIN_LEFT + 60 * mm, my - 8 * mm)
 
     c.save()
 
