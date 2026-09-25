@@ -508,14 +508,13 @@ def modern(data, file):
             print(f"Error drawing photo: {e}")
 
     def safe_wrap_text(text, font, size, max_width):
-        """Helper to break down overly long words or strings exceeding max width."""
+        """Break down overly long words or strings exceeding max width."""
         c.setFont(font, size)
         words = text.split()
         wrapped_lines = []
         current_line = ""
 
         for word in words:
-            # If a single word is longer than the entire width, break it down by character
             if c.stringWidth(word, font, size) > max_width:
                 if current_line:
                     wrapped_lines.append(current_line)
@@ -541,7 +540,7 @@ def modern(data, file):
             wrapped_lines.append(current_line)
         return wrapped_lines
 
-    def draw_lines(value, x, y, width, font="Helvetica", size=9.2, leading=5.5 * mm, color=dark, bullet=False):
+    def draw_lines(value, x, y, width, font="Times-Roman", size=9.5, leading=5.5 * mm, color=dark, bullet=False):
         if not value:
             return y
         c.setFillColor(color)
@@ -563,7 +562,7 @@ def modern(data, file):
     def main_section(title, icon_type, x, y, width):
         draw_icon_badge(c, x + 5 * mm, y + 1 * mm, icon_type, teal, gold)
         c.setFillColor(dark)
-        c.setFont("Helvetica-Bold", 12)
+        c.setFont("Times-Bold", 12.5)
         c.drawString(x + 14 * mm, y, title.upper())
         c.setStrokeColor(gold)
         c.setLineWidth(1.1)
@@ -573,15 +572,15 @@ def modern(data, file):
     def sidebar_section(title, icon_type, x, y, width):
         draw_icon_badge(c, x + 3 * mm, y + 1 * mm, icon_type, gold, sidebar_color)
         c.setFillColor(gold)
-        c.setFont("Helvetica-Bold", 10.5)
+        c.setFont("Times-Bold", 11)
         title_x = x + 10 * mm
         c.drawString(title_x, y, title.upper())
         c.setStrokeColor(gold)
         c.setLineWidth(1)
-        c.line(title_x, y - 2.2 * mm, x + width, y - 2.2 * mm)
-        return y - 9 * mm
+        c.line(title_x, y - 2.5 * mm, x + width, y - 2.5 * mm)
+        return y - 9.5 * mm
 
-    # Sidebar Positioning
+    # Sidebar Positioning (Increased margins for breathing room)
     sx = 10 * mm
     sw = sidebar_w - 20 * mm
     sy = H - 78 * mm
@@ -600,40 +599,42 @@ def modern(data, file):
 
     for val in contact_items:
         if val and str(val).strip():
-            sy = draw_lines(str(val).strip(), sx + 2 * mm, sy, sw - 2 * mm, size=8.8, leading=5.2 * mm, color=white)
-    sy -= 3.0 * mm
+            sy = draw_lines(str(val).strip(), sx + 2 * mm, sy, sw - 2 * mm, font="Times-Roman", size=8.5, leading=5.8 * mm, color=white)
+    sy -= 4.0 * mm
 
     # 2. Skills Section
     if data.get("skills"):
         sy = check_page_overflow(c, sy, 6 * mm, "modern", sidebar_color, gold)
-        sy -= 3 * mm
+        sy -= 2 * mm
         sy = sidebar_section("Skills", "certificates", sx, sy, sw)
         for skill in data["skills"].splitlines():
             if skill.strip():
-                sy = draw_lines(skill.strip(), sx, sy, sw, size=9.0, leading=5.2 * mm, color=white, bullet=True)
+                sy = draw_lines(skill.strip(), sx, sy, sw, font="Times-Roman", size=8.5, leading=5.8 * mm, color=white, bullet=True)
+        sy -= 4.0 * mm
 
     # 3. Languages Section
     if data.get("languages"):
         sy = check_page_overflow(c, sy, 6 * mm, "modern", sidebar_color, gold)
-        sy -= 3 * mm
+        sy -= 2 * mm
         sy = sidebar_section("Languages", "education", sx, sy, sw)
         for lang in data["languages"].splitlines():
             if lang.strip():
-                sy = draw_lines(lang.strip(), sx, sy, sw, size=9.0, leading=5.2 * mm, color=white, bullet=True)
+                sy = draw_lines(lang.strip(), sx, sy, sw, font="Times-Roman", size=8.5, leading=5.8 * mm, color=white, bullet=True)
+        sy -= 4.0 * mm
 
     # 4. Interests / Hobbies Section
     if data.get("hobbies"):
         sy = check_page_overflow(c, sy, 6 * mm, "modern", sidebar_color, gold)
-        sy -= 3 * mm
+        sy -= 2 * mm
         sy = sidebar_section("Interests", "experience", sx, sy, sw)
         for hobby in data["hobbies"].splitlines():
             if hobby.strip():
-                sy = draw_lines(hobby.strip(), sx, sy, sw, size=9.0, leading=5.2 * mm, color=white, bullet=True)
+                sy = draw_lines(hobby.strip(), sx, sy, sw, font="Times-Roman", size=8.5, leading=5.8 * mm, color=white, bullet=True)
 
     # Main Area - Candidate Name
     name = (data.get("name") or "My CV").upper()
     c.setFillColor(dark)
-    c.setFont("Helvetica-Bold", 21)
+    c.setFont("Times-Bold", 22)
     c.drawString(main_x, H - 23 * mm, name[:45])
 
     # Main Area - Full Professional Title
@@ -641,53 +642,53 @@ def modern(data, file):
     y_start = H - 30 * mm
     if title:
         c.setFillColor(gold)
-        c.setFont("Helvetica-Bold", 11.5)
-        title_lines = safe_wrap_text(title, "Helvetica-Bold", 11.5, main_w)
+        c.setFont("Times-Bold", 11.5)
+        title_lines = safe_wrap_text(title, "Times-Bold", 11.5, main_w)
         for line in title_lines:
             c.drawString(main_x, y_start, line)
-            y_start -= 4.8 * mm
+            y_start -= 5.0 * mm
 
     y = y_start - 5 * mm
 
     if data.get("summary"):
-        y = draw_lines(data["summary"], main_x, y, main_w, size=9.5, leading=5.2 * mm, color=muted)
+        y = draw_lines(data["summary"], main_x, y, main_w, font="Times-Roman", size=9.5, leading=5.5 * mm, color=muted)
         y -= 6 * mm
 
     if data.get("experience"):
         y = check_page_overflow(c, y, 12 * mm, "modern", sidebar_color, gold)
         y = main_section("Experience", "experience", main_x, y, main_w)
-        y = draw_lines(data["experience"], main_x, y, main_w, size=9.0, leading=5.2 * mm, color=muted)
+        y = draw_lines(data["experience"], main_x, y, main_w, font="Times-Roman", size=9.5, leading=5.5 * mm, color=muted)
         y -= 5 * mm
 
     if data.get("projects"):
         y = check_page_overflow(c, y, 12 * mm, "modern", sidebar_color, gold)
         y = main_section("Projects", "experience", main_x, y, main_w)
-        y = draw_lines(data["projects"], main_x, y, main_w, size=9.0, leading=5.2 * mm, color=muted)
+        y = draw_lines(data["projects"], main_x, y, main_w, font="Times-Roman", size=9.5, leading=5.5 * mm, color=muted)
         y -= 5 * mm
 
     if data.get("education"):
         y = check_page_overflow(c, y, 12 * mm, "modern", sidebar_color, gold)
         y = main_section("Education", "education", main_x, y, main_w)
-        y = draw_lines(data["education"], main_x, y, main_w, size=9.0, leading=5.2 * mm, color=muted)
+        y = draw_lines(data["education"], main_x, y, main_w, font="Times-Roman", size=9.5, leading=5.5 * mm, color=muted)
         y -= 5 * mm
 
     if data.get("certificates"):
         y = check_page_overflow(c, y, 12 * mm, "modern", sidebar_color, gold)
         y = main_section("Certificates", "certificates", main_x, y, main_w)
-        y = draw_lines(data["certificates"], main_x, y, main_w, size=9.0, leading=5.2 * mm, color=muted)
+        y = draw_lines(data["certificates"], main_x, y, main_w, font="Times-Roman", size=9.5, leading=5.5 * mm, color=muted)
         y -= 5 * mm
 
     if data.get("references"):
         y = check_page_overflow(c, y, 12 * mm, "modern", sidebar_color, gold)
         y = main_section("References", "references", main_x, y, main_w)
-        y = draw_lines(data["references"], main_x, y, main_w, size=9.0, leading=5.2 * mm, color=muted)
+        y = draw_lines(data["references"], main_x, y, main_w, font="Times-Roman", size=9.5, leading=5.5 * mm, color=muted)
         y -= 5 * mm
 
     signature_text = data.get("signature_name") or data.get("signature")
     if signature_text:
         y = check_page_overflow(c, y, 12 * mm, "modern", sidebar_color, gold)
         y -= 5 * mm
-        font_sig = "DancingScript" if HAS_DANCING else "Helvetica-BoldOblique"
+        font_sig = "DancingScript" if HAS_DANCING else "Times-BoldItalic"
         c.setFont(font_sig, 16 if HAS_DANCING else 13)
         c.setFillColor(dark)
         c.drawString(main_x, y, signature_text)
@@ -697,6 +698,7 @@ def modern(data, file):
         c.line(main_x, y - 2.5 * mm, main_x + 55 * mm, y - 2.5 * mm)
 
     c.save()
+
 
 
 
