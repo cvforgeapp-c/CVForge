@@ -387,6 +387,24 @@ renderPDF();
 def clean(text):
     return str(text).strip() if text else ""
 
+def check_page_overflow(c, current_y, required_height, layout_type="modern", sidebar_color=None, accent_color=None):
+    """Checks space remaining and draws page structure upon page breaks."""
+    if current_y - required_height < BOTTOM_MARGIN:
+        c.showPage()
+        new_y = PAGE_HEIGHT - 20 * mm
+        W, H = A4
+        if layout_type == "modern":
+            sidebar_w = 78 * mm
+            c.setFillColor(colors.HexColor("#FAFCFB"))
+            c.rect(0, 0, W, H, stroke=0, fill=1)
+            c.setFillColor(sidebar_color or colors.HexColor("#053D47"))
+            c.rect(0, 0, sidebar_w, H, stroke=0, fill=1)
+        elif layout_type == "classic":
+            c.setFillColor(accent_color or colors.HexColor("#0D4F4F"))
+            c.rect(0, PAGE_HEIGHT - 8 * mm, PAGE_WIDTH, 8 * mm, stroke=0, fill=1)
+        return new_y
+    return current_y
+
 def wrap_text(c, text, font, size, max_width):
     words = clean(text).split()
     lines = []
@@ -415,19 +433,6 @@ def wrap(text, font, size, width):
         return []
     return wrap_text(_modern_canvas, text, font, size, width)
 
-def check_page_overflow(c, y, required_space, template_type, sidebar_color, accent_color):
-    if y - required_space < BOTTOM_MARGIN:
-        c.showPage()
-        new_y = PAGE_HEIGHT - 20 * mm
-        if template_type == "modern":
-            c.setFillColor(sidebar_color)
-            c.rect(0, 0, 78 * mm, PAGE_HEIGHT, fill=True, stroke=False)
-        elif template_type == "classic":
-            c.setFillColor(accent_color)
-            c.rect(0, PAGE_HEIGHT - 8 * mm, PAGE_WIDTH, 8 * mm, fill=True, stroke=False)
-        return new_y
-    return y
-
 def draw_icon_badge(c, x, y, icon_type, badge_color, icon_color):
     c.setFillColor(badge_color)
     c.circle(x, y, 4.8 * mm, stroke=0, fill=1)
@@ -436,11 +441,48 @@ def draw_icon_badge(c, x, y, icon_type, badge_color, icon_color):
     c.setStrokeColor(icon_color)
     c.setLineWidth(0.8)
     
-    if icon_type == "experience":
+    if icon_type == "contact":
+        # Map pin icon
+        c.circle(x, y + 1 * mm, 1.5 * mm, stroke=1, fill=0)
+        p = c.beginPath()
+        p.moveTo(x - 1.5 * mm, y + 0.8 * mm)
+        p.lineTo(x, y - 2.5 * mm)
+        p.lineTo(x + 1.5 * mm, y + 0.8 * mm)
+        c.drawPath(p, stroke=1, fill=0)
+        c.circle(x, y + 1 * mm, 0.5 * mm, stroke=1, fill=1)
+
+    elif icon_type == "skills":
+        # Gear / Cog icon
+        c.circle(x, y, 1.8 * mm, stroke=1, fill=0)
+        c.circle(x, y, 0.7 * mm, stroke=1, fill=1)
+        for i in range(4):
+            c.saveState()
+            c.translate(x, y)
+            c.rotate(i * 45)
+            c.rect(-0.4 * mm, -2.4 * mm, 0.8 * mm, 4.8 * mm, stroke=0, fill=1)
+            c.restoreState()
+
+    elif icon_type == "languages":
+        # Globe icon
+        c.circle(x, y, 2.3 * mm, stroke=1, fill=0)
+        c.line(x - 2.3 * mm, y, x + 2.3 * mm, y)
+        c.ellipse(x - 1.2 * mm, y - 2.3 * mm, x + 1.2 * mm, y + 2.3 * mm, stroke=1, fill=0)
+
+    elif icon_type == "interests":
+        # Heart icon
+        p = c.beginPath()
+        p.moveTo(x, y - 2 * mm)
+        p.curveTo(x - 3 * mm, y + 0.5 * mm, x - 1.5 * mm, y + 2.5 * mm, x, y + 0.8 * mm)
+        p.curveTo(x + 1.5 * mm, y + 2.5 * mm, x + 3 * mm, y + 0.5 * mm, x, y - 2 * mm)
+        c.drawPath(p, stroke=0, fill=1)
+
+    elif icon_type == "experience":
+        # Briefcase icon
         c.rect(x - 2.5 * mm, y - 2 * mm, 5 * mm, 3.5 * mm, stroke=1, fill=0)
         c.rect(x - 1.2 * mm, y + 1.5 * mm, 2.4 * mm, 1 * mm, stroke=1, fill=0)
+
     elif icon_type == "education":
-        # Draw diamond cap using beginPath instead of polygon
+        # Graduation cap icon
         p = c.beginPath()
         p.moveTo(x, y + 2.2 * mm)
         p.lineTo(x + 3 * mm, y)
@@ -449,11 +491,15 @@ def draw_icon_badge(c, x, y, icon_type, badge_color, icon_color):
         p.close()
         c.drawPath(p, stroke=1, fill=1)
         c.line(x + 2 * mm, y - 0.5 * mm, x + 2 * mm, y - 2.8 * mm)
+
     elif icon_type == "certificates":
+        # Document with text lines
         c.rect(x - 2 * mm, y - 2.5 * mm, 4 * mm, 5 * mm, stroke=1, fill=0)
         c.line(x - 1 * mm, y + 1 * mm, x + 1 * mm, y + 1 * mm)
         c.line(x - 1 * mm, y - 0.5 * mm, x + 1 * mm, y - 0.5 * mm)
+
     elif icon_type == "references":
+        # Two-person outline icon
         c.circle(x - 1 * mm, y + 1 * mm, 1.2 * mm, stroke=1, fill=0)
         c.circle(x + 1.5 * mm, y + 1 * mm, 1 * mm, stroke=1, fill=0)
         c.arc(x - 3 * mm, y - 2.5 * mm, x + 1 * mm, y + 0.5 * mm, 0, 180)
@@ -462,27 +508,6 @@ def draw_icon_badge(c, x, y, icon_type, badge_color, icon_color):
 # ============================================================
 # 4. PDF LAYOUT GENERATORS
 # ============================================================
-
-def check_page_overflow(c, current_y, required_height, layout_type="modern", sidebar_color=None, gold=None):
-    """
-    Checks if there is enough space left on the page. 
-    If not, starts a new page and properly resets the Y coordinate.
-    """
-    if current_y - required_height < 15 * mm:
-        c.showPage()
-        W, H = A4
-        
-        # Redraw background elements on page break for two-column layout
-        if layout_type == "modern":
-            sidebar_w = 78 * mm
-            c.setFillColor(colors.HexColor("#FAFCFB"))
-            c.rect(0, 0, W, H, stroke=0, fill=1)
-            c.setFillColor(sidebar_color or colors.HexColor("#053D47"))
-            c.rect(0, 0, sidebar_w, H, stroke=0, fill=1)
-            
-        return H - 20 * mm  # Reset Y coordinate to top of new page
-    return current_y
-
 
 def modern(data, file):
     W, H = A4
@@ -561,13 +586,14 @@ def modern(data, file):
             wrapped_lines.append(current_line)
         return wrapped_lines
 
-    def draw_lines(value, x, y, width, font="Times-Roman", size=9.5, leading=5.5 * mm, color=dark, bullet=False, is_sidebar=False):
+    def draw_lines(value, x, y, width, font="Times-Roman", size=9.5, leading=5.5 * mm, color=dark, bullet=False):
         if not value:
             return y
         c.setFillColor(color)
         c.setFont(font, size)
 
-        effective_width = width - (6 * mm if bullet else 0)
+        bullet_indent = 4 * mm if bullet else 0
+        effective_width = width - bullet_indent
 
         for paragraph in value.splitlines():
             paragraph = paragraph.strip()
@@ -577,16 +603,17 @@ def modern(data, file):
 
             lines = safe_wrap_text(paragraph, font, size, effective_width)
             for index, line in enumerate(lines):
-                # Check for page overflow on individual line draws
-                nonlocal sy
-                if is_sidebar:
-                    sy = check_page_overflow(c, y, leading, "modern", sidebar_color, gold)
-                    y = sy
+                y = check_page_overflow(c, y, leading, "modern", sidebar_color, gold)
+                c.setFont(font, size)
+                c.setFillColor(color)
+                
+                if bullet:
+                    if index == 0:
+                        c.drawString(x, y, "• ")
+                    c.drawString(x + bullet_indent, y, line)
                 else:
-                    y = check_page_overflow(c, y, leading, "modern", sidebar_color, gold)
+                    c.drawString(x, y, line)
 
-                prefix = "• " if (bullet and index == 0) else ("  " if bullet else "")
-                c.drawString(x, y, prefix + line)
                 y -= leading
         return y
 
@@ -619,7 +646,7 @@ def modern(data, file):
     sy = H - 78 * mm
 
     # 1. Contact Section
-    sy = sidebar_section("Contact", "references", sx, sy, sw)
+    sy = sidebar_section("Contact", "contact", sx, sy, sw)
 
     contact_items = [
         data.get("phone"),
@@ -631,31 +658,31 @@ def modern(data, file):
 
     for val in contact_items:
         if val and str(val).strip():
-            sy = draw_lines(str(val).strip(), sx + 2 * mm, sy, sw - 2 * mm, font="Times-Roman", size=8.5, leading=5.8 * mm, color=white, is_sidebar=True)
+            sy = draw_lines(str(val).strip(), sx + 2 * mm, sy, sw - 2 * mm, font="Times-Roman", size=8.5, leading=5.8 * mm, color=white)
     sy -= 4.0 * mm
 
     # 2. Skills Section
     if data.get("skills"):
-        sy = sidebar_section("Skills", "certificates", sx, sy, sw)
+        sy = sidebar_section("Skills", "skills", sx, sy, sw)
         for skill in data["skills"].splitlines():
             if skill.strip():
-                sy = draw_lines(skill.strip(), sx, sy, sw, font="Times-Roman", size=8.5, leading=5.8 * mm, color=white, bullet=True, is_sidebar=True)
+                sy = draw_lines(skill.strip(), sx, sy, sw, font="Times-Roman", size=8.5, leading=5.8 * mm, color=white, bullet=True)
         sy -= 4.0 * mm
 
     # 3. Languages Section
     if data.get("languages"):
-        sy = sidebar_section("Languages", "education", sx, sy, sw)
+        sy = sidebar_section("Languages", "languages", sx, sy, sw)
         for lang in data["languages"].splitlines():
             if lang.strip():
-                sy = draw_lines(lang.strip(), sx, sy, sw, font="Times-Roman", size=8.5, leading=5.8 * mm, color=white, bullet=True, is_sidebar=True)
+                sy = draw_lines(lang.strip(), sx, sy, sw, font="Times-Roman", size=8.5, leading=5.8 * mm, color=white, bullet=True)
         sy -= 4.0 * mm
 
     # 4. Interests / Hobbies Section
     if data.get("hobbies"):
-        sy = sidebar_section("Interests", "experience", sx, sy, sw)
+        sy = sidebar_section("Interests", "interests", sx, sy, sw)
         for hobby in data["hobbies"].splitlines():
             if hobby.strip():
-                sy = draw_lines(hobby.strip(), sx, sy, sw, font="Times-Roman", size=8.5, leading=5.8 * mm, color=white, bullet=True, is_sidebar=True)
+                sy = draw_lines(hobby.strip(), sx, sy, sw, font="Times-Roman", size=8.5, leading=5.8 * mm, color=white, bullet=True)
 
     # Main Area - Candidate Name
     name = (data.get("name") or "My CV").upper()
@@ -719,7 +746,6 @@ def modern(data, file):
         c.line(main_x, y - 2.5 * mm, main_x + 55 * mm, y - 2.5 * mm)
 
     c.save()
-
 
 
 def classic(data, file):
