@@ -509,6 +509,27 @@ def draw_icon_badge(c, x, y, icon_type, badge_color, icon_color):
 # 4. PDF LAYOUT GENERATORS
 # ============================================================
 
+def check_page_overflow(c, current_y, required_height, layout_type="modern", sidebar_color=None, accent_color=None):
+    """Checks space remaining and draws background/sidebar structures upon page breaks."""
+    if current_y - required_height < BOTTOM_MARGIN:
+        c.showPage()
+        new_y = PAGE_HEIGHT - 20 * mm
+        W, H = A4
+        if layout_type == "modern":
+            sidebar_w = 78 * mm
+            # Redraw main background for the new page
+            c.setFillColor(colors.HexColor("#FAFCFB"))
+            c.rect(0, 0, W, H, stroke=0, fill=1)
+            # Redraw full sidebar background for the new page
+            c.setFillColor(sidebar_color or colors.HexColor("#053D47"))
+            c.rect(0, 0, sidebar_w, H, stroke=0, fill=1)
+        elif layout_type == "classic":
+            c.setFillColor(accent_color or colors.HexColor("#0D4F4F"))
+            c.rect(0, PAGE_HEIGHT - 8 * mm, PAGE_WIDTH, 8 * mm, stroke=0, fill=1)
+        return new_y
+    return current_y
+
+
 def modern(data, file):
     W, H = A4
     c = canvas.Canvas(file, pagesize=A4)
@@ -527,6 +548,7 @@ def modern(data, file):
     main_x = sidebar_w + 14 * mm
     main_w = W - main_x - 13 * mm
 
+    # Background canvas render for Page 1
     c.setFillColor(colors.HexColor("#FAFCFB"))
     c.rect(0, 0, W, H, stroke=0, fill=1)
     c.setFillColor(sidebar_color)
@@ -690,7 +712,7 @@ def modern(data, file):
     c.setFont("Times-Bold", 22)
     c.drawString(main_x, H - 23 * mm, name[:45])
 
-    # Main Area - Full Professional Title
+    # Main Area - Title & Dynamic Top Coordinate Setup
     title = (data.get("title") or "").upper()
     y_start = H - 30 * mm
     if title:
