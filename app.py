@@ -15,24 +15,29 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import stringWidth
 
 # ============================================================
-# 1. FONT REGISTRATION & INITIALIZATION
+# 1. FONT REGISTRATION & FLAGS
 # ============================================================
 
 FONT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts")
 MONTSERRAT_EXTRA_BOLD = os.path.join(FONT_DIR, "Montserrat-ExtraBold.ttf")
 DANCING_SCRIPT = os.path.join(FONT_DIR, "DancingScript-Regular.ttf")
 
+HAS_MONTSERRAT = False
+HAS_DANCING = False
+
 if os.path.exists(MONTSERRAT_EXTRA_BOLD):
     try:
         pdfmetrics.registerFont(TTFont("Montserrat-ExtraBold", MONTSERRAT_EXTRA_BOLD))
+        HAS_MONTSERRAT = True
     except Exception as e:
-        print(f"Font error: {e}")
+        print(f"Font error (Montserrat): {e}")
 
 if os.path.exists(DANCING_SCRIPT):
     try:
         pdfmetrics.registerFont(TTFont("DancingScript", DANCING_SCRIPT))
+        HAS_DANCING = True
     except Exception as e:
-        print(f"Font error: {e}")
+        print(f"Font error (DancingScript): {e}")
 
 app = Flask(__name__)
 
@@ -42,11 +47,161 @@ PAGE_WIDTH = 210 * mm
 BOTTOM_MARGIN = 15 * mm
 
 # ============================================================
-# 2. VECTOR ICON DRAWING HELPERS
+# 2. HTML TEMPLATES
+# ============================================================
+
+HTML = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #02353C; margin-bottom: 20px; }
+        label { font-weight: bold; display: block; margin-top: 15px; color: #333; }
+        input[type="text"], textarea, input[type="file"], input[type="color"] {
+            width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;
+        }
+        textarea { height: 80px; resize: vertical; }
+        .row { display: flex; gap: 15px; }
+        .row > div { flex: 1; }
+        button { margin-top: 25px; width: 100%; padding: 12px; background: #02353C; color: #fff; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        button:hover { background: #053D47; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CV Builder</h1>
+        <form action="/generate" method="POST" enctype="multipart/form-data">
+            <div class="row">
+                <div>
+                    <label>Full Name</label>
+                    <input type="text" name="name" value="KEDIR ALEMAYEHU" required>
+                </div>
+                <div>
+                    <label>Job Title</label>
+                    <input type="text" name="title" value="SOFTWARE DEVELOPER" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div>
+                    <label>Phone</label>
+                    <input type="text" name="phone" value="+251 91 234 5678">
+                </div>
+                <div>
+                    <label>Email</label>
+                    <input type="text" name="email" value="kediralemayehu@gmail.com">
+                </div>
+            </div>
+
+            <div class="row">
+                <div>
+                    <label>Location</label>
+                    <input type="text" name="location" value="Addis Ababa, Ethiopia">
+                </div>
+                <div>
+                    <label>LinkedIn</label>
+                    <input type="text" name="linkedin" value="linkedin.com/in/kedir-alemayehu">
+                </div>
+            </div>
+
+            <label>Website</label>
+            <input type="text" name="website" value="www.kedir.dev">
+
+            <label>Profile Photo</label>
+            <input type="file" name="photo" accept="image/*">
+
+            <label>Professional Summary</label>
+            <textarea name="summary">Passionate and dedicated software developer with a strong foundation in Python, web development, and problem-solving. Eager to contribute to innovative projects and grow in a dynamic tech environment.</textarea>
+
+            <label>Work Experience (One per line)</label>
+            <textarea name="experience">Developed web applications using Python and Flask.
+Built and maintained small business websites.
+Collaborated with clients to deliver quality solutions.</textarea>
+
+            <label>Education</label>
+            <textarea name="education">B.Sc. in Computer Science - Addis Ababa University (2019 - 2023)</textarea>
+
+            <label>Skills (One per line)</label>
+            <textarea name="skills">Python
+Flask
+HTML & CSS
+JavaScript
+Git & GitHub
+Problem Solving
+Team Collaboration</textarea>
+
+            <label>Certificates (One per line)</label>
+            <textarea name="certificates">Python Programming - Udemy (2023)
+Web Development with Flask - Coursera (2023)</textarea>
+
+            <label>Languages (One per line)</label>
+            <textarea name="languages">Amharic (Native)
+English (Fluent)</textarea>
+
+            <label>Interests / Hobbies (One per line)</label>
+            <textarea name="hobbies">Technology
+Reading
+Football
+Travel</textarea>
+
+            <label>References (One per line)</label>
+            <textarea name="references">Dr. Samuel Tadesse - Senior Software Engineer, EthioTech (+251 91 000 1234)
+Mesfin Girma - Lecturer, Addis Ababa University (+251 91 111 2233)</textarea>
+
+            <div class="row">
+                <div>
+                    <label>Sidebar Color</label>
+                    <input type="color" name="sidebar_color" value="#02353C">
+                </div>
+                <div>
+                    <label>Accent Color</label>
+                    <input type="color" name="accent_color" value="#E5A93C">
+                </div>
+            </div>
+
+            <button type="submit">Generate PDF CV</button>
+        </form>
+    </div>
+</body>
+</html>
+"""
+
+PREVIEW_HTML = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Preview</title>
+    <style>
+        body { margin: 0; background: #2b2b2b; display: flex; flex-direction: column; align-items: center; min-height: 100vh; font-family: Arial, sans-serif; }
+        .controls { width: 100%; max-width: 900px; padding: 15px; display: flex; justify-content: space-between; box-sizing: border-box; }
+        a { text-decoration: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; }
+        .btn-back { background: #555; color: #fff; }
+        .btn-download { background: #E5A93C; color: #02353C; }
+        iframe { width: 100%; max-width: 900px; height: 85vh; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); background: #fff; }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <a href="/" class="btn-back">← Edit Details</a>
+        <a href="/download/{{ token }}" class="btn-download">Download PDF</a>
+    </div>
+    <iframe src="data:application/pdf;base64,{{ pdf_data }}"></iframe>
+</body>
+</html>
+"""
+
+# ============================================================
+# 3. VECTOR ICON DRAWING HELPERS
 # ============================================================
 
 def draw_circle_icon(c, x, y, radius, bg_color, icon_type):
-    """Draws circular badges with custom vector icon graphics inside."""
     c.saveState()
     c.setFillColor(bg_color)
     c.circle(x, y, radius, stroke=0, fill=1)
@@ -57,13 +212,11 @@ def draw_circle_icon(c, x, y, radius, bg_color, icon_type):
     r = radius * 0.55
 
     if icon_type == "experience":
-        # Briefcase
         c.rect(x - r*0.7, y - r*0.5, r*1.4, r*1.0, stroke=1, fill=0)
         c.rect(x - r*0.3, y + r*0.5, r*0.6, r*0.3, stroke=1, fill=0)
         c.line(x - r*0.7, y + r*0.1, x + r*0.7, y + r*0.1)
 
     elif icon_type == "education":
-        # Graduation Cap
         p = c.beginPath()
         p.moveTo(x - r*0.9, y)
         p.lineTo(x, y + r*0.6)
@@ -74,14 +227,12 @@ def draw_circle_icon(c, x, y, radius, bg_color, icon_type):
         c.rect(x - r*0.5, y - r*0.7, r*1.0, r*0.4, stroke=0, fill=1)
 
     elif icon_type == "certificates":
-        # Certificate / Document
         c.rect(x - r*0.6, y - r*0.7, r*1.2, r*1.4, stroke=1, fill=0)
         c.line(x - r*0.3, y + r*0.3, x + r*0.3, y + r*0.3)
         c.line(x - r*0.3, y, x + r*0.3, y)
         c.line(x - r*0.3, y - r*0.3, x + r*0.1, y - r*0.3)
 
     elif icon_type == "references":
-        # User / People
         c.circle(x, y + r*0.3, r*0.35, stroke=1, fill=1)
         p = c.beginPath()
         p.moveTo(x - r*0.6, y - r*0.6)
@@ -89,7 +240,6 @@ def draw_circle_icon(c, x, y, radius, bg_color, icon_type):
         c.drawPath(p, stroke=1, fill=1)
 
     elif icon_type == "contact":
-        # Pin icon
         c.circle(x, y + r*0.2, r*0.4, stroke=1, fill=0)
         p = c.beginPath()
         p.moveTo(x - r*0.3, y + r*0.1)
@@ -98,20 +248,17 @@ def draw_circle_icon(c, x, y, radius, bg_color, icon_type):
         c.drawPath(p, stroke=1, fill=1)
 
     elif icon_type == "skills":
-        # Gear / Settings icon
         c.circle(x, y, r*0.4, stroke=1, fill=0)
         for angle in range(0, 360, 45):
             rad = math.radians(angle)
             c.line(x + r*0.4*math.cos(rad), y + r*0.4*math.sin(rad), x + r*0.75*math.cos(rad), y + r*0.75*math.sin(rad))
 
     elif icon_type == "languages":
-        # Globe icon
         c.circle(x, y, r*0.7, stroke=1, fill=0)
         c.line(x - r*0.7, y, x + r*0.7, y)
         c.line(x, y - r*0.7, x, y + r*0.7)
 
     elif icon_type == "interests":
-        # Heart icon
         p = c.beginPath()
         p.moveTo(x, y - r*0.6)
         p.curveTo(x - r*0.8, y, x - r*0.8, y + r*0.6, x, y + r*0.3)
@@ -121,7 +268,6 @@ def draw_circle_icon(c, x, y, radius, bg_color, icon_type):
     c.restoreState()
 
 def draw_sidebar_contact_icon(c, x, y, icon_type, color):
-    """Draws small contact glyphs on sidebar (Phone, Email, Location, LinkedIn, Globe)."""
     c.saveState()
     c.setFillColor(color)
     c.setStrokeColor(color)
@@ -161,7 +307,7 @@ def draw_sidebar_contact_icon(c, x, y, icon_type, color):
     c.restoreState()
 
 # ============================================================
-# 3. TEXT WRAPPING & PAGINATION UTILITIES
+# 4. TEXT WRAPPING & PAGINATION UTILITIES
 # ============================================================
 
 def clean(text):
@@ -201,7 +347,7 @@ def check_page_overflow(c, y, required_space, sidebar_color):
     return y
 
 # ============================================================
-# 4. MODERN TEMPLATE (MATCHING REFERENCE EXACTLY)
+# 5. MODERN TEMPLATE GENERATOR
 # ============================================================
 
 def modern(data, file):
@@ -211,7 +357,6 @@ def modern(data, file):
     _modern_canvas = c
     c.setTitle("CV - " + (data.get("name") or "KEDIR ALEMAYEHU"))
 
-    teal = colors.HexColor("#053D47")
     sidebar_color = colors.HexColor(data.get("sidebar_color") or "#02353C")
     gold = colors.HexColor(data.get("accent_color") or "#E5A93C")
     white = colors.white
@@ -222,15 +367,11 @@ def modern(data, file):
     main_x = sidebar_w + 12 * mm
     main_w = W - main_x - 12 * mm
 
-    # Background Canvas
     c.setFillColor(colors.HexColor("#FFFFFF"))
     c.rect(0, 0, W, H, stroke=0, fill=1)
     c.setFillColor(sidebar_color)
     c.rect(0, 0, sidebar_w, H, stroke=0, fill=1)
 
-    # ---------------------------------------------------------
-    # Profile Photo
-    # ---------------------------------------------------------
     photo = data.get("photo")
     photo_size = 52 * mm
     photo_x = (sidebar_w - photo_size) / 2
@@ -252,9 +393,6 @@ def modern(data, file):
         except Exception as e:
             print(f"Photo render error: {e}")
 
-    # ---------------------------------------------------------
-    # Helper Functions
-    # ---------------------------------------------------------
     def draw_lines(value, x, y, width, font="Helvetica", size=9, leading=4.8 * mm, color=dark, bullet=False):
         if not value:
             return y
@@ -294,14 +432,10 @@ def modern(data, file):
         c.line(x, y - 3 * mm, x + width, y - 3 * mm)
         return y - 9 * mm
 
-    # ---------------------------------------------------------
-    # Sidebar Sections (Contact, Skills, Languages, Interests)
-    # ---------------------------------------------------------
     sx = 10 * mm
     sw = sidebar_w - 20 * mm
     sy = H - 80 * mm
 
-    # Contact
     sy = sidebar_section("Contact", "contact", sx, sy, sw)
     contacts = [
         ("phone", data.get("phone") or "+251 91 234 5678"),
@@ -317,7 +451,6 @@ def modern(data, file):
             sy = draw_lines(val, sx + 7 * mm, sy, sw - 7 * mm, size=8.2, leading=4.5 * mm, color=white)
             sy -= 1.5 * mm
 
-    # Skills
     if data.get("skills"):
         sy -= 3 * mm
         sy = check_page_overflow(c, sy, 20 * mm, sidebar_color)
@@ -326,7 +459,6 @@ def modern(data, file):
             if skill.strip():
                 sy = draw_lines(skill.strip(), sx + 2 * mm, sy, sw - 2 * mm, size=8.8, leading=4.8 * mm, color=white, bullet=True)
 
-    # Languages
     if data.get("languages"):
         sy -= 3 * mm
         sy = check_page_overflow(c, sy, 20 * mm, sidebar_color)
@@ -335,7 +467,6 @@ def modern(data, file):
             if lang.strip():
                 sy = draw_lines(lang.strip(), sx + 2 * mm, sy, sw - 2 * mm, size=8.8, leading=4.8 * mm, color=white, bullet=True)
 
-    # Interests
     if data.get("hobbies"):
         sy -= 3 * mm
         sy = check_page_overflow(c, sy, 20 * mm, sidebar_color)
@@ -344,9 +475,6 @@ def modern(data, file):
             if hobby.strip():
                 sy = draw_lines(hobby.strip(), sx + 2 * mm, sy, sw - 2 * mm, size=8.8, leading=4.8 * mm, color=white, bullet=True)
 
-    # ---------------------------------------------------------
-    # Main Body Content (Header, Summary, Experience, etc.)
-    # ---------------------------------------------------------
     name_font = "Montserrat-ExtraBold" if HAS_MONTSERRAT else "Helvetica-Bold"
     name = (data.get("name") or "KEDIR ALEMAYEHU").upper()
 
@@ -361,60 +489,34 @@ def modern(data, file):
 
     y = H - 38 * mm
 
-    # Summary Paragraph
-    summary = data.get("summary") or "Passionate and dedicated software developer with a strong foundation in Python, web development, and problem-solving. Eager to contribute to innovative projects and grow in a dynamic tech environment."
+    summary = data.get("summary") or ""
     y = draw_lines(summary, main_x, y, main_w, size=9, leading=4.8 * mm, color=muted)
     y -= 6 * mm
 
-    # Experience
     if data.get("experience"):
         y = check_page_overflow(c, y, 25 * mm, sidebar_color)
         y = main_section("Experience", "experience", main_x, y, main_w)
-        
-        # Heading & Dates layout
-        c.setFillColor(dark)
-        c.setFont("Helvetica-Bold", 10)
-        c.drawString(main_x, y, "Junior Software Developer")
-        c.setFillColor(muted)
-        c.setFont("Helvetica", 9)
-        c.drawRightString(main_x + main_w, y, "2023 – Present")
-        y -= 4.5 * mm
-        c.drawString(main_x, y, "Self-Employed / Freelance")
-        y -= 5 * mm
-
         y = draw_lines(data["experience"], main_x, y, main_w, size=8.8, leading=4.8 * mm, color=muted, bullet=True)
         y -= 5 * mm
 
-    # Education
     if data.get("education"):
         y = check_page_overflow(c, y, 20 * mm, sidebar_color)
         y = main_section("Education", "education", main_x, y, main_w)
+        y = draw_lines(data["education"], main_x, y, main_w, size=8.8, leading=4.8 * mm, color=muted, bullet=True)
+        y -= 5 * mm
 
-        c.setFillColor(dark)
-        c.setFont("Helvetica-Bold", 10)
-        c.drawString(main_x, y, "B.Sc. in Computer Science")
-        c.setFillColor(muted)
-        c.setFont("Helvetica", 9)
-        c.drawRightString(main_x + main_w, y, "2019 – 2023")
-        y -= 4.5 * mm
-        c.drawString(main_x, y, "Addis Ababa University")
-        y -= 6 * mm
-
-    # Certificates
     if data.get("certificates"):
         y = check_page_overflow(c, y, 20 * mm, sidebar_color)
         y = main_section("Certificates", "certificates", main_x, y, main_w)
         y = draw_lines(data["certificates"], main_x, y, main_w, size=8.8, leading=4.8 * mm, color=muted, bullet=True)
         y -= 5 * mm
 
-    # References
     if data.get("references"):
         y = check_page_overflow(c, y, 25 * mm, sidebar_color)
         y = main_section("References", "references", main_x, y, main_w)
         y = draw_lines(data["references"], main_x, y, main_w, size=8.8, leading=4.8 * mm, color=muted, bullet=True)
         y -= 6 * mm
 
-    # Cursive Signature Script at bottom
     sig_font = "DancingScript" if HAS_DANCING else "Helvetica-Oblique"
     c.setFillColor(dark)
     c.setFont(sig_font, 26)
@@ -429,7 +531,7 @@ def generate_pdf(data, filename):
     modern(data, filename)
 
 # ============================================================
-# 5. FLASK CONTROLLERS & ROUTES
+# 6. FLASK CONTROLLERS & ROUTES
 # ============================================================
 
 @app.route("/")
@@ -451,14 +553,14 @@ def generate():
         "location": request.form.get("location", "Addis Ababa, Ethiopia"),
         "linkedin": request.form.get("linkedin", "linkedin.com/in/kedir-alemayehu"),
         "website": request.form.get("website", "www.kedir.dev"),
-        "summary": request.form.get("summary", "Passionate and dedicated software developer with a strong foundation in Python, web development, and problem-solving. Eager to contribute to innovative projects and grow in a dynamic tech environment."),
-        "experience": request.form.get("experience", "Developed web applications using Python and Flask.\nBuilt and maintained small business websites.\nCollaborated with clients to deliver quality solutions."),
-        "education": request.form.get("education", "B.Sc. in Computer Science - Addis Ababa University (2019 - 2023)"),
-        "skills": request.form.get("skills", "Python\nFlask\nHTML & CSS\nJavaScript\nGit & GitHub\nProblem Solving\nTeam Collaboration"),
-        "certificates": request.form.get("certificates", "Python Programming - Udemy (2023)\nWeb Development with Flask - Coursera (2023)"),
-        "languages": request.form.get("languages", "Amharic (Native)\nEnglish (Fluent)"),
-        "hobbies": request.form.get("hobbies", "Technology\nReading\nFootball\nTravel"),
-        "references": request.form.get("references", "Dr. Samuel Tadesse - Senior Software Engineer, EthioTech (+251 91 000 1234)\nMesfin Girma - Lecturer, Addis Ababa University (+251 91 111 2233)"),
+        "summary": request.form.get("summary", ""),
+        "experience": request.form.get("experience", ""),
+        "education": request.form.get("education", ""),
+        "skills": request.form.get("skills", ""),
+        "certificates": request.form.get("certificates", ""),
+        "languages": request.form.get("languages", ""),
+        "hobbies": request.form.get("hobbies", ""),
+        "references": request.form.get("references", ""),
         "accent_color": request.form.get("accent_color", "#E5A93C"),
         "sidebar_color": request.form.get("sidebar_color", "#02353C"),
     }
