@@ -42,11 +42,9 @@ if os.path.exists(DANCING_SCRIPT):
 
 app = Flask(__name__)
 
-_modern_canvas = None
-
 PAGE_HEIGHT = 297 * mm  # A4 Height
 PAGE_WIDTH = 210 * mm   # A4 Width
-BOTTOM_MARGIN = 20 * mm
+BOTTOM_MARGIN = 15 * mm
 
 # ============================================================
 # 2. UI / FRONTEND TEMPLATES (FORM & PREVIEW)
@@ -387,127 +385,39 @@ renderPDF();
 def clean(text):
     return str(text).strip() if text else ""
 
-def check_page_overflow(c, current_y, required_height, layout_type="modern", sidebar_color=None, accent_color=None):
-    """Checks space remaining and draws page structure upon page breaks."""
-    if current_y - required_height < BOTTOM_MARGIN:
-        c.showPage()
-        new_y = PAGE_HEIGHT - 20 * mm
-        W, H = A4
-        if layout_type == "modern":
-            sidebar_w = 78 * mm
-            c.setFillColor(colors.HexColor("#FAFCFB"))
-            c.rect(0, 0, W, H, stroke=0, fill=1)
-            c.setFillColor(sidebar_color or colors.HexColor("#053D47"))
-            c.rect(0, 0, sidebar_w, H, stroke=0, fill=1)
-        elif layout_type == "classic":
-            c.setFillColor(accent_color or colors.HexColor("#0D4F4F"))
-            c.rect(0, PAGE_HEIGHT - 8 * mm, PAGE_WIDTH, 8 * mm, stroke=0, fill=1)
-        return new_y
-    return current_y
-
-def wrap_text(c, text, font, size, max_width):
-    words = clean(text).split()
-    lines = []
-    current = ""
-
-    if c:
-        c.setFont(font, size)
+def safe_wrap_text(text, font, size, max_width):
+    """Accurately wraps text using explicit PDF font metrics to prevent layout drift."""
+    words = clean(text).split(" ")
+    wrapped_lines = []
+    current_line = ""
 
     for word in words:
-        test = word if not current else current + " " + word
-        width = c.stringWidth(test, font, size) if c else stringWidth(test, font, size)
-        if width <= max_width:
-            current = test
+        word_width = pdfmetrics.stringWidth(word, font, size)
+        if word_width > max_width:
+            if current_line:
+                wrapped_lines.append(current_line)
+                current_line = ""
+            sub_word = ""
+            for char in word:
+                if pdfmetrics.stringWidth(sub_word + char, font, size) <= max_width:
+                    sub_word += char
+                else:
+                    wrapped_lines.append(sub_word)
+                    sub_word = char
+            if sub_word:
+                current_line = sub_word
+            continue
+
+        test_line = f"{current_line} {word}".strip()
+        if pdfmetrics.stringWidth(test_line, font, size) <= max_width:
+            current_line = test_line
         else:
-            if current:
-                lines.append(current)
-            current = word
+            wrapped_lines.append(current_line)
+            current_line = word
 
-    if current:
-        lines.append(current)
-
-    return lines
-
-def wrap(text, font, size, width):
-    if not text:
-        return []
-    return wrap_text(_modern_canvas, text, font, size, width)
-
-def draw_icon_badge(c, x, y, icon_type, badge_color, icon_color):
-    c.setFillColor(badge_color)
-    c.circle(x, y, 4.8 * mm, stroke=0, fill=1)
-    
-    c.setFillColor(icon_color)
-    c.setStrokeColor(icon_color)
-    c.setLineWidth(0.8)
-    
-    if icon_type == "contact":
-        # Map pin icon
-        c.circle(x, y + 1 * mm, 1.5 * mm, stroke=1, fill=0)
-        p = c.beginPath()
-        p.moveTo(x - 1.5 * mm, y + 0.8 * mm)
-        p.lineTo(x, y - 2.5 * mm)
-        p.lineTo(x + 1.5 * mm, y + 0.8 * mm)
-        c.drawPath(p, stroke=1, fill=0)
-        c.circle(x, y + 1 * mm, 0.5 * mm, stroke=1, fill=1)
-
-    elif icon_type == "skills":
-        # Gear / Cog icon
-        c.circle(x, y, 1.8 * mm, stroke=1, fill=0)
-        c.circle(x, y, 0.7 * mm, stroke=1, fill=1)
-        for i in range(4):
-            c.saveState()
-            c.translate(x, y)
-            c.rotate(i * 45)
-            c.rect(-0.4 * mm, -2.4 * mm, 0.8 * mm, 4.8 * mm, stroke=0, fill=1)
-            c.restoreState()
-
-    elif icon_type == "languages":
-        # Globe icon
-        c.circle(x, y, 2.3 * mm, stroke=1, fill=0)
-        c.line(x - 2.3 * mm, y, x + 2.3 * mm, y)
-        c.ellipse(x - 1.2 * mm, y - 2.3 * mm, x + 1.2 * mm, y + 2.3 * mm, stroke=1, fill=0)
-
-    elif icon_type == "interests":
-        # Heart icon
-        p = c.beginPath()
-        p.moveTo(x, y - 2 * mm)
-        p.curveTo(x - 3 * mm, y + 0.5 * mm, x - 1.5 * mm, y + 2.5 * mm, x, y + 0.8 * mm)
-        p.curveTo(x + 1.5 * mm, y + 2.5 * mm, x + 3 * mm, y + 0.5 * mm, x, y - 2 * mm)
-        c.drawPath(p, stroke=0, fill=1)
-
-    elif icon_type == "experience":
-        # Briefcase icon
-        c.rect(x - 2.5 * mm, y - 2 * mm, 5 * mm, 3.5 * mm, stroke=1, fill=0)
-        c.rect(x - 1.2 * mm, y + 1.5 * mm, 2.4 * mm, 1 * mm, stroke=1, fill=0)
-
-    elif icon_type == "education":
-        # Graduation cap icon
-        p = c.beginPath()
-        p.moveTo(x, y + 2.2 * mm)
-        p.lineTo(x + 3 * mm, y)
-        p.lineTo(x, y - 2.2 * mm)
-        p.lineTo(x - 3 * mm, y)
-        p.close()
-        c.drawPath(p, stroke=1, fill=1)
-        c.line(x + 2 * mm, y - 0.5 * mm, x + 2 * mm, y - 2.8 * mm)
-
-    elif icon_type == "certificates":
-        # Document with text lines
-        c.rect(x - 2 * mm, y - 2.5 * mm, 4 * mm, 5 * mm, stroke=1, fill=0)
-        c.line(x - 1 * mm, y + 1 * mm, x + 1 * mm, y + 1 * mm)
-        c.line(x - 1 * mm, y - 0.5 * mm, x + 1 * mm, y - 0.5 * mm)
-
-    elif icon_type == "references":
-        # Two-person outline icon
-        c.circle(x - 1 * mm, y + 1 * mm, 1.2 * mm, stroke=1, fill=0)
-        c.circle(x + 1.5 * mm, y + 1 * mm, 1 * mm, stroke=1, fill=0)
-        c.arc(x - 3 * mm, y - 2.5 * mm, x + 1 * mm, y + 0.5 * mm, 0, 180)
-
-
-# ============================================================
-# 4. PDF LAYOUT GENERATORS
-# ============================================================
+    if current_line:
+        wrapped_lines.append(current_line)
+    return wrapped_lines
 
 def check_page_overflow(c, current_y, required_height, layout_type="modern", sidebar_color=None, accent_color=None):
     """Checks space remaining and draws background/sidebar structures upon page breaks."""
@@ -517,10 +427,8 @@ def check_page_overflow(c, current_y, required_height, layout_type="modern", sid
         W, H = A4
         if layout_type == "modern":
             sidebar_w = 78 * mm
-            # Redraw main background for the new page
             c.setFillColor(colors.HexColor("#FAFCFB"))
             c.rect(0, 0, W, H, stroke=0, fill=1)
-            # Redraw full sidebar background for the new page
             c.setFillColor(sidebar_color or colors.HexColor("#053D47"))
             c.rect(0, 0, sidebar_w, H, stroke=0, fill=1)
         elif layout_type == "classic":
@@ -529,12 +437,70 @@ def check_page_overflow(c, current_y, required_height, layout_type="modern", sid
         return new_y
     return current_y
 
+def draw_icon_badge(c, x, y, icon_type, badge_color, icon_color):
+    c.setFillColor(badge_color)
+    c.circle(x, y, 4.8 * mm, stroke=0, fill=1)
+    
+    c.setFillColor(icon_color)
+    c.setStrokeColor(icon_color)
+    c.setLineWidth(0.8)
+    
+    if icon_type in ("experience", "work"):
+        c.rect(x - 2.5 * mm, y - 2 * mm, 5 * mm, 3.5 * mm, stroke=1, fill=0)
+        c.rect(x - 1.2 * mm, y + 1.5 * mm, 2.4 * mm, 1 * mm, stroke=1, fill=0)
+    elif icon_type == "education":
+        p = c.beginPath()
+        p.moveTo(x, y + 2.2 * mm)
+        p.lineTo(x + 3 * mm, y)
+        p.lineTo(x, y - 2.2 * mm)
+        p.lineTo(x - 3 * mm, y)
+        p.close()
+        c.drawPath(p, stroke=1, fill=1)
+        c.line(x + 2 * mm, y - 0.5 * mm, x + 2 * mm, y - 2.8 * mm)
+    elif icon_type == "certificates":
+        c.rect(x - 2 * mm, y - 2.5 * mm, 4 * mm, 5 * mm, stroke=1, fill=0)
+        c.line(x - 1 * mm, y + 1 * mm, x + 1 * mm, y + 1 * mm)
+        c.line(x - 1 * mm, y - 0.5 * mm, x + 1 * mm, y - 0.5 * mm)
+    elif icon_type in ("references", "contact"):
+        c.circle(x - 1 * mm, y + 1 * mm, 1.2 * mm, stroke=1, fill=0)
+        c.circle(x + 1.5 * mm, y + 1 * mm, 1 * mm, stroke=1, fill=0)
+        c.arc(x - 3 * mm, y - 2.5 * mm, x + 1 * mm, y + 0.5 * mm, 0, 180)
+    elif icon_type == "phone":
+        c.rect(x - 1.5 * mm, y - 2.5 * mm, 3 * mm, 5 * mm, stroke=1, fill=0)
+        c.circle(x, y - 1.8 * mm, 0.4 * mm, stroke=1, fill=1)
+    elif icon_type == "email":
+        c.rect(x - 2.5 * mm, y - 1.8 * mm, 5 * mm, 3.6 * mm, stroke=1, fill=0)
+        p = c.beginPath()
+        p.moveTo(x - 2.5 * mm, y + 1.8 * mm)
+        p.lineTo(x, y - 0.2 * mm)
+        p.lineTo(x + 2.5 * mm, y + 1.8 * mm)
+        c.drawPath(p, stroke=1, fill=0)
+    elif icon_type == "location":
+        c.circle(x, y + 0.5 * mm, 1.8 * mm, stroke=1, fill=0)
+        p = c.beginPath()
+        p.moveTo(x - 1.6 * mm, y)
+        p.lineTo(x, y - 2.8 * mm)
+        p.lineTo(x + 1.6 * mm, y)
+        c.drawPath(p, stroke=1, fill=0)
+    elif icon_type in ("linkedin", "website"):
+        c.circle(x, y, 2.2 * mm, stroke=1, fill=0)
+        c.line(x - 2.2 * mm, y, x + 2.2 * mm, y)
+        c.line(x, y - 2.2 * mm, x, y + 2.2 * mm)
+    elif icon_type == "skills":
+        c.rect(x - 2 * mm, y - 2 * mm, 4 * mm, 4 * mm, stroke=1, fill=0)
+    elif icon_type == "languages":
+        c.circle(x, y, 2.5 * mm, stroke=1, fill=0)
+    elif icon_type in ("interests", "hobbies"):
+        c.circle(x - 1 * mm, y, 1.5 * mm, stroke=1, fill=0)
+        c.circle(x + 1 * mm, y, 1.5 * mm, stroke=1, fill=0)
+
+# ============================================================
+# 4. PDF LAYOUT GENERATORS
+# ============================================================
 
 def modern(data, file):
     W, H = A4
     c = canvas.Canvas(file, pagesize=A4)
-    global _modern_canvas
-    _modern_canvas = c
     c.setTitle("CV - " + (data.get("name") or "My CV"))
 
     teal = colors.HexColor("#053D47")
@@ -548,7 +514,6 @@ def modern(data, file):
     main_x = sidebar_w + 14 * mm
     main_w = W - main_x - 13 * mm
 
-    # Background canvas render for Page 1
     c.setFillColor(colors.HexColor("#FAFCFB"))
     c.rect(0, 0, W, H, stroke=0, fill=1)
     c.setFillColor(sidebar_color)
@@ -575,44 +540,9 @@ def modern(data, file):
         except Exception as e:
             print(f"Error drawing photo: {e}")
 
-    def safe_wrap_text(text, font, size, max_width):
-        c.setFont(font, size)
-        words = text.split(" ")
-        wrapped_lines = []
-        current_line = ""
-
-        for word in words:
-            if c.stringWidth(word, font, size) > max_width:
-                if current_line:
-                    wrapped_lines.append(current_line)
-                    current_line = ""
-                sub_word = ""
-                for char in word:
-                    if c.stringWidth(sub_word + char, font, size) <= max_width:
-                        sub_word += char
-                    else:
-                        wrapped_lines.append(sub_word)
-                        sub_word = char
-                if sub_word:
-                    current_line = sub_word
-                continue
-
-            test_line = f"{current_line} {word}".strip()
-            if c.stringWidth(test_line, font, size) <= max_width:
-                current_line = test_line
-            else:
-                wrapped_lines.append(current_line)
-                current_line = word
-
-        if current_line:
-            wrapped_lines.append(current_line)
-        return wrapped_lines
-
     def draw_lines(value, x, y, width, font="Times-Roman", size=9.5, leading=5.5 * mm, color=dark, bullet=False):
         if not value:
             return y
-        c.setFillColor(color)
-        c.setFont(font, size)
 
         bullet_indent = 4 * mm if bullet else 0
         effective_width = width - bullet_indent
@@ -667,20 +597,22 @@ def modern(data, file):
     sw = sidebar_w - 20 * mm
     sy = H - 78 * mm
 
-    # 1. Contact Section
+    # 1. Contact Section with Individual Icons
     sy = sidebar_section("Contact", "contact", sx, sy, sw)
 
     contact_items = [
-        data.get("phone"),
-        data.get("email"),
-        data.get("location"),
-        data.get("linkedin"),
-        data.get("website")
+        ("phone", data.get("phone")),
+        ("email", data.get("email")),
+        ("location", data.get("location")),
+        ("linkedin", data.get("linkedin")),
+        ("website", data.get("website"))
     ]
 
-    for val in contact_items:
+    for icon_key, val in contact_items:
         if val and str(val).strip():
-            sy = draw_lines(str(val).strip(), sx + 2 * mm, sy, sw - 2 * mm, font="Times-Roman", size=8.5, leading=5.8 * mm, color=white)
+            sy = check_page_overflow(c, sy, 6 * mm, "modern", sidebar_color, gold)
+            draw_icon_badge(c, sx + 2 * mm, sy + 1 * mm, icon_key, gold, sidebar_color)
+            sy = draw_lines(str(val).strip(), sx + 8 * mm, sy, sw - 8 * mm, font="Times-Roman", size=8.5, leading=5.8 * mm, color=white)
     sy -= 4.0 * mm
 
     # 2. Skills Section
@@ -712,7 +644,7 @@ def modern(data, file):
     c.setFont("Times-Bold", 22)
     c.drawString(main_x, H - 23 * mm, name[:45])
 
-    # Main Area - Title & Dynamic Top Coordinate Setup
+    # Main Area - Full Professional Title
     title = (data.get("title") or "").upper()
     y_start = H - 30 * mm
     if title:
@@ -773,8 +705,6 @@ def modern(data, file):
 def classic(data, file):
     W, H = A4
     c = canvas.Canvas(file, pagesize=A4)
-    global _modern_canvas
-    _modern_canvas = c
     c.setTitle("CV - " + (data.get("name") or "My CV"))
 
     accent = colors.HexColor(data.get("accent_color") or "#F2B632")
@@ -822,7 +752,7 @@ def classic(data, file):
             return current_y
         c.setFillColor(dark)
         c.setFont("Helvetica", 9)
-        for line in wrap(text, "Helvetica", 9, w):
+        for line in safe_wrap_text(text, "Helvetica", 9, w):
             c.drawString(x, current_y, line)
             current_y -= 4.5 * mm
         return current_y
@@ -847,11 +777,10 @@ def classic(data, file):
 
     c.save()
 
+
 def ats(data, file):
     W, H = A4
     c = canvas.Canvas(file, pagesize=A4)
-    global _modern_canvas
-    _modern_canvas = c
     c.setTitle("CV - " + (data.get("name") or "My CV"))
 
     dark = colors.HexColor("#111111")
@@ -889,7 +818,7 @@ def ats(data, file):
         current_y -= 4.5 * mm
 
         c.setFont("Helvetica", 8.5)
-        for line in wrap(content, "Helvetica", 8.5, w):
+        for line in safe_wrap_text(content, "Helvetica", 8.5, w):
             c.drawString(x, current_y, line)
             current_y -= 4 * mm
         return current_y - 4 * mm
@@ -909,6 +838,7 @@ def ats(data, file):
         y = draw_section(title, content, y)
 
     c.save()
+
 
 def generate_pdf(data, filename):
     template = clean(data.get("template")).lower()
