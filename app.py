@@ -49,7 +49,7 @@ BOTTOM_MARGIN = 15 * mm
 
 def draw_sidebar_icon(c, x, y, icon_type, color):
     """
-    Renders accurate vector line icons matching the reference sidebar.
+    Renders vector line icons for sidebar details.
     """
     c.setStrokeColor(color)
     c.setFillColor(color)
@@ -114,7 +114,7 @@ def draw_sidebar_icon(c, x, y, icon_type, color):
 
 def draw_section_badge(c, x, y, title, icon_type, badge_bg, icon_gold, text_dark):
     """
-    Renders circular badge with golden icon and bold section heading line.
+    Renders circular badge with accent icon and section heading.
     """
     badge_radius = 5.2 * mm
     c.setFillColor(badge_bg)
@@ -209,16 +209,16 @@ def check_page_overflow(c, current_y, required_height, sidebar_color):
 
 
 # ============================================================
-# 4. MODERN TEMPLATE GENERATOR (REFERENCE REPLICATOR)
+# 4. TEMPLATE GENERATOR
 # ============================================================
 
-def modern_template(data, file):
+def generate_pdf(data, file):
     W, H = A4
     c = canvas.Canvas(file, pagesize=A4)
     font_bold = "Montserrat-ExtraBold" if HAS_MONTSERRAT else "Helvetica-Bold"
     c.setTitle("CV - " + (data.get("name") or "Kedir Alemayehu"))
 
-    # Colors matched to exact reference image
+    # Dynamic Color Selection
     sidebar_bg = colors.HexColor(data.get("sidebar_color") or "#02353C")
     gold_accent = colors.HexColor(data.get("accent_color") or "#E5A93C")
     title_dark = colors.HexColor("#0D3B4C")
@@ -229,13 +229,13 @@ def modern_template(data, file):
     main_x = sidebar_w + 12 * mm
     main_w = W - main_x - 12 * mm
 
-    # Background canvas
+    # Draw Background Canvas
     c.setFillColor(colors.HexColor("#FAFCFB"))
     c.rect(0, 0, W, H, stroke=0, fill=1)
     c.setFillColor(sidebar_bg)
     c.rect(0, 0, sidebar_w, H, stroke=0, fill=1)
 
-    # 1. Profile Photo Render
+    # 1. Profile Photo
     photo_path = data.get("photo")
     if photo_path and os.path.exists(photo_path):
         try:
@@ -243,13 +243,11 @@ def modern_template(data, file):
             photo_x = (sidebar_w - photo_size) / 2
             photo_y = H - 64 * mm
 
-            # Outer Gold Circle Frame
             c.setFillColor(gold_accent)
             c.circle(photo_x + photo_size / 2, photo_y + photo_size / 2, photo_size / 2 + 2.5 * mm, stroke=0, fill=1)
             c.setFillColor(white)
             c.circle(photo_x + photo_size / 2, photo_y + photo_size / 2, photo_size / 2 + 0.8 * mm, stroke=0, fill=1)
 
-            # Circular Image Clipping
             c.saveState()
             path = c.beginPath()
             path.circle(photo_x + photo_size / 2, photo_y + photo_size / 2, photo_size / 2)
@@ -259,7 +257,7 @@ def modern_template(data, file):
         except Exception as e:
             print(f"Error rendering profile photo: {e}")
 
-    # Sidebar Render Helper
+    # Sidebar Header Function
     def sidebar_heading(title, icon_type, y_pos):
         y_pos = check_page_overflow(c, y_pos, 15 * mm, sidebar_bg)
         draw_sidebar_icon(c, 12 * mm, y_pos + 1.5 * mm, icon_type, gold_accent)
@@ -276,7 +274,7 @@ def modern_template(data, file):
     sw = sidebar_w - 20 * mm
     sy = H - 76 * mm
 
-    # Sidebar Contact Details
+    # Sidebar Contacts
     sy = sidebar_heading("Contact", "contact_header", sy)
     contacts = [
         ("phone", data.get("phone")),
@@ -323,7 +321,7 @@ def modern_template(data, file):
                 sy -= 5.2 * mm
         sy -= 3 * mm
 
-    # Sidebar Interests
+    # Sidebar Hobbies / Interests
     if data.get("hobbies"):
         sy = sidebar_heading("Interests", "interests_header", sy)
         c.setFillColor(white)
@@ -334,7 +332,7 @@ def modern_template(data, file):
                 c.drawString(sx + 3 * mm, sy, "• " + hobby.strip())
                 sy -= 5.2 * mm
 
-    # Main Header Block
+    # Main Area Header
     name = (data.get("name") or "KEDIR ALEMAYEHU").upper()
     c.setFillColor(title_dark)
     c.setFont(font_bold, 24)
@@ -347,7 +345,7 @@ def modern_template(data, file):
 
     my = H - 38 * mm
 
-    # Professional Summary
+    # Summary
     if data.get("summary"):
         c.setFillColor(body_muted)
         c.setFont("Helvetica", 9)
@@ -397,7 +395,7 @@ def modern_template(data, file):
 
             c.setFillColor(body_muted)
             c.setFont("Helvetica", 8.5)
-            bullet_lines = lines[1:] if len(header_parts) > 1 else lines[1:]
+            bullet_lines = lines[1:]
             for bline in bullet_lines:
                 my = check_page_overflow(c, my, 5 * mm, sidebar_bg)
                 b_text = bline if bline.startswith("•") else "• " + bline
@@ -492,7 +490,7 @@ def modern_template(data, file):
                 c.drawString(main_x + 4 * mm, my, ref_contact)
                 my -= 4.8 * mm
 
-    # Digital Cursive Signature Block
+    # Digital Signature Block
     sig_name = data.get("signature_name") or "Kedir Alemayehu"
     if sig_name:
         my = check_page_overflow(c, my, 16 * mm, sidebar_bg)
@@ -509,7 +507,7 @@ def modern_template(data, file):
 
 
 # ============================================================
-# 5. FRONTEND HTML & UI ENGINE
+# 5. FULL FEATURED HTML FORM, TEMPLATE SELECTOR & PREVIEW
 # ============================================================
 
 HTML = """
@@ -521,21 +519,33 @@ HTML = """
 <style>
 * { box-sizing: border-box; }
 body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #f4f7f7; color: #173f3f; }
-.container { max-width: 780px; margin: auto; padding: 20px; }
+.container { max-width: 820px; margin: auto; padding: 20px; }
 .card { background: white; border-radius: 18px; padding: 28px; box-shadow: 0 5px 25px rgba(0,0,0,.08); }
 .logo { text-align: center; font-size: 32px; font-weight: 800; color: #02353c; }
 .subtitle { text-align: center; color: #667; margin-bottom: 25px; font-size: 15px; }
-.progress { display: flex; gap: 4px; margin-bottom: 25px; }
-.progress div { flex: 1; height: 6px; background: #d9e3e3; border-radius: 10px; }
+
+/* Progress Bar */
+.progress { display: flex; gap: 6px; margin-bottom: 25px; }
+.progress div { flex: 1; height: 6px; background: #d9e3e3; border-radius: 10px; transition: background 0.3s; }
 .progress div.active { background: #e5a93c; }
+
 .step { display: none; }
 .step.active { display: block; }
 h2 { margin-top: 0; color: #02353c; font-size: 22px; }
+
+/* Form Elements */
 label { display: block; margin-top: 15px; margin-bottom: 6px; font-weight: 600; font-size: 14px; }
-input, textarea { width: 100%; padding: 12px 14px; border: 1px solid #ccd8d8; border-radius: 10px; font-size: 15px; }
-textarea { min-height: 110px; resize: vertical; }
+input, textarea, select { width: 100%; padding: 12px 14px; border: 1px solid #ccd8d8; border-radius: 10px; font-size: 15px; }
+textarea { min-height: 100px; resize: vertical; }
+
+.color-group { display: flex; gap: 15px; }
+.color-group > div { flex: 1; }
+input[type="color"] { padding: 4px; height: 45px; cursor: pointer; }
+
+/* Controls */
 .buttons { display: flex; gap: 10px; margin-top: 25px; }
-button { flex: 1; padding: 14px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
+button { flex: 1; padding: 14px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; }
+button:hover { opacity: 0.9; }
 .next { background: #02353c; color: white; }
 .back { background: #e7eeee; color: #173f3f; }
 .generate { background: #e5a93c; color: white; }
@@ -545,45 +555,136 @@ button { flex: 1; padding: 14px; border: none; border-radius: 10px; font-size: 1
 <div class="container">
 <div class="card">
 <div class="logo">CVForge</div>
-<div class="subtitle">Pixel-Perfect Professional Resume Engine</div>
-<form method="POST" action="/generate" enctype="multipart/form-data">
-<h2>Personal Details</h2>
-<label>Full Name</label><input name="name" value="KEDIR ALEMAYEHU">
-<label>Title</label><input name="title" value="SOFTWARE DEVELOPER">
-<label>Profile Picture</label><input type="file" name="photo" accept="image/*">
-<label>Phone</label><input name="phone" value="+251 91 234 5678">
-<label>Email</label><input name="email" value="kediralemayehu@gmail.com">
-<label>Location</label><input name="location" value="Addis Ababa, Ethiopia">
-<label>LinkedIn</label><input name="linkedin" value="linkedin.com/in/kedir-alemayehu">
-<label>Website</label><input name="website" value="www.kedir.dev">
-<label>Summary</label><textarea name="summary">Passionate and dedicated software developer with a strong foundation in Python, web development, and problem-solving. Eager to contribute to innovative projects and grow in a dynamic tech environment.</textarea>
-<label>Experience</label><textarea name="experience">Junior Software Developer | Self-Employed / Freelance | 2023 – Present
+<div class="subtitle">Pixel-Perfect Professional Resume Builder</div>
+
+<div class="progress">
+  <div id="p1" class="active"></div>
+  <div id="p2"></div>
+  <div id="p3"></div>
+  <div id="p4"></div>
+</div>
+
+<form id="cvForm" method="POST" action="/generate" enctype="multipart/form-data">
+
+<!-- Step 1: Personal Info -->
+<div class="step active" id="step1">
+  <h2>1. Personal Details</h2>
+  <label>Full Name</label><input name="name" value="KEDIR ALEMAYEHU" required>
+  <label>Professional Title</label><input name="title" value="SOFTWARE DEVELOPER">
+  <label>Profile Picture</label><input type="file" name="photo" accept="image/*">
+  <label>Phone Number</label><input name="phone" value="+251 91 234 5678">
+  <label>Email Address</label><input name="email" value="kediralemayehu@gmail.com">
+  <label>Location</label><input name="location" value="Addis Ababa, Ethiopia">
+  <label>LinkedIn URL</label><input name="linkedin" value="linkedin.com/in/kedir-alemayehu">
+  <label>Website / Portfolio</label><input name="website" value="www.kedir.dev">
+  
+  <div class="buttons">
+    <button type="button" class="next" onclick="goToStep(2)">Next: Experience & Education</button>
+  </div>
+</div>
+
+<!-- Step 2: Experience & Education -->
+<div class="step" id="step2">
+  <h2>2. Professional Background</h2>
+  <label>Professional Summary</label>
+  <textarea name="summary">Passionate and dedicated software developer with a strong foundation in Python, web development, and problem-solving. Eager to contribute to innovative projects and grow in a dynamic tech environment.</textarea>
+  
+  <label>Work Experience (Format: Role | Company | Dates)</label>
+  <textarea name="experience">Junior Software Developer | Self-Employed / Freelance | 2023 – Present
 • Developed web applications using Python and Flask.
 • Built and maintained small business websites.
 • Collaborated with clients to deliver quality solutions.</textarea>
-<label>Education</label><textarea name="education">B.Sc. in Computer Science | Addis Ababa University | 2019 – 2023</textarea>
-<label>Skills</label><textarea name="skills">Python
+  
+  <label>Education (Format: Degree | Institution | Dates)</label>
+  <textarea name="education">B.Sc. in Computer Science | Addis Ababa University | 2019 – 2023</textarea>
+  
+  <div class="buttons">
+    <button type="button" class="back" onclick="goToStep(1)">Back</button>
+    <button type="button" class="next" onclick="goToStep(3)">Next: Skills & Details</button>
+  </div>
+</div>
+
+<!-- Step 3: Skills & Extra Sections -->
+<div class="step" id="step3">
+  <h2>3. Skills & Additional Sections</h2>
+  <label>Skills (One per line)</label>
+  <textarea name="skills">Python
 Flask
 HTML & CSS
 JavaScript
 Git & GitHub
-Problem Solving
-Team Collaboration</textarea>
-<label>Certificates</label><textarea name="certificates">Python Programming | Udemy | 2023
+Problem Solving</textarea>
+  
+  <label>Certificates (Format: Name | Issuer | Date)</label>
+  <textarea name="certificates">Python Programming | Udemy | 2023
 Web Development with Flask | Coursera | 2023</textarea>
-<label>Languages</label><textarea name="languages">Amharic (Native)
+  
+  <label>Languages</label>
+  <textarea name="languages">Amharic (Native)
 English (Fluent)</textarea>
-<label>Interests</label><textarea name="hobbies">Technology
+  
+  <label>Interests & Hobbies</label>
+  <textarea name="hobbies">Technology
 Reading
 Football
 Travel</textarea>
-<label>References</label><textarea name="references">Dr. Samuel Tadesse | Senior Software Engineer, EthioTech | +251 91 000 1234 | samuel@ethiotech.com
+  
+  <label>References (Format: Name | Role & Company | Phone | Email)</label>
+  <textarea name="references">Dr. Samuel Tadesse | Senior Software Engineer, EthioTech | +251 91 000 1234 | samuel@ethiotech.com
 Mesfin Girma | Lecturer, Addis Ababa University | +251 91 111 2233 | mesfin@aau.edu.et</textarea>
-<label>Signature Text</label><input name="signature_name" value="Kedir Alemayehu">
-<div class="buttons"><button type="submit" class="generate">GENERATE CV</button></div>
+  
+  <label>Signature Text</label>
+  <input name="signature_name" value="Kedir Alemayehu">
+
+  <div class="buttons">
+    <button type="button" class="back" onclick="goToStep(2)">Back</button>
+    <button type="button" class="next" onclick="goToStep(4)">Next: Design & Colors</button>
+  </div>
+</div>
+
+<!-- Step 4: Styling & Generation -->
+<div class="step" id="step4">
+  <h2>4. Style & Theme Selection</h2>
+  
+  <label>Select Template Layout</label>
+  <select name="template">
+    <option value="modern" selected>Modern Two-Column Layout (Reference)</option>
+    <option value="classic">Classic Minimalist Layout</option>
+  </select>
+
+  <div class="color-group">
+    <div>
+      <label>Sidebar Color</label>
+      <input type="color" name="sidebar_color" value="#02353C">
+    </div>
+    <div>
+      <label>Accent Color</label>
+      <input type="color" name="accent_color" value="#E5A93C">
+    </div>
+  </div>
+
+  <div class="buttons">
+    <button type="button" class="back" onclick="goToStep(3)">Back</button>
+    <button type="submit" class="generate">GENERATE CV PREVIEW</button>
+  </div>
+</div>
+
 </form>
 </div>
 </div>
+
+<script>
+function goToStep(stepNum) {
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById('step' + i).classList.remove('active');
+    document.getElementById('p' + i).classList.remove('active');
+  }
+  document.getElementById('step' + stepNum).classList.add('active');
+  for (let i = 1; i <= stepNum; i++) {
+    document.getElementById('p' + i).classList.add('active');
+  }
+}
+</script>
 </body>
 </html>
 """
@@ -593,14 +694,17 @@ PREVIEW_HTML = """
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CV Preview</title>
+<title>CV Preview & Download</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
-body { margin: 0; background: #eef3f3; font-family: sans-serif; }
+body { margin: 0; background: #eef3f3; font-family: 'Segoe UI', Arial, sans-serif; }
 .container { max-width: 900px; margin: auto; padding: 20px; }
-.card { background: white; border-radius: 16px; padding: 20px; text-align: center; }
-.pdf-page { width: 100%; margin-bottom: 15px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
-.download { display: inline-block; padding: 14px 28px; background: #e5a93c; color: white; border-radius: 10px; font-weight: bold; text-decoration: none; margin-top: 15px; }
+.card { background: white; border-radius: 16px; padding: 25px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+.pdf-page { width: 100%; margin-bottom: 15px; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,.15); }
+.actions { display: flex; gap: 15px; justify-content: center; margin-top: 20px; }
+.btn { display: inline-block; padding: 14px 28px; border-radius: 10px; font-weight: bold; text-decoration: none; font-size: 16px; cursor: pointer; }
+.download { background: #e5a93c; color: white; }
+.edit { background: #02353c; color: white; }
 </style>
 </head>
 <body>
@@ -608,7 +712,10 @@ body { margin: 0; background: #eef3f3; font-family: sans-serif; }
 <div class="card">
 <h2>CV Generated Successfully</h2>
 <div id="previewBox"></div>
-<a class="download" href="/download/{{ token }}">DOWNLOAD PDF</a>
+<div class="actions">
+  <a class="btn edit" href="/">← Edit Form Data</a>
+  <a class="btn download" href="/download/{{ token }}">DOWNLOAD PDF</a>
+</div>
 </div>
 </div>
 <script>
@@ -635,7 +742,7 @@ render();
 """
 
 # ============================================================
-# 6. FLASK CONTROLLER ROUTES
+# 6. FLASK ROUTING CONTROLLERS
 # ============================================================
 
 @app.route("/")
@@ -663,8 +770,8 @@ def generate():
         "hobbies": request.form.get("hobbies", ""),
         "references": request.form.get("references", ""),
         "signature_name": request.form.get("signature_name", ""),
-        "accent_color": "#E5A93C",
-        "sidebar_color": "#02353C",
+        "accent_color": request.form.get("accent_color", "#E5A93C"),
+        "sidebar_color": request.form.get("sidebar_color", "#02353C"),
     }
 
     if photo and photo.filename:
@@ -676,7 +783,7 @@ def generate():
 
     token = str(uuid.uuid4())
     filename = os.path.join(tempfile.gettempdir(), "CV_" + token + ".pdf")
-    modern_template(data, filename)
+    generate_pdf(data, filename)
 
     with open(filename, "rb") as f:
         pdf_bytes = f.read()
