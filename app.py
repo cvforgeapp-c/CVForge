@@ -508,56 +508,73 @@ def modern(data, file):
             print(f"Error drawing photo: {e}")
 
     def safe_wrap_text(text, font, size, max_width):
-        """Break down overly long words or strings exceeding max width."""
-        c.setFont(font, size)
-        words = text.split()
-        wrapped_lines = []
-        current_line = ""
+    """Wraps text cleanly and forces character breaks on long unspaced strings."""
+    c.setFont(font, size)
+    words = text.split(" ")
+    wrapped_lines = []
+    current_line = ""
 
-        for word in words:
-            if c.stringWidth(word, font, size) > max_width:
-                if current_line:
-                    wrapped_lines.append(current_line)
-                    current_line = ""
-                sub_word = ""
-                for char in word:
-                    if c.stringWidth(sub_word + char, font, size) <= max_width:
-                        sub_word += char
-                    else:
-                        wrapped_lines.append(sub_word)
-                        sub_word = char
-                if sub_word:
-                    current_line = sub_word
-                continue
-
-            test_line = f"{current_line} {word}".strip()
-            if c.stringWidth(test_line, font, size) <= max_width:
-                current_line = test_line
-            else:
+    for word in words:
+        # If a single word is wider than the allowed width, break it down character-by-character
+        if c.stringWidth(word, font, size) > max_width:
+            if current_line:
                 wrapped_lines.append(current_line)
-                current_line = word
-        if current_line:
+                current_line = ""
+            sub_word = ""
+            for char in word:
+                if c.stringWidth(sub_word + char, font, size) <= max_width:
+                    sub_word += char
+                else:
+                    wrapped_lines.append(sub_word)
+                    sub_word = char
+            if sub_word:
+                current_line = sub_word
+            continue
+
+        test_line = f"{current_line} {word}".strip()
+        if c.stringWidth(test_line, font, size) <= max_width:
+            current_line = test_line
+        else:
             wrapped_lines.append(current_line)
-        return wrapped_lines
+            current_line = word
 
-    def draw_lines(value, x, y, width, font="Times-Roman", size=9.5, leading=5.5 * mm, color=dark, bullet=False):
-        if not value:
-            return y
-        c.setFillColor(color)
-        c.setFont(font, size)
+    if current_line:
+        wrapped_lines.append(current_line)
+    return wrapped_lines
 
-        for paragraph in value.splitlines():
-            paragraph = paragraph.strip()
-            if not paragraph:
-                y -= leading * 0.5
-                continue
 
-            lines = safe_wrap_text(paragraph, font, size, width - (10 if bullet else 0))
-            for index, line in enumerate(lines):
-                prefix = "• " if (bullet and index == 0) else ("  " if bullet else "")
-                c.drawString(x, y, prefix + line)
-                y -= leading
+def draw_lines(
+    value,
+    x,
+    y,
+    width,
+    font="Times-Roman",
+    size=9.5,
+    leading=5.5 * mm,
+    color=dark,
+    bullet=False,
+):
+    if not value:
         return y
+    c.setFillColor(color)
+    c.setFont(font, size)
+
+    # Indent slightly if bullet points are used
+    effective_width = width - (6 * mm if bullet else 0)
+
+    for paragraph in value.splitlines():
+        paragraph = paragraph.strip()
+        if not paragraph:
+            y -= leading * 0.5
+            continue
+
+        lines = safe_wrap_text(paragraph, font, size, effective_width)
+        for index, line in enumerate(lines):
+            prefix = "• " if (bullet and index == 0) else ("  " if bullet else "")
+            c.drawString(x, y, prefix + line)
+            y -= leading
+    return y
+
 
     def main_section(title, icon_type, x, y, width):
         draw_icon_badge(c, x + 5 * mm, y + 1 * mm, icon_type, teal, gold)
