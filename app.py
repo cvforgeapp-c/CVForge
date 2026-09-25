@@ -3,6 +3,7 @@ import tempfile
 import base64
 import uuid
 import math
+import re
 from flask import Flask, request, render_template_string, send_file, redirect, url_for
 
 from reportlab.lib import colors
@@ -79,33 +80,33 @@ HTML = """
             <div class="row">
                 <div>
                     <label>Full Name</label>
-                    <input type="text" name="name" value="KEDIR ALEMAYEHU" required>
+                    <input type="text" name="name" value="KEDIR ABDELA" required>
                 </div>
                 <div>
                     <label>Job Title</label>
-                    <input type="text" name="title" value="SOFTWARE DEVELOPER" required>
+                    <input type="text" name="title" value="BUSINESS MARKETING" required>
                 </div>
             </div>
 
             <div class="row">
                 <div>
                     <label>Phone</label>
-                    <input type="text" name="phone" value="+251 91 234 5678">
+                    <input type="text" name="phone" value="+251 90 870 6534">
                 </div>
                 <div>
                     <label>Email</label>
-                    <input type="text" name="email" value="kediralemayehu@gmail.com">
+                    <input type="text" name="email" value="rentallah85@gmail.com">
                 </div>
             </div>
 
             <div class="row">
                 <div>
                     <label>Location</label>
-                    <input type="text" name="location" value="Addis Ababa, Ethiopia">
+                    <input type="text" name="location" value="Los Angeles, USA">
                 </div>
                 <div>
                     <label>LinkedIn</label>
-                    <input type="text" name="linkedin" value="linkedin.com/in/kedir-alemayehu">
+                    <input type="text" name="linkedin" value="linkedin.com/in/kedirmohammed">
                 </div>
             </div>
 
@@ -116,42 +117,54 @@ HTML = """
             <input type="file" name="photo" accept="image/*">
 
             <label>Professional Summary</label>
-            <textarea name="summary">Passionate and dedicated software developer with a strong foundation in Python, web development, and problem-solving. Eager to contribute to innovative projects and grow in a dynamic tech environment.</textarea>
+            <textarea name="summary">Results-driven Digital Marketing Specialist with 5+ years of experience developing data-driven marketing campaigns, increasing online engagement, and improving customer acquisition. Skilled in SEO, social media marketing, content strategy, Google Analytics, and paid advertising. Strong communicator with a proven ability to manage multiple projects and deliver measurable results.</textarea>
 
             <label>Work Experience (One per line)</label>
-            <textarea name="experience">Developed web applications using Python and Flask.
-Built and maintained small business websites.
-Collaborated with clients to deliver quality solutions.</textarea>
+            <textarea name="experience">Digital Marketing Specialist | BrightWave Media | New York, NY | 2022 - Present
+Developed and managed digital marketing campaigns across Google, Instagram, Facebook, and LinkedIn.
+Increased website traffic by 45% through SEO and content marketing strategies.
+Managed monthly advertising budgets and analyzed campaign performance.
+Collaborated with designers and content writers to produce marketing materials.
+Marketing Coordinator | NovaTech Solutions | New York, NY | 2019 - 2022
+Supported digital marketing campaigns and social media activities.
+Created weekly performance reports using Google Analytics.
+Improved social media engagement by 30% within one year.
+Assisted with email marketing and customer research.</textarea>
 
             <label>Education</label>
-            <textarea name="education">B.Sc. in Computer Science - Addis Ababa University (2019 - 2023)</textarea>
+            <textarea name="education">Bachelor of Business Administration | New York University | New York, NY | 2015 - 2019</textarea>
 
             <label>Skills (One per line)</label>
-            <textarea name="skills">Python
-Flask
-HTML & CSS
-JavaScript
-Git & GitHub
-Problem Solving
-Team Collaboration</textarea>
+            <textarea name="skills">Digital Marketing
+Search Engine Optimization (SEO)
+Social Media Marketing
+Google Analytics
+Content Marketing
+Email Marketing
+Google Ads
+Microsoft Office
+Data Analysis
+Project Management</textarea>
 
             <label>Certificates (One per line)</label>
-            <textarea name="certificates">Python Programming - Udemy (2023)
-Web Development with Flask - Coursera (2023)</textarea>
+            <textarea name="certificates">Google Analytics Certification | Google | 2023
+Google Ads Search Certification | Google | 2023
+HubSpot Content Marketing Certification | HubSpot Academy | 2022</textarea>
 
             <label>Languages (One per line)</label>
-            <textarea name="languages">Amharic (Native)
-English (Fluent)</textarea>
+            <textarea name="languages">English – Native
+Spanish – Professional Working Proficiency
+French – Basic</textarea>
 
             <label>Interests / Hobbies (One per line)</label>
-            <textarea name="hobbies">Technology
+            <textarea name="hobbies">Technology and AI
+Photography
+Traveling
 Reading
-Football
-Travel</textarea>
+Entrepreneurship</textarea>
 
             <label>References (One per line)</label>
-            <textarea name="references">Dr. Samuel Tadesse - Senior Software Engineer, EthioTech (+251 91 000 1234)
-Mesfin Girma - Lecturer, Addis Ababa University (+251 91 111 2233)</textarea>
+            <textarea name="references">References available upon request.</textarea>
 
             <div class="row">
                 <div>
@@ -184,7 +197,9 @@ PREVIEW_HTML = """
         a { text-decoration: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; }
         .btn-back { background: #555; color: #fff; }
         .btn-download { background: #E5A93C; color: #02353C; }
-        iframe { width: 100%; max-width: 900px; height: 85vh; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); background: #fff; }
+        .preview-container { width: 100%; max-width: 900px; height: 85vh; background: #fff; }
+        object { width: 100%; height: 100%; }
+        .fallback { padding: 20px; text-align: center; color: #fff; }
     </style>
 </head>
 <body>
@@ -192,7 +207,14 @@ PREVIEW_HTML = """
         <a href="/" class="btn-back">← Edit Details</a>
         <a href="/download/{{ token }}" class="btn-download">Download PDF</a>
     </div>
-    <iframe src="data:application/pdf;base64,{{ pdf_data }}"></iframe>
+    <div class="preview-container">
+        <object data="/preview/{{ token }}" type="application/pdf">
+            <div class="fallback">
+                <p>Your browser doesn't support direct PDF preview in mobile view.</p>
+                <a href="/preview/{{ token }}" target="_blank" style="color: #E5A93C;">Open PDF in New Tab</a>
+            </div>
+        </object>
+    </div>
 </body>
 </html>
 """
@@ -243,7 +265,7 @@ def draw_circle_icon(c, x, y, radius, bg_color, icon_type):
         c.circle(x, y + r*0.2, r*0.4, stroke=1, fill=0)
         p = c.beginPath()
         p.moveTo(x - r*0.3, y + r*0.1)
-        p.lineTo(x, y - r*0.7)
+        p.lineTo(x, y - r*0.6)
         p.lineTo(x + r*0.3, y + r*0.1)
         c.drawPath(p, stroke=1, fill=1)
 
@@ -313,6 +335,10 @@ def draw_sidebar_contact_icon(c, x, y, icon_type, color):
 def clean(text):
     return str(text).strip() if text else ""
 
+def strip_existing_bullets(text):
+    """Removes pre-existing bullet characters or hyphens at the start of strings."""
+    return re.sub(r'^[•\-\*\s]+', '', text.strip())
+
 def wrap_text(c, text, font, size, max_width):
     words = clean(text).split()
     lines = []
@@ -355,7 +381,7 @@ def modern(data, file):
     c = canvas.Canvas(file, pagesize=A4)
     global _modern_canvas
     _modern_canvas = c
-    c.setTitle("CV - " + (data.get("name") or "KEDIR ALEMAYEHU"))
+    c.setTitle("CV - " + (data.get("name") or "KEDIR ABDELA"))
 
     sidebar_color = colors.HexColor(data.get("sidebar_color") or "#02353C")
     gold = colors.HexColor(data.get("accent_color") or "#E5A93C")
@@ -405,7 +431,10 @@ def modern(data, file):
                 y -= leading * 0.5
                 continue
 
-            lines = wrap(paragraph, font, size, width)
+            # Clean pre-existing bullet characters from user input to eliminate double bullets
+            clean_para = strip_existing_bullets(paragraph) if bullet else paragraph
+            lines = wrap(clean_para, font, size, width)
+
             for index, line in enumerate(lines):
                 prefix = "• " if (bullet and index == 0) else ("  " if bullet else "")
                 c.drawString(x, y, prefix + line)
@@ -438,10 +467,10 @@ def modern(data, file):
 
     sy = sidebar_section("Contact", "contact", sx, sy, sw)
     contacts = [
-        ("phone", data.get("phone") or "+251 91 234 5678"),
-        ("email", data.get("email") or "kediralemayehu@gmail.com"),
-        ("location", data.get("location") or "Addis Ababa, Ethiopia"),
-        ("linkedin", data.get("linkedin") or "linkedin.com/in/kedir-alemayehu"),
+        ("phone", data.get("phone") or "+251 90 870 6534"),
+        ("email", data.get("email") or "rentallah85@gmail.com"),
+        ("location", data.get("location") or "Los Angeles, USA"),
+        ("linkedin", data.get("linkedin") or "linkedin.com/in/kedirmohammed"),
         ("website", data.get("website") or "www.kedir.dev"),
     ]
 
@@ -476,13 +505,13 @@ def modern(data, file):
                 sy = draw_lines(hobby.strip(), sx + 2 * mm, sy, sw - 2 * mm, size=8.8, leading=4.8 * mm, color=white, bullet=True)
 
     name_font = "Montserrat-ExtraBold" if HAS_MONTSERRAT else "Helvetica-Bold"
-    name = (data.get("name") or "KEDIR ALEMAYEHU").upper()
+    name = (data.get("name") or "KEDIR ABDELA").upper()
 
     c.setFillColor(dark)
     c.setFont(name_font, 22)
     c.drawString(main_x, H - 22 * mm, name)
 
-    title = (data.get("title") or "SOFTWARE DEVELOPER").upper()
+    title = (data.get("title") or "BUSINESS MARKETING").upper()
     c.setFillColor(gold)
     c.setFont("Helvetica-Bold", 13)
     c.drawString(main_x, H - 29 * mm, title)
@@ -546,12 +575,12 @@ def generate():
     photo = request.files.get("photo")
 
     data = {
-        "name": request.form.get("name", "KEDIR ALEMAYEHU"),
-        "title": request.form.get("title", "SOFTWARE DEVELOPER"),
-        "phone": request.form.get("phone", "+251 91 234 5678"),
-        "email": request.form.get("email", "kediralemayehu@gmail.com"),
-        "location": request.form.get("location", "Addis Ababa, Ethiopia"),
-        "linkedin": request.form.get("linkedin", "linkedin.com/in/kedir-alemayehu"),
+        "name": request.form.get("name", "KEDIR ABDELA"),
+        "title": request.form.get("title", "BUSINESS MARKETING"),
+        "phone": request.form.get("phone", "+251 90 870 6534"),
+        "email": request.form.get("email", "rentallah85@gmail.com"),
+        "location": request.form.get("location", "Los Angeles, USA"),
+        "linkedin": request.form.get("linkedin", "linkedin.com/in/kedirmohammed"),
         "website": request.form.get("website", "www.kedir.dev"),
         "summary": request.form.get("summary", ""),
         "experience": request.form.get("experience", ""),
@@ -570,27 +599,25 @@ def generate():
         photo.save(photo_path)
         data["photo"] = photo_path
 
-    filename = os.path.join(tempfile.gettempdir(), "CV_" + uuid.uuid4().hex + ".pdf")
-    generate_pdf(data, filename)
-
-    with open(filename, "rb") as pdf_file:
-        pdf_bytes = pdf_file.read()
-
-    pdf_data = base64.b64encode(pdf_bytes).decode("utf-8")
     token = str(uuid.uuid4())
     preview_file = os.path.join(tempfile.gettempdir(), "CV_" + token + ".pdf")
+    generate_pdf(data, preview_file)
 
-    with open(preview_file, "wb") as output:
-        output.write(pdf_bytes)
+    return render_template_string(PREVIEW_HTML, token=token)
 
-    return render_template_string(PREVIEW_HTML, pdf_data=pdf_data, token=token)
+@app.route("/preview/<token>")
+def preview_pdf(token):
+    filename = os.path.join(tempfile.gettempdir(), "CV_" + token + ".pdf")
+    if not os.path.exists(filename):
+        return "CV not found.", 404
+    return send_file(filename, mimetype="application/pdf")
 
 @app.route("/download/<token>")
 def download_pdf(token):
     filename = os.path.join(tempfile.gettempdir(), "CV_" + token + ".pdf")
     if not os.path.exists(filename):
         return "CV not found.", 404
-    return send_file(filename, as_attachment=True, download_name="KEDIR_ALEMAYEHU_CV.pdf", mimetype="application/pdf")
+    return send_file(filename, as_attachment=True, download_name="KEDIR_ABDELA_CV.pdf", mimetype="application/pdf")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)), debug=False)
