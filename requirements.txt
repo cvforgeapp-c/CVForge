@@ -1,7 +1,28 @@
-Flask
-reportlab
-gunicorn
-Pillow
-PyMuPDF
-requests
-beautifulsoup4
+# --- Base Framework & WSGI Server ---
+Flask>=3.0.0
+gunicorn>=21.2.0
+python-dotenv>=1.0.0
+
+# --- Document Parsing & Web Scraping ---
+PyMuPDF>=1.23.0
+beautifulsoup4>=4.12.0
+requests>=2.31.0
+reportlab>=4.0.0
+Pillow>=10.0.0
+
+# --- AI / LLM SDKs ---
+openai>=1.0.0
+pydantic>=2.0.0
+
+# --- Database & User Management ---
+Flask-SQLAlchemy>=3.1.0
+psycopg2-binary>=2.9.9
+Flask-Login>=0.6.3
+Werkzeug>=3.0.0
+
+# --- Payment & Merchant of Record (Paddle) ---
+paddle-python-sdk>=1.0.0
+
+# --- Background Worker & Task Queue ---
+celery>=5.3.0
+redis>=5.0.0
