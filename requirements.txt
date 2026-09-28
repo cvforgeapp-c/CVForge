@@ -4,3 +4,4 @@ gunicorn
 Pillow
 PyMuPDF
 requests
+beautifulsoup4
