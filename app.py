@@ -331,102 +331,322 @@ APP_HTML = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CVForge AI — Resume Optimizer & Cover Letter Generator</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cvforge - Optimize Your Resume</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Google Fonts: Serif for titles, Sans-Serif for body -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #0b132b; color: #ffffff; font-family: system-ui, -apple-system, sans-serif; }
-        .card-custom { background: #1c2541; border: 1px solid #3a506b; border-radius: 12px; }
-        .btn-gold { background: #E5A93C; color: #0b132b; font-weight: 700; border: none; }
-        .btn-gold:hover { background: #f0b446; color: #0b132b; }
-        .badge-score { font-size: 1.8rem; font-weight: 800; padding: 12px 20px; border-radius: 50px; }
-        .progress-bar-animated { background: linear-gradient(90deg, #E5A93C, #48cae4); }
-        .keyword-tag { background: #3a506b; padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+        /* Reset & Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #ffffff;
+  color: #1a202c;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Navbar */
+.navbar {
+  background-color: #0f4c64; /* Dark Teal / Blue shade */
+  padding: 12px 20px;
+  color: #ffffff;
+}
+
+.nav-container {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-icon {
+  width: 24px;
+  height: 24px;
+  stroke: #ffffff;
+}
+
+.logo-text {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.logo-dot {
+  color: #d97706; /* Accent color for the dot */
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lang-selector {
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  color: #0f4c64;
+  padding: 6px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: opacity 0.2s;
+}
+
+.btn-secondary:hover {
+  opacity: 0.9;
+}
+
+.menu-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+}
+
+.menu-toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background-color: #ffffff;
+  border-radius: 2px;
+}
+
+/* Hero Section */
+.hero {
+  padding: 40px 20px 60px;
+  text-align: center;
+}
+
+.hero-container {
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-title {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 2.2rem;
+  line-height: 1.25;
+  color: #0f4c64;
+  margin-bottom: 20px;
+  font-weight: 400;
+}
+
+.hero-subtitle {
+  font-size: 1.05rem;
+  color: #4a5568;
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+/* Stat Box / Card */
+.stat-card {
+  background-color: #f0f7fa;
+  border: 1px solid #d0e4ed;
+  border-radius: 16px;
+  padding: 28px 20px;
+  margin-bottom: 36px;
+  width: 100%;
+}
+
+.stat-tag {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #319795;
+  margin-bottom: 12px;
+}
+
+.stat-heading {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 1.5rem;
+  line-height: 1.3;
+  color: #0f4c64;
+  margin-bottom: 16px;
+  font-weight: 400;
+}
+
+.stat-subtext {
+  font-size: 0.95rem;
+  color: #4a5568;
+}
+
+/* CTA Wrapper & Badge */
+.cta-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.btn-primary {
+  background-color: #0f4c64;
+  color: #ffffff;
+  width: 100%;
+  max-width: 320px;
+  padding: 16px 24px;
+  border-radius: 30px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(15, 76, 100, 0.25);
+  transition: transform 0.15s, background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #0b3b4f;
+  transform: translateY(-1px);
+}
+
+.arrow {
+  font-size: 1.2rem;
+}
+
+.badge {
+  position: absolute;
+  right: 10px;
+  top: -15px;
+  background-color: #000000;
+  color: #ffffff;
+  border-radius: 50%;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #319795;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.badge-icon {
+  width: 16px;
+  height: 16px;
+  stroke: #ffffff;
+}
+
+.badge-text {
+  font-size: 0.35rem;
+  font-weight: 700;
+  text-align: center;
+  margin-top: 2px;
+  line-height: 1;
+}
+
+.cta-footnote {
+  font-size: 0.85rem;
+  color: #718096;
+}
+
     </style>
 </head>
-<body class="py-5">
-    <div class="container" style="max-width: 960px;">
-        <div class="text-center mb-5">
-            <h1 class="fw-bold display-5">CV<span style="color:#E5A93C;">Forge</span> AI</h1>
-            <p class="text-secondary">Tailor your resume, boost ATS compatibility scores, and generate cover letters instantly.</p>
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="logo">
+        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        <span class="logo-text">cvforge<span class="logo-dot">.</span></span>
+      </div>
+
+      <div class="nav-actions">
+        <div class="lang-selector">
+          <span class="flag">🇬🇧</span>
         </div>
-
-        <div id="optimizer-form" class="card card-custom p-4 mb-4">
-            <h4 class="mb-3 text-light">1. Target Job Offer</h4>
-            <div class="mb-3">
-                <label class="form-label text-secondary">Paste Job Description</label>
-                <textarea id="job_description" class="form-control bg-dark text-light border-secondary" rows="4" placeholder="Paste full job offer text here..."></textarea>
-            </div>
-
-            <h4 class="mt-4 mb-3 text-light">2. Your Resume Details</h4>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label text-secondary">Full Name</label>
-                    <input type="text" id="name" class="form-control bg-dark text-light border-secondary" value="KEDIR ABDELA">
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label text-secondary">Job Title</label>
-                    <input type="text" id="title" class="form-control bg-dark text-light border-secondary" value="BUSINESS MARKETING SPECIALIST">
-                </div>
-                <div class="col-12">
-                    <label class="form-label text-secondary">Professional Summary</label>
-                    <textarea id="summary" class="form-control bg-dark text-light border-secondary" rows="3">Results-driven Digital Marketing Specialist with 5+ years of experience managing marketing campaigns and increasing online engagement.</textarea>
-                </div>
-                <div class="col-12">
-                    <label class="form-label text-secondary">Work Experience (Header format: Title | Company | Location | Dates)</label>
-                    <textarea id="experience" class="form-control bg-dark text-light border-secondary" rows="5">Digital Marketing Specialist | BrightWave Media | New York, NY | 2022 - Present
-Managed digital marketing campaigns across Google and social channels.
-Increased engagement and traffic through content strategy.</textarea>
-                </div>
-            </div>
-
-            <button onclick="startOptimization()" class="btn btn-gold btn-lg w-100 mt-4">✨ Optimize CV & Generate Cover Letter</button>
-        </div>
-
-        <div id="progress-card" class="card card-custom p-4 mb-4 d-none text-center">
-            <h4 class="mb-3 text-light">CVForge AI is Processing...</h4>
-            <div class="progress mb-3" style="height: 20px;">
-                <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%"></div>
-            </div>
-            <p id="progress-status" class="text-secondary fw-semibold">Analyzing document...</p>
-        </div>
-
-        <div id="results-card" class="card card-custom p-4 mb-4 d-none">
-            <h3 class="fw-bold mb-4">ATS Compatibility Score</h3>
-            <div class="row text-center mb-4">
-                <div class="col-md-6 mb-2">
-                    <div class="p-3 bg-dark rounded border border-secondary">
-                        <small class="text-secondary d-block mb-1">ORIGINAL SCORE</small>
-                        <span id="score-before" class="badge-score bg-danger text-white">45%</span>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="p-3 bg-dark rounded border border-secondary">
-                        <small class="text-secondary d-block mb-1">OPTIMIZED ATS SCORE</small>
-                        <span id="score-after" class="badge-score bg-success text-white">94%</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <h6 class="text-secondary">INTEGRATED ATS KEYWORDS</h6>
-                <div id="missing-keywords-list"></div>
-            </div>
-
-            <div class="mb-4">
-                <h5 class="text-light">Generated Cover Letter</h5>
-                <textarea id="cover-letter-text" class="form-control bg-dark text-light border-secondary" rows="6" readonly></textarea>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="m-0">ATS Resume Preview</h5>
-                <a id="download-btn" href="#" class="btn btn-gold">Download Optimized PDF</a>
-            </div>
-
-            <div id="preview-container" class="text-center bg-dark p-3 rounded"></div>
-        </div>
+        <a href="#try" class="btn-secondary">Try it</a>
+        <button class="menu-toggle" aria-label="Open menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
     </div>
+  </header>
+
+  <!-- Main Hero Section -->
+  <main class="hero">
+    <div class="hero-container">
+      
+      <!-- Main Title -->
+      <h1 class="hero-title">
+        Your resume, optimized for the job you want.
+      </h1>
+
+      <!-- Subtitle -->
+      <p class="hero-subtitle">
+        We tailor your resume to each job posting so it gets selected. No cheating, and full respect for your data.
+      </p>
+
+      <!-- Stat Card -->
+      <div class="stat-card">
+        <span class="stat-tag">JOBSTER STUDY · 2025</span>
+        <h2 class="stat-heading">
+          75% of resumes are rejected before a human ever reads them.
+        </h2>
+        <p class="stat-subtext">
+          Yours will be optimized for the job you're targeting.
+        </p>
+      </div>
+
+      <!-- Call to Action Container -->
+      <div class="cta-wrapper">
+        <a href="#start" class="btn-primary">
+          Try it for free <span class="arrow">→</span>
+        </a>
+        <div class="badge">
+          <svg class="badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span class="badge-text">GDPR COMPLIANCE</span>
+        </div>
+      </div>
+
+      <!-- Sub-CTA Text -->
+      <p class="cta-footnote">1 free credit · No credit card required</p>
+
+    </div>
+  </main>
 
     <script>
         function startOptimization() {
