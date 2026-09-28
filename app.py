@@ -6,7 +6,7 @@ import re
 import json
 import time
 import requests
-import pymupdf as fitz  # Updated PyMuPDF import to avoid deprecation warning
+import pymupdf as fitz
 from flask import Flask, request, render_template_string, send_file, Response, jsonify
 
 from reportlab.lib import colors
@@ -325,7 +325,7 @@ def pdf_to_base64_images(pdf_path):
     return image_list
 
 # ============================================================
-# CVFORGE FRONTEND UI (RESPONSIVE & SSE INTEGRATED)
+# MULTI-VIEW INTEGRATED UI FRONTEND
 # ============================================================
 APP_HTML = """
 <!DOCTYPE html>
@@ -334,382 +334,352 @@ APP_HTML = """
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>cvforge - Optimize Your Resume</title>
-  <link rel="stylesheet" href="style.css" />
-  <!-- Google Fonts: Serif for titles, Sans-Serif for body -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* Reset & Base Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #ffffff;
+      color: #1a202c;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    .hidden { display: none !important; }
 
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: #ffffff;
-  color: #1a202c;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-}
+    /* Navigation Header */
+    .navbar { background-color: #0d4b60; padding: 12px 20px; color: #ffffff; }
+    .nav-container { max-width: 500px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    .logo { display: flex; items-center; gap: 8px; cursor: pointer; text-decoration: none; color: white; }
+    .logo-icon { width: 22px; height: 22px; stroke: #ffffff; }
+    .logo-text { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.5px; }
+    .logo-dot { color: #e59329; }
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+    .btn-secondary {
+      background-color: #ffffff; color: #0d4b60; padding: 6px 16px; border-radius: 8px;
+      text-decoration: none; font-weight: 600; font-size: 0.88rem; cursor: pointer; border: none;
+    }
 
-/* Navbar */
-.navbar {
-  background-color: #0f4c64; /* Dark Teal / Blue shade */
-  padding: 12px 20px;
-  color: #ffffff;
-}
+    /* Hero / Home View */
+    .hero { padding: 40px 20px 60px; text-align: center; }
+    .hero-container { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
+    .hero-title { font-family: 'DM Serif Display', Georgia, serif; font-size: 2.2rem; line-height: 1.25; color: #0d4b60; margin-bottom: 20px; font-weight: 400; }
+    .hero-subtitle { font-size: 1rem; color: #4a5568; margin-bottom: 32px; line-height: 1.6; }
+    .stat-card { background-color: #f0f7fa; border: 1px solid #d0e4ed; border-radius: 16px; padding: 24px 20px; margin-bottom: 32px; width: 100%; }
+    .stat-tag { display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 1px; color: #319795; margin-bottom: 10px; }
+    .stat-heading { font-family: 'DM Serif Display', Georgia, serif; font-size: 1.4rem; line-height: 1.3; color: #0d4b60; margin-bottom: 12px; font-weight: 400; }
+    .stat-subtext { font-size: 0.9rem; color: #4a5568; }
+    .cta-wrapper { position: relative; width: 100%; display: flex; justify-content: center; margin-bottom: 12px; }
+    .btn-primary {
+      background-color: #0d4b60; color: #ffffff; width: 100%; max-width: 320px; padding: 16px 24px;
+      border-radius: 30px; font-size: 1.05rem; font-weight: 600; border: none; display: flex;
+      align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(13, 75, 96, 0.25);
+      cursor: pointer; transition: background-color 0.2s;
+    }
+    .btn-primary:hover { background-color: #0a3a4b; }
+    .badge {
+      position: absolute; right: 10px; top: -15px; background-color: #000000; color: #ffffff;
+      border-radius: 50%; width: 52px; height: 52px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; border: 2px dashed #319795;
+    }
+    .badge-icon { width: 14px; height: 14px; stroke: #ffffff; }
+    .badge-text { font-size: 0.35rem; font-weight: 700; text-align: center; margin-top: 2px; }
+    .cta-footnote { font-size: 0.82rem; color: #718096; }
 
-.nav-container {
-  max-width: 600px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+    /* Dashboard View */
+    .dashboard-container { max-width: 480px; margin: 0 auto; padding: 20px; }
+    .dash-header-card {
+      background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px 20px;
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;
+    }
+    .credit-pill {
+      background-color: #e0f2fe; color: #0369a1; border-radius: 20px; padding: 4px 12px;
+      font-size: 0.78rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-account {
+      background-color: #0d4b60; color: white; border: none; padding: 8px 16px; border-radius: 20px;
+      font-size: 0.8rem; font-weight: 600; cursor: pointer;
+    }
+    .dropzone-card {
+      border: 2px dashed #cbd5e1; border-radius: 16px; padding: 28px 20px; text-align: center;
+      background-color: #fafafa; margin-bottom: 20px; cursor: pointer;
+    }
+    .input-field {
+      width: 100%; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px; font-family: inherit;
+      font-size: 0.88rem; margin-bottom: 12px; outline: none;
+    }
+    .input-field:focus { border-color: #0d4b60; }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+    /* Register View */
+    .register-container { max-width: 460px; margin: 0 auto; padding: 16px 20px 48px; }
+    .terms-box {
+      background-color: #fffbeb; border: 1px solid #fef08a; border-radius: 12px; padding: 14px;
+      margin-bottom: 20px; display: flex; gap: 12px; align-items: flex-start;
+    }
+    .social-btn {
+      width: 100%; border-radius: 25px; padding: 12px; font-size: 0.88rem; font-weight: 600;
+      display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; margin-bottom: 10px;
+    }
+    .btn-google { background: white; border: 1px solid #cbd5e1; color: #1e293b; }
+    .btn-apple { background: black; border: none; color: white; }
+    .divider { display: flex; align-items: center; margin: 20px 0; color: #94a3b8; font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; }
+    .divider::before, .divider::after { content: ""; flex: 1; border-bottom: 1px solid #e2e8f0; }
+    .divider span { margin: 0 12px; }
 
-.logo-icon {
-  width: 24px;
-  height: 24px;
-  stroke: #ffffff;
-}
-
-.logo-text {
-  font-size: 1.3rem;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-}
-
-.logo-dot {
-  color: #d97706; /* Accent color for the dot */
-}
-
-.nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.lang-selector {
-  font-size: 1.1rem;
-  cursor: pointer;
-}
-
-.btn-secondary {
-  background-color: #ffffff;
-  color: #0f4c64;
-  padding: 6px 16px;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: opacity 0.2s;
-}
-
-.btn-secondary:hover {
-  opacity: 0.9;
-}
-
-.menu-toggle {
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 4px;
-}
-
-.menu-toggle span {
-  display: block;
-  width: 20px;
-  height: 2px;
-  background-color: #ffffff;
-  border-radius: 2px;
-}
-
-/* Hero Section */
-.hero {
-  padding: 40px 20px 60px;
-  text-align: center;
-}
-
-.hero-container {
-  max-width: 480px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.hero-title {
-  font-family: 'DM Serif Display', Georgia, serif;
-  font-size: 2.2rem;
-  line-height: 1.25;
-  color: #0f4c64;
-  margin-bottom: 20px;
-  font-weight: 400;
-}
-
-.hero-subtitle {
-  font-size: 1.05rem;
-  color: #4a5568;
-  margin-bottom: 32px;
-  line-height: 1.6;
-}
-
-/* Stat Box / Card */
-.stat-card {
-  background-color: #f0f7fa;
-  border: 1px solid #d0e4ed;
-  border-radius: 16px;
-  padding: 28px 20px;
-  margin-bottom: 36px;
-  width: 100%;
-}
-
-.stat-tag {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 1px;
-  color: #319795;
-  margin-bottom: 12px;
-}
-
-.stat-heading {
-  font-family: 'DM Serif Display', Georgia, serif;
-  font-size: 1.5rem;
-  line-height: 1.3;
-  color: #0f4c64;
-  margin-bottom: 16px;
-  font-weight: 400;
-}
-
-.stat-subtext {
-  font-size: 0.95rem;
-  color: #4a5568;
-}
-
-/* CTA Wrapper & Badge */
-.cta-wrapper {
-  position: relative;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 12px;
-}
-
-.btn-primary {
-  background-color: #0f4c64;
-  color: #ffffff;
-  width: 100%;
-  max-width: 320px;
-  padding: 16px 24px;
-  border-radius: 30px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow: 0 4px 14px rgba(15, 76, 100, 0.25);
-  transition: transform 0.15s, background-color 0.2s;
-}
-
-.btn-primary:hover {
-  background-color: #0b3b4f;
-  transform: translateY(-1px);
-}
-
-.arrow {
-  font-size: 1.2rem;
-}
-
-.badge {
-  position: absolute;
-  right: 10px;
-  top: -15px;
-  background-color: #000000;
-  color: #ffffff;
-  border-radius: 50%;
-  width: 52px;
-  height: 52px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border: 2px dashed #319795;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-.badge-icon {
-  width: 16px;
-  height: 16px;
-  stroke: #ffffff;
-}
-
-.badge-text {
-  font-size: 0.35rem;
-  font-weight: 700;
-  text-align: center;
-  margin-top: 2px;
-  line-height: 1;
-}
-
-.cta-footnote {
-  font-size: 0.85rem;
-  color: #718096;
-}
-
-    </style>
+    /* Progress & Results */
+    .progress-bar-inner { height: 100%; background-color: #0d4b60; width: 0%; transition: width 0.3s; }
+  </style>
 </head>
 <body>
 
-  <!-- Navbar -->
+  <!-- TOP NAVBAR -->
   <header class="navbar">
     <div class="nav-container">
-      <div class="logo">
+      <div class="logo" onclick="switchView('home')">
         <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
           <polyline points="14 2 14 8 20 8"></polyline>
           <line x1="16" y1="13" x2="8" y2="13"></line>
           <line x1="16" y1="17" x2="8" y2="17"></line>
-          <polyline points="10 9 9 9 8 9"></polyline>
         </svg>
         <span class="logo-text">cvforge<span class="logo-dot">.</span></span>
       </div>
-
       <div class="nav-actions">
-        <div class="lang-selector">
-          <span class="flag">🇬🇧</span>
-        </div>
-        <a href="#try" class="btn-secondary">Try it</a>
-        <button class="menu-toggle" aria-label="Open menu">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
+        <span>🇬🇧</span>
+        <button id="nav-action-btn" class="btn-secondary" onclick="switchView('dashboard')">Try it</button>
       </div>
     </div>
   </header>
 
-  <!-- Main Hero Section -->
-  <main class="hero">
-    <div class="hero-container">
-      
-      <!-- Main Title -->
-      <h1 class="hero-title">
-        Your resume, optimized for the job you want.
-      </h1>
+  <!-- VIEW 1: HOME PAGE -->
+  <div id="view-home">
+    <main class="hero">
+      <div class="hero-container">
+        <h1 class="hero-title">Your resume, optimized for the job you want.</h1>
+        <p class="hero-subtitle">We tailor your resume to each job posting so it gets selected. No cheating, and full respect for your data.</p>
+        
+        <div class="stat-card">
+          <span class="stat-tag">JOBSTER STUDY · 2025</span>
+          <h2 class="stat-heading">75% of resumes are rejected before a human ever reads them.</h2>
+          <p class="stat-subtext">Yours will be optimized for the job you're targeting.</p>
+        </div>
 
-      <!-- Subtitle -->
-      <p class="hero-subtitle">
-        We tailor your resume to each job posting so it gets selected. No cheating, and full respect for your data.
-      </p>
+        <div class="cta-wrapper">
+          <button class="btn-primary" onclick="switchView('dashboard')">
+            Try it for free <span style="font-size: 1.2rem;">→</span>
+          </button>
+          <div class="badge">
+            <svg class="badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <span class="badge-text">GDPR COMPLIANCE</span>
+          </div>
+        </div>
+        <p class="cta-footnote">1 free credit · No credit card required</p>
+      </div>
+    </main>
+  </div>
 
-      <!-- Stat Card -->
-      <div class="stat-card">
-        <span class="stat-tag">JOBSTER STUDY · 2025</span>
-        <h2 class="stat-heading">
-          75% of resumes are rejected before a human ever reads them.
-        </h2>
-        <p class="stat-subtext">
-          Yours will be optimized for the job you're targeting.
-        </p>
+  <!-- VIEW 2: DASHBOARD PAGE -->
+  <div id="view-dashboard" class="hidden">
+    <div class="dashboard-container">
+      <div class="dash-header-card">
+        <div class="credit-pill">⚡ 1 free credit left</div>
+        <button class="btn-account" onclick="switchView('register')">Create an account</button>
       </div>
 
-      <!-- Call to Action Container -->
-      <div class="cta-wrapper">
-        <a href="#start" class="btn-primary">
-          Try it for free <span class="arrow">→</span>
-        </a>
-        <div class="badge">
-          <svg class="badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      <div id="dash-form">
+        <div class="dropzone-card">
+          <svg style="width: 32px; height: 32px; margin: 0 auto 8px; stroke: #64748b;" viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
           </svg>
-          <span class="badge-text">GDPR COMPLIANCE</span>
+          <p style="font-size: 0.9rem; font-weight: 600; color: #1e293b;">Drop your CV or click to browse</p>
+          <p style="font-size: 0.75rem; color: #64748b;">Supports PDF or TXT format</p>
+        </div>
+
+        <input type="text" id="name" placeholder="Full Name" class="input-field" value="Alex Smith" />
+        <input type="text" id="title" placeholder="Target Job Title" class="input-field" value="Software Engineer" />
+        <textarea id="job_description" rows="3" placeholder="Paste Target Job Description here..." class="input-field">Looking for a Full Stack Software Engineer proficient in KPI tracking, data optimization, and cross-functional leadership.</textarea>
+        <textarea id="summary" rows="2" placeholder="Current CV Summary..." class="input-field">Experienced software developer with focus on web applications.</textarea>
+        <textarea id="experience" rows="3" placeholder="Current Work Experience..." class="input-field">Senior Developer | Tech Corp
+Developed scalable web APIs and backend systems.</textarea>
+
+        <button class="btn-primary" style="max-width: 100%; border-radius: 12px; margin-top: 8px;" onclick="startOptimization()">
+          Optimize Resume Now →
+        </button>
+      </div>
+
+      <!-- Progress Section -->
+      <div id="progress-card" class="hidden" style="text-align: center; padding: 40px 0;">
+        <p id="progress-status" style="font-size: 0.9rem; font-weight: 600; color: #0d4b60; margin-bottom: 12px;">Initializing...</p>
+        <div style="height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-bottom: 12px;">
+          <div id="progress-bar" class="progress-bar-inner"></div>
         </div>
       </div>
 
-      <!-- Sub-CTA Text -->
-      <p class="cta-footnote">1 free credit · No credit card required</p>
-
+      <!-- Result Section -->
+      <div id="results-card" class="hidden" style="margin-top: 20px;">
+        <h3 style="color: #0d4b60; margin-bottom: 12px;">Optimization Complete!</h3>
+        <p style="font-size: 0.85rem; color: #475569; margin-bottom: 12px;">ATS Score Improved: <span id="score-before">--</span> → <strong id="score-after" style="color: #16a34a;">--</strong></p>
+        <a id="download-btn" href="#" class="btn-primary" style="max-width: 100%; border-radius: 12px; text-decoration: none;">Download Optimized PDF</a>
+        <div id="preview-container" style="margin-top: 20px; text-align: center;"></div>
+      </div>
     </div>
-  </main>
+  </div>
 
-    <script>
-        function startOptimization() {
-            const payload = {
-                job_description: document.getElementById('job_description').value,
-                name: document.getElementById('name').value,
-                title: document.getElementById('title').value,
-                summary: document.getElementById('summary').value,
-                experience: document.getElementById('experience').value
-            };
+  <!-- VIEW 3: REGISTER PAGE -->
+  <div id="view-register" class="hidden">
+    <div class="register-container">
+      <h1 style="font-family: 'DM Serif Display', Georgia, serif; font-size: 2rem; color: #0d4b60; margin-bottom: 6px;">Welcome.</h1>
+      <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">One account = your resumes saved, your credits kept, zero loss.</p>
 
-            document.getElementById('optimizer-form').classList.add('d-none');
-            document.getElementById('progress-card').classList.remove('d-none');
+      <div class="terms-box">
+        <input type="checkbox" id="terms-check" style="margin-top: 3px; accent-color: #0d4b60; cursor: pointer;" />
+        <label for="terms-check" style="font-size: 0.75rem; color: #854d0e; line-height: 1.4; cursor: pointer;">
+          <strong style="color: #92400e; display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">
+            🛡 Required to sign up
+          </strong>
+          I accept the <a href="#" style="color: #78350f; font-weight: 600;">Terms of Service</a> and the <a href="#" style="color: #78350f; font-weight: 600;">Privacy Policy</a>.
+        </label>
+      </div>
 
-            fetch('/api/optimize', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(data => {
-                listenToProgress(data.job_id);
-            });
+      <button class="social-btn btn-google">
+        <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+        Continue with Google
+      </button>
+
+      <button class="social-btn btn-apple">
+        <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 170 170"><path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.34.13-9.16-1.9-14.49-6.08-3.32-2.68-7.23-7.38-11.73-14.09-6.42-9.56-11.45-20.15-15.09-31.78-3.64-11.63-5.46-22.91-5.46-33.84 0-14.88 3.73-27.12 11.19-36.72 7.46-9.6 16.89-14.48 28.29-14.64 4.89 0 10.15 1.25 15.78 3.74 5.63 2.5 9.4 3.75 11.3 3.75 1.52 0 5.43-1.3 11.73-3.9 6.3-2.6 11.49-3.8 15.57-3.6 11.51.9 20.89 5.22 28.14 12.96-10.22 6.18-15.22 14.84-15.01 25.98.21 8.68 3.51 16.03 9.89 22.05 6.38 6.02 14.01 9.46 22.89 10.32-2.28 6.84-5.22 13.62-8.82 20.34zM119.22 31.84c0-6.73 2.41-13.36 7.23-19.89 4.82-6.53 11.08-10.87 18.78-13.02.65 2.17.98 4.29.98 6.36 0 6.84-2.52 13.6-7.56 20.28-5.04 6.68-11.28 10.84-18.72 12.48-.22-2.06-.71-4.13-.71-6.21z"/></svg>
+        Continue with Apple
+      </button>
+
+      <div class="divider"><span>OR WITH YOUR EMAIL</span></div>
+
+      <form onsubmit="handleRegister(event)">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div>
+            <label style="font-size: 0.75rem; font-weight: 700; color: #334155;">First name</label>
+            <input type="text" placeholder="First name" class="input-field" style="margin-top: 4px;" required />
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; font-weight: 700; color: #334155;">Last name</label>
+            <input type="text" placeholder="Last name" class="input-field" style="margin-top: 4px;" required />
+          </div>
+        </div>
+
+        <div style="margin-top: 8px;">
+          <label style="font-size: 0.75rem; font-weight: 700; color: #334155;">Email address</label>
+          <input type="email" placeholder="you@email.com" class="input-field" style="margin-top: 4px;" required />
+        </div>
+
+        <div style="margin-top: 8px;">
+          <label style="font-size: 0.75rem; font-weight: 700; color: #334155;">Password <span style="color: #ef4444;">*</span></label>
+          <input type="password" placeholder="At least 8 characters" class="input-field" style="margin-top: 4px;" required />
+          <p style="font-size: 0.7rem; color: #64748b;">Your password must contain at least 8 characters, one letter and one number.</p>
+        </div>
+
+        <button type="submit" class="btn-primary" style="max-width: 100%; border-radius: 25px; margin-top: 16px;">
+          Create my account →
+        </button>
+      </form>
+
+      <p style="text-align: center; font-size: 0.8rem; color: #475569; margin-top: 20px;">
+        Already have an account? <a href="#" style="color: #0d4b60; font-weight: 700;">Sign in</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    function switchView(viewName) {
+      document.getElementById('view-home').classList.add('hidden');
+      document.getElementById('view-dashboard').classList.add('hidden');
+      document.getElementById('view-register').classList.add('hidden');
+
+      const actionBtn = document.getElementById('nav-action-btn');
+
+      if (viewName === 'home') {
+        document.getElementById('view-home').classList.remove('hidden');
+        actionBtn.innerText = 'Try it';
+        actionBtn.onclick = () => switchView('dashboard');
+      } else if (viewName === 'dashboard') {
+        document.getElementById('view-dashboard').classList.remove('hidden');
+        actionBtn.innerText = 'Sign up';
+        actionBtn.onclick = () => switchView('register');
+      } else if (viewName === 'register') {
+        document.getElementById('view-register').classList.remove('hidden');
+        actionBtn.innerText = 'Dashboard';
+        actionBtn.onclick = () => switchView('dashboard');
+      }
+      window.scrollTo(0, 0);
+    }
+
+    function handleRegister(e) {
+      e.preventDefault();
+      const terms = document.getElementById('terms-check').checked;
+      if (!terms) {
+        alert('Please accept the Terms of Service and Privacy Policy.');
+        return;
+      }
+      alert('Account created successfully!');
+      switchView('dashboard');
+    }
+
+    function startOptimization() {
+      const payload = {
+        job_description: document.getElementById('job_description').value,
+        name: document.getElementById('name').value,
+        title: document.getElementById('title').value,
+        summary: document.getElementById('summary').value,
+        experience: document.getElementById('experience').value
+      };
+
+      document.getElementById('dash-form').classList.add('hidden');
+      document.getElementById('progress-card').classList.remove('hidden');
+
+      fetch('/api/optimize', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        listenToProgress(data.job_id);
+      });
+    }
+
+    function listenToProgress(jobId) {
+      const eventSource = new EventSource(`/api/stream/${jobId}`);
+      eventSource.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        document.getElementById('progress-bar').style.width = data.progress + '%';
+        document.getElementById('progress-status').innerText = data.status;
+
+        if (data.progress === 100 && data.result) {
+          eventSource.close();
+          showResults(data.result);
         }
+      };
+    }
 
-        function listenToProgress(jobId) {
-            const eventSource = new EventSource(`/api/stream/${jobId}`);
+    function showResults(result) {
+      document.getElementById('progress-card').classList.add('hidden');
+      document.getElementById('results-card').classList.remove('hidden');
 
-            eventSource.onmessage = function(event) {
-                const data = JSON.parse(event.data);
-                document.getElementById('progress-bar').style.width = data.progress + '%';
-                document.getElementById('progress-status').innerText = data.status;
+      document.getElementById('score-before').innerText = result.analysis.ats_score_before + '%';
+      document.getElementById('score-after').innerText = result.analysis.ats_score_after + '%';
+      document.getElementById('download-btn').href = `/download/${result.token}`;
 
-                if (data.progress === 100 && data.result) {
-                    eventSource.close();
-                    showResults(data.result);
-                }
-            };
-        }
-
-        function showResults(result) {
-            document.getElementById('progress-card').classList.add('d-none');
-            document.getElementById('results-card').classList.remove('d-none');
-
-            document.getElementById('score-before').innerText = result.analysis.ats_score_before + '%';
-            document.getElementById('score-after').innerText = result.analysis.ats_score_after + '%';
-            document.getElementById('cover-letter-text').value = result.cover_letter;
-
-            const kwContainer = document.getElementById('missing-keywords-list');
-            kwContainer.innerHTML = '';
-            result.analysis.missing_keywords.forEach(kw => {
-                kwContainer.innerHTML += `<span class="keyword-tag text-warning">+ ${kw}</span>`;
-            });
-
-            document.getElementById('download-btn').href = `/download/${result.token}`;
-
-            const previewContainer = document.getElementById('preview-container');
-            previewContainer.innerHTML = '';
-            result.page_images.forEach(base64Img => {
-                previewContainer.innerHTML += `<img src="data:image/png;base64,${base64Img}" class="img-fluid rounded shadow mb-3" style="max-width: 700px;">`;
-            });
-        }
-    </script>
+      const previewContainer = document.getElementById('preview-container');
+      previewContainer.innerHTML = '';
+      result.page_images.forEach(base64Img => {
+        previewContainer.innerHTML += `<img src="data:image/png;base64,${base64Img}" style="max-width: 100%; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 12px;" />`;
+      });
+    }
+  </script>
 </body>
 </html>
 """
