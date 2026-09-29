@@ -28,12 +28,6 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
-# --- Routes ---
-
-@app.route('/')
-def home():
-    """Renders the main CVForge dashboard interface."""
-    return render_template('index.html')
 
 @app.route('/api/parse', methods=['POST'])
 def parse_inputs():
