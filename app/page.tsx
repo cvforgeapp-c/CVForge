@@ -7,7 +7,8 @@ import { ArrowRight, ShieldCheck, Menu, Globe } from "lucide-react";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#F7FAFC] text-[#0F2A4A] font-sans">
+    // Inside app/page.tsx, update the main wrapper class to:
+<main className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased">
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto border-b border-gray-100">
         <div className="flex items-center gap-2">
