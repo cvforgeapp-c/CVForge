@@ -2,7 +2,6 @@ import os
 from flask import Flask, request, jsonify, Response, send_from_directory
 from dotenv import load_dotenv
 
-
 # --- Import Core Utility Modules ---
 from scraper import scrape_job_url
 from pdf_parser import extract_text_from_pdf_stream
@@ -18,8 +17,13 @@ app = Flask(__name__, static_folder='out', static_url_path='')
 
 # --- App & Database Configuration ---
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default-dev-key')
-# Uses Render/Neon PostgreSQL URL if provided; falls back to local SQLite for quick testing
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///cvforge.db')
+
+# Format Postgres URL scheme for SQLAlchemy compatibility on Render/Neon
+db_url = os.getenv('DATABASE_URL', 'sqlite:///cvforge.db')
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize SQLAlchemy with app
@@ -39,7 +43,7 @@ def parse_inputs():
     job_text = scrape_job_url(job_url) if job_url else ""
     cv_text = ""
     
-    if pdf_file and pdf_file.filename.endswith('.pdf'):
+    if pdf_file and pdf_file.filename and pdf_file.filename.lower().endswith('.pdf'):
         cv_text = extract_text_from_pdf_stream(pdf_file.read())
 
     if not cv_text and not job_text:
@@ -91,7 +95,5 @@ def serve_static(path):
     return send_from_directory('out', 'index.html')
 
 if __name__ == '__main__':
-    # Render assigns dynamic ports via the PORT environment variable
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
-
