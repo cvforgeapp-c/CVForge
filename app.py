@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, Response, send_from_directory
 from dotenv import load_dotenv
 
 # --- Import Core Utility Modules ---
@@ -13,7 +13,7 @@ from stream import stream_optimization_process
 
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='out', static_url_path='')
 
 # --- App & Database Configuration ---
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default-dev-key')
@@ -83,6 +83,17 @@ def run_optimization():
         'data': result
     })
 
+# --- Static File Serving Routes ---
+
+@app.route('/')
+def serve_index():
+    return send_from_directory('out', 'index.html')
+
+@app.route('/<path:path>')
+def serve_static(path):
+    if os.path.exists(os.path.join('out', path)):
+        return send_from_directory('out', path)
+    return send_from_directory('out', 'index.html')
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
