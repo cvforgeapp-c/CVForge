@@ -1,4 +1,5 @@
 import pymupdf as fitz
+from utils import sanitize_text
 
 def extract_text_from_pdf_stream(file_stream: bytes) -> str:
     extracted_text = []
