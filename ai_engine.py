@@ -2,8 +2,6 @@ import os
 from openai import OpenAI
 from pydantic import BaseModel, Field
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
 class BulletPoint(BaseModel):
     original: str
     optimized: str
@@ -16,6 +14,13 @@ class ResumeOptimizationResponse(BaseModel):
     optimized_bullets: list[BulletPoint]
 
 def generate_tailored_resume(cv_text: str, job_text: str) -> dict:
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        print("[AI Engine Error]: OPENAI_API_KEY environment variable is not set.")
+        return {"error": "OpenAI API key missing from server environment."}
+
+    client = OpenAI(api_key=api_key)
+
     prompt = f"""
     You are an expert ATS Resume Optimizer.
     Analyze the candidate's CV against the target Job Description.
