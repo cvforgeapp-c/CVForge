@@ -1,14 +1,13 @@
-// app/page.tsx - Landing Page (Reference Image 1)
+// app/page.tsx - Landing Page
 "use client";
 
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, ShieldCheck, Menu, Globe } from "lucide-react";
+import { ArrowRight, Menu } from "lucide-react";
 
 export default function LandingPage() {
   return (
-    // Inside app/page.tsx, update the main wrapper class to:
-<main className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased">
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto border-b border-gray-100">
         <div className="flex items-center gap-2">
