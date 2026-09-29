@@ -1,7 +1,6 @@
 import os
 from flask import Flask, request, jsonify, Response, send_from_directory
 from dotenv import load_dotenv
-import pymupdf as fitz
 
 
 # --- Import Core Utility Modules ---
