@@ -1,4 +1,4 @@
-import fitz  # PyMuPDF
+import pymupdf as fitz
 
 def extract_text_from_pdf_stream(file_stream: bytes) -> str:
     extracted_text = []
