@@ -74,10 +74,15 @@ def run_optimization():
     # Call AI Engine to optimize resume
     result = generate_tailored_resume(cv_text, job_text)
     
+    # If the engine returned an error dictionary
+    if "error" in result:
+        return jsonify({'status': 'error', 'message': result['error']}), 500
+
     return jsonify({
         'status': 'success',
         'data': result
     })
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
