@@ -96,5 +96,7 @@ def serve_static(path):
     return send_from_directory('out', 'index.html')
 
 if __name__ == '__main__':
+    # Render assigns dynamic ports via the PORT environment variable
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
+
