@@ -1,6 +1,7 @@
 import os
 from flask import Flask, request, jsonify, Response, send_from_directory
 from dotenv import load_dotenv
+from utils import allowed_file, sanitize_text
 
 # --- Import Core Utility Modules ---
 from scraper import scrape_job_url
