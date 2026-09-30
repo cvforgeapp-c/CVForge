@@ -50,7 +50,7 @@ export default function LandingPage() {
         {/* Statistic Box */}
         <div className="bg-[#EDF5F9] border border-sky-100 rounded-2xl p-6 mb-8 text-center">
           <span className="text-[11px] font-bold tracking-widest text-sky-800 uppercase block mb-2">
-            JOBSTER STUDY · 2025
+            JOBSTER STUDY · 2026
           </span>
           <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#0F2A4A] mb-3 leading-snug">
             75% of resumes are rejected before a human ever reads them.
