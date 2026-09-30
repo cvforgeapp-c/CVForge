@@ -138,7 +138,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <span className="text-[10px] font-bold tracking-wider text-[#3B7A9E] uppercase block">
-                    VOTRE CV DE BASE
+                    YOUR BASE RESUME
                   </span>
                   <p className="font-semibold text-sm text-[#0F2942]">{userName}</p>
                   <p className="text-xs text-gray-400 truncate max-w-[180px]">{file.name}</p>
