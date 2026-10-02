@@ -1,0 +1,65 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String            @id @default(uuid())
+  email         String            @unique
+  passwordHash  String?
+  firstName     String?
+  lastName      String?
+  creditsCoins  Int               @default(0)
+  creditsTarget Int               @default(1) // Free trial credits
+  tier          SubscriptionTier  @default(STARTER)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  resumes       OptimizedResume[]
+  coverLetters  CoverLetter[]
+  transactions  Transaction[]
+}
+
+enum SubscriptionTier {
+  FREE
+  STARTER
+  PRO
+  EXPERT
+}
+
+model OptimizedResume {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName     String
+  sourceJobUrl    String
+  parsedDataJson  Json
+  matchScoreBefore Int
+  matchScoreAfter  Int
+  pdfStorageUrl   String?
+  createdAt       DateTime @default(now())
+}
+
+model CoverLetter {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName  String
+  letterContent String  @db.Text
+  createdAt    DateTime @default(now())
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amountUsd   Decimal
+  creditsAdded Int
+  provider    String   // "Stripe" or "Telebirr"
+  status      String
+  createdAt   DateTime @default(now())
+}
