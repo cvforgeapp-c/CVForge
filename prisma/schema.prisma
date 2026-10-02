@@ -1,65 +1,91 @@
+generator client {
+  provider  = "prisma-client-js"
+  output    = "../node_modules/.prisma/client"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 model User {
-  id            String            @id @default(uuid())
-  email         String            @unique
+  id            String         @id @default(uuid())
+  email         String         @unique
   passwordHash  String?
-  firstName     String?
-  lastName      String?
-  creditsCoins  Int               @default(0)
-  creditsTarget Int               @default(1) // Free trial credits
-  tier          SubscriptionTier  @default(STARTER)
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-
-  resumes       OptimizedResume[]
+  name          String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  // Credits & Tier
+  credits       Int            @default(1) // 1 free trial credit on signup
+  plan          PlanType       @default(FREE)
+  
+  // Relationships
+  resumes       Resume[]
   coverLetters  CoverLetter[]
   transactions  Transaction[]
+
+  @@map("users")
 }
 
-enum SubscriptionTier {
+model Resume {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title          String   @default("Untitled CV")
+  originalText   String   @db.Text
+  optimizedJson  Json     // Stores structured output from Gemini AI
+  jobTitle       String?
+  jobUrl         String?
+  pdfUrl         String?
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("resumes")
+}
+
+model CoverLetter {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  targetRole     String
+  companyName    String?
+  content        String   @db.Text
+  
+  createdAt      DateTime @default(now())
+
+  @@map("cover_letters")
+}
+
+model Transaction {
+  id             String            @id @default(uuid())
+  userId         String
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  paddleTxId     String?           @unique
+  amount         Float
+  currency       String            @default("USD")
+  status         TransactionStatus @default(PENDING)
+  creditsAdded   Int               @default(0)
+  
+  createdAt      DateTime          @default(now())
+
+  @@map("transactions")
+}
+
+enum PlanType {
   FREE
   STARTER
   PRO
   EXPERT
 }
 
-model OptimizedResume {
-  id              String   @id @default(uuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  companyName     String
-  sourceJobUrl    String
-  parsedDataJson  Json
-  matchScoreBefore Int
-  matchScoreAfter  Int
-  pdfStorageUrl   String?
-  createdAt       DateTime @default(now())
-}
-
-model CoverLetter {
-  id           String   @id @default(uuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  companyName  String
-  letterContent String  @db.Text
-  createdAt    DateTime @default(now())
-}
-
-model Transaction {
-  id          String   @id @default(uuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  amountUsd   Decimal
-  creditsAdded Int
-  provider    String   // "Stripe" or "Telebirr"
-  status      String
-  createdAt   DateTime @default(now())
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
 }
