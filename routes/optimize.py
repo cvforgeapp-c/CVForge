@@ -3,8 +3,8 @@ import tempfile
 from flask import Blueprint, request, jsonify, send_file
 from utils.auth_middleware import token_required
 from services.pdf_parser import parse_resume_stream
-from services.scraper import scrape_job_posting
-from services.ai_engine import optimize_resume_data
+from services.scraper_service import scrape_job_posting
+from services.ai_service import optimize_resume_data
 from services.pdf_engine import generate_ats_pdf
 
 optimize_bp = Blueprint('optimize', __name__)
