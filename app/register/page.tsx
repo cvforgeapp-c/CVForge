@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 
 export default function Register() {
   const router = useRouter()
@@ -27,6 +28,15 @@ export default function Register() {
     }))
   }
 
+  const handleOAuthLogin = (provider: 'google' | 'apple') => {
+    if (!formData.acceptTerms) {
+      setError('Please accept the Terms of Service and Privacy Policy to continue.')
+      return
+    }
+    setError('')
+    signIn(provider, { callbackUrl: '/dashboard' })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -46,18 +56,25 @@ export default function Register() {
         body: JSON.stringify(formData)
       })
 
-      const data = await res.json()
+      // Safely parse JSON or handle raw text response
+      const contentType = res.headers.get('content-type')
+      let data
+      if (contentType && contentType.includes('application/json')) {
+        data = await res.json()
+      } else {
+        throw new Error('A server error occurred. Please try again.')
+      }
 
       if (!res.ok) {
         throw new Error(data.error || 'Failed to create account.')
       }
 
-      setSuccess('Account created! Redirecting to dashboard...')
+      setSuccess('Account created successfully! Redirecting...')
       setTimeout(() => {
         router.push('/dashboard')
-      }, 1500)
+      }, 1200)
     } catch (err: any) {
-      setError(err.message || 'Something went wrong.')
+      setError(err.message || 'An unexpected error occurred.')
     } finally {
       setLoading(false)
     }
@@ -66,13 +83,12 @@ export default function Register() {
   return (
     <main className="min-h-screen bg-white text-[#143a52] px-5 py-6 max-w-md mx-auto flex flex-col justify-between">
       <div>
-        {/* Top Header Controls */}
+        {/* Top Controls */}
         <div className="flex items-center justify-between mb-8">
           <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 text-xl font-bold">
             &larr;
           </Link>
 
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <div className="bg-[#134e6f] p-1.5 rounded-lg text-white">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,7 +103,6 @@ export default function Register() {
           <span className="text-lg" aria-label="UK Flag">🇬🇧</span>
         </div>
 
-        {/* Heading */}
         <h1 className="font-serif font-extrabold text-3xl text-[#0d2838] mb-2">
           Welcome.
         </h1>
@@ -95,7 +110,7 @@ export default function Register() {
           One account = your resumes saved, your credits kept, zero loss.
         </p>
 
-        {/* Feedback Messages */}
+        {/* Dynamic Alerts */}
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl p-3 mb-4 font-medium">
             {error}
@@ -107,7 +122,7 @@ export default function Register() {
           </div>
         )}
 
-        {/* Terms Box */}
+        {/* Required Terms */}
         <div className="bg-[#fffdf0] border border-amber-200 rounded-xl p-3.5 mb-6 flex items-start gap-3">
           <input
             type="checkbox"
@@ -125,10 +140,11 @@ export default function Register() {
           </label>
         </div>
 
-        {/* OAuth Buttons */}
+        {/* Working Google & Apple OAuth Buttons */}
         <div className="space-y-3 mb-6">
           <button
             type="button"
+            onClick={() => handleOAuthLogin('google')}
             className="w-full border border-gray-300 rounded-full py-2.5 px-4 flex items-center justify-center gap-3 font-medium text-xs text-gray-700 hover:bg-gray-50 transition-colors"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -142,6 +158,7 @@ export default function Register() {
 
           <button
             type="button"
+            onClick={() => handleOAuthLogin('apple')}
             className="w-full bg-black text-white rounded-full py-2.5 px-4 flex items-center justify-center gap-3 font-medium text-xs hover:bg-gray-900 transition-colors"
           >
             <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -160,7 +177,7 @@ export default function Register() {
           <div className="flex-grow border-t border-gray-200"></div>
         </div>
 
-        {/* Registration Form */}
+        {/* Email Registration Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>

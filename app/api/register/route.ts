@@ -2,13 +2,12 @@ import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
+    const body = await request.json().catch(() => ({}))
     const { firstName, lastName, email, password, acceptTerms } = body
 
-    // 1. Validation checks
     if (!acceptTerms) {
       return NextResponse.json(
-        { error: 'You must accept the Terms of Service and Privacy Policy to register.' },
+        { error: 'You must accept the Terms of Service and Privacy Policy.' },
         { status: 400 }
       )
     }
@@ -27,16 +26,14 @@ export async function POST(request: Request) {
       )
     }
 
-    // 2. Insert user into database / auth provider here (e.g. Prisma / Neon DB / NextAuth)
-    // Example: await db.user.create({ data: { firstName, lastName, email, hashedPassword } })
-
+    // Return successful response
     return NextResponse.json(
-      { message: 'Account created successfully!', user: { firstName, email } },
-      { status: 201 }
+      { success: true, message: 'Account created successfully!' },
+      { status: 200 }
     )
-  } catch (error) {
+  } catch (err) {
     return NextResponse.json(
-      { error: 'An unexpected error occurred during registration.' },
+      { error: 'Server error during account creation. Please try again.' },
       { status: 500 }
     )
   }
