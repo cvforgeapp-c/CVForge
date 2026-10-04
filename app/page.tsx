@@ -1,7 +1,15 @@
-import React from 'react'
+'use client'
+
+import React, { useState } from 'react'
 import Link from 'next/link'
 
 export default function Home() {
+  const [showCookieBanner, setShowCookieBanner] = useState(true)
+
+  const handleCookieConsent = () => {
+    setShowCookieBanner(false)
+  }
+
   return (
     <main className="min-h-screen flex flex-col justify-between bg-white text-[#143a52] relative pb-28">
       {/* Header Banner */}
@@ -79,29 +87,37 @@ export default function Home() {
         </p>
       </section>
 
-      {/* Fixed Cookie Banner at Bottom */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-50">
-        <div className="max-w-xl mx-auto flex flex-col gap-3">
-          <div className="flex items-start gap-2.5">
-            <span className="text-lg">🍪</span>
-            <div>
-              <p className="font-bold text-xs text-[#0d2838]">We use cookies</p>
-              <p className="text-[11px] text-gray-500 leading-snug">
-                This site uses cookies and a technical identifier from your device to improve your experience and prevent abuse.{' '}
-                <a href="#" className="underline text-gray-700">Learn more</a>
-              </p>
+      {/* Interactive Cookie Consent Banner matching reference text exactly */}
+      {showCookieBanner && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 shadow-2xl z-50 transition-all duration-300">
+          <div className="max-w-md mx-auto flex flex-col gap-3">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl leading-none">🍪</span>
+              <div>
+                <p className="font-bold text-sm text-[#0d2838]">We use cookies</p>
+                <p className="text-xs text-gray-500 leading-snug mt-0.5">
+                  This site uses cookies and a technical identifier from your device to improve your experience and prevent abuse.{' '}
+                  <a href="#" className="underline text-gray-700">Learn more</a>
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 pt-1">
+              <button
+                onClick={handleCookieConsent}
+                className="flex-1 py-2.5 border border-gray-300 rounded-full text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Decline
+              </button>
+              <button
+                onClick={handleCookieConsent}
+                className="flex-1 py-2.5 bg-[#134e6f] rounded-full text-xs font-semibold text-white hover:bg-[#0f3d57] transition-colors"
+              >
+                Accept
+              </button>
             </div>
           </div>
-          <div className="flex items-center gap-2 pt-1">
-            <button className="flex-1 py-2 border border-gray-300 rounded-full text-xs font-semibold text-gray-700 hover:bg-gray-50">
-              Decline
-            </button>
-            <button className="flex-1 py-2 bg-[#134e6f] rounded-full text-xs font-semibold text-white hover:bg-[#0f3d57]">
-              Accept
-            </button>
-          </div>
         </div>
-      </div>
+      )}
     </main>
   )
 }
