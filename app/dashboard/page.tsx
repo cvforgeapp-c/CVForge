@@ -3,11 +3,27 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 
+interface User {
+  firstName: string
+  emailBadge: string
+}
+
 export default function Dashboard() {
-  const [user, setUser] = useState<{ firstName: string; emailBadge: string } | null>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [jobUrl, setJobUrl] = useState('')
+  const [uploadedFileName, setUploadedFileName] = useState('Kedir_Alemayehu_CV.pdf')
+  const [isOptimizing, setIsOptimizing] = useState(false)
+  const [stepIndex, setStepIndex] = useState(0)
+
+  const steps = [
+    'Reading your resume...',
+    'Analyzing the job offer...',
+    'Detecting ATS keywords...',
+    'Rewriting your experiences...',
+    'Calculating the score...'
+  ]
 
   useEffect(() => {
-    // Read user credentials saved during registration
     if (typeof window !== 'undefined') {
       const savedName = localStorage.getItem('cvforge_user_name')
       const savedEmail = localStorage.getItem('cvforge_user_email')
@@ -22,91 +38,197 @@ export default function Dashboard() {
     }
   }, [])
 
+  const handleLaunch = () => {
+    if (!jobUrl) return
+    setIsOptimizing(true)
+    setStepIndex(0)
+
+    const interval = setInterval(() => {
+      setStepIndex((prev) => {
+        if (prev >= steps.length - 1) {
+          clearInterval(interval)
+          return prev
+        }
+        return prev + 1
+      })
+    }, 1200)
+  }
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setUploadedFileName(e.target.files[0].name)
+    }
+  }
+
   return (
-    <main className="min-h-screen bg-[#fafbfc] text-[#143a52] px-4 py-4 max-w-lg mx-auto flex flex-col font-sans">
-      {/* Header Bar */}
-      <header className="flex items-center justify-between py-3 mb-6">
+    <main className="min-h-screen bg-[#fafbfc] text-[#143a52] px-4 py-4 max-w-md mx-auto flex flex-col font-sans">
+      {/* Top Header */}
+      <header className="flex items-center justify-between py-2 mb-4">
         <Link href="/" className="flex items-center gap-2">
-          <div className="bg-[#134e6f] p-2 rounded-xl text-white shadow-sm">
+          <div className="bg-[#134e6f] p-1.5 rounded-xl text-white">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
-          <span className="font-serif font-bold text-2xl text-[#0d2838]">
+          <span className="font-serif font-bold text-xl text-[#0d2838]">
             cvforge<span className="text-amber-500">.</span>
           </span>
         </Link>
 
-        {/* Top Right Controls */}
         <div className="flex items-center gap-2">
-          <div className="bg-blue-50 text-[#134e6f] font-bold text-xs px-2.5 py-1.5 rounded-full flex items-center gap-1 border border-blue-100">
+          <div className="bg-blue-50 text-[#134e6f] font-bold text-xs px-2.5 py-1 rounded-full flex items-center gap-1 border border-blue-100">
             <span>1</span>
             <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
           </div>
 
-          {/* Dynamic Header Action: Email Badge Avatar OR Create an account button */}
           {user ? (
-            <div className="w-9 h-9 rounded-full bg-[#134e6f] text-amber-300 font-extrabold text-xs flex items-center justify-center border-2 border-white shadow-sm tracking-wider">
+            <div className="w-8 h-8 rounded-full bg-[#134e6f] text-amber-300 font-extrabold text-xs flex items-center justify-center shadow-sm">
               {user.emailBadge}
             </div>
           ) : (
             <Link
               href="/register"
-              className="bg-[#134e6f] hover:bg-[#0f3d57] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors shadow-sm"
+              className="bg-[#134e6f] text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-sm"
             >
-              Create an account
+              <span>+</span>
+              <span>Create an account</span>
             </Link>
           )}
         </div>
       </header>
 
-      {/* Dynamic Salutation & Subtitle */}
-      <section className="mb-6">
-        <h1 className="font-serif font-extrabold text-2xl sm:text-3xl text-[#0d2838] mb-2 leading-tight">
-          {user ? `Welcome back, ${user.firstName}!` : 'Optimize your resume for free'}
+      {/* Date & Salutation */}
+      <div className="mb-4">
+        <p className="text-xs text-gray-400 font-medium mb-1">
+          {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+        </p>
+        <h1 className="font-serif font-extrabold text-2xl text-[#0d2838]">
+          {user ? `Hello ${user.firstName}, ready to apply?` : 'Hello there, ready to apply?'}
         </h1>
-        <p className="text-gray-500 text-xs sm:text-sm leading-relaxed">
-          Drop your resume and paste the job offer link to receive your optimized resume.
-        </p>
-      </section>
+      </div>
 
-      {/* Upload Box */}
-      <section className="border-2 border-dashed border-blue-200 bg-white rounded-2xl p-8 mb-6 text-center flex flex-col items-center justify-center transition-all hover:border-blue-300">
-        <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-          </svg>
+      {/* Guest Warning Banner (Only visible if not logged in) */}
+      {!user && (
+        <div className="bg-[#fff9db] border border-amber-200 rounded-2xl p-4 mb-4 flex items-center justify-between shadow-xs">
+          <div className="flex items-start gap-2 max-w-[200px]">
+            <span className="text-amber-600 text-sm mt-0.5">⚠️️</span>
+            <div className="text-xs text-amber-900 leading-snug">
+              <span className="font-bold block">Guest account -</span>
+              Create an account to save your resumes and job offers permanently.
+            </div>
+          </div>
+          <Link
+            href="/register"
+            className="bg-white border border-gray-200 text-[#0d2838] font-semibold text-xs px-3 py-2 rounded-full shadow-2xs hover:bg-gray-50"
+          >
+            Create an account
+          </Link>
         </div>
-        <p className="font-serif font-bold text-base text-[#0d2838] mb-2">
-          Drag and drop your resume here
-        </p>
-        <span className="text-gray-400 text-xs mb-3">or</span>
-        <button className="bg-white border border-gray-200 text-gray-700 text-xs font-medium px-6 py-2 rounded-full shadow-xs hover:bg-gray-50 transition-colors mb-4">
-          Browse
-        </button>
-        <p className="text-[11px] text-gray-400">
-          PDF, DOCX or image (JPG/PNG), max 10 MB
-        </p>
-      </section>
+      )}
 
-      {/* Resumes Section */}
-      <section className="bg-white border border-gray-100 rounded-2xl p-6 shadow-xs text-center">
-        <div className="flex items-center justify-center gap-1 text-xs font-bold text-[#0d2838] mb-4">
+      {/* Base CV Upload Card */}
+      <div className="bg-white border border-blue-100 rounded-2xl p-3.5 mb-3 flex items-center justify-between shadow-2xs">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-10 border border-gray-200 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400">
+            📄
+          </div>
+          <div>
+            <span className="text-[10px] font-bold text-gray-400 tracking-wider block uppercase">
+              YOUR BASE CV
+            </span>
+            <p className="text-xs font-bold text-[#0d2838] truncate max-w-[180px]">
+              {user ? user.firstName : 'Base Resume'}
+            </p>
+            <p className="text-[11px] text-gray-400 truncate max-w-[180px]">
+              {uploadedFileName}
+            </p>
+          </div>
+        </div>
+        <label className="p-2 text-gray-400 hover:text-gray-600 cursor-pointer">
+          <input type="file" onChange={handleFileUpload} className="hidden" accept=".pdf,.docx,.doc" />
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+        </label>
+      </div>
+
+      {/* Job Offer Input & Launch Row */}
+      <div className="space-y-3 mb-6">
+        <div className="flex items-center border border-gray-200 rounded-2xl bg-white px-3.5 py-2.5 shadow-2xs focus-within:border-blue-400">
+          <input
+            type="url"
+            value={jobUrl}
+            onChange={(e) => setJobUrl(e.target.value)}
+            placeholder="https://www.linkedin.com/jobs/view/xx"
+            className="w-full text-xs text-gray-700 focus:outline-none bg-transparent"
+          />
+          <div className="text-gray-400 pl-2 border-l border-gray-200 flex items-center gap-1 text-xs">
+            🌐 <span className="text-[10px]">▼</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="bg-white border border-gray-200 rounded-full px-4 py-2.5 text-xs text-gray-600 font-medium">
+            Trial <span className="text-gray-400">(1)</span>
+          </div>
+          <button
+            onClick={handleLaunch}
+            disabled={!jobUrl || isOptimizing}
+            className="flex-1 bg-[#134e6f] hover:bg-[#0f3d57] disabled:opacity-50 text-white font-medium text-xs py-2.5 rounded-full transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+          >
+            <span>✨</span>
+            <span>{isOptimizing ? 'Optimizing...' : 'Launch'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* My Optimized Resumes / Progress Section */}
+      <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-2xs flex-1 flex flex-col">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-[#0d2838] mb-4">
           <span>✨</span>
           <span>My optimized resumes</span>
         </div>
-        <div className="flex flex-col items-center justify-center py-4">
-          <div className="w-10 h-10 bg-gray-50 border border-gray-100 rounded-lg flex items-center justify-center mb-2 text-gray-300">
-            📄
+
+        {isOptimizing ? (
+          <div className="bg-[#fafbfc] border border-gray-100 rounded-2xl p-5 my-auto text-left space-y-3">
+            <h3 className="font-serif font-bold text-base text-[#0d2838] mb-4">
+              We&apos;re working on it.
+            </h3>
+            {steps.map((step, idx) => {
+              const isDone = idx < stepIndex
+              const isCurrent = idx === stepIndex
+              return (
+                <div key={idx} className="flex items-center gap-3 text-xs">
+                  {isDone ? (
+                    <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold">
+                      ✓
+                    </div>
+                  ) : isCurrent ? (
+                    <div className="w-5 h-5 rounded-full border-2 border-[#134e6f] border-t-transparent animate-spin"></div>
+                  ) : (
+                    <div className="w-5 h-5 rounded-full bg-gray-100"></div>
+                  )}
+                  <span className={`font-medium ${isDone ? 'text-gray-800' : isCurrent ? 'text-[#134e6f] font-semibold' : 'text-gray-300'}`}>
+                    {step}
+                  </span>
+                </div>
+              )
+            })}
           </div>
-          <p className="text-xs font-semibold text-gray-700 mb-1">
-            No optimized resumes yet
-          </p>
-          <p className="text-[11px] text-gray-400 max-w-xs leading-normal">
-            Paste a job offer link above and click &quot;Launch&quot; to create an optimized resume.
-          </p>
-        </div>
-      </section>
+        ) : (
+          <div className="my-auto py-8 text-center flex flex-col items-center">
+            <div className="w-10 h-10 border-2 border-gray-300 rounded-lg flex items-center justify-center mb-3 text-gray-300">
+              📄
+            </div>
+            <p className="text-xs font-bold text-[#0d2838] mb-1">
+              No optimized resumes yet
+            </p>
+            <p className="text-[11px] text-gray-400 max-w-xs leading-normal">
+              Paste a job offer link above and click &quot;Launch&quot;
+            </p>
+          </div>
+        )}
+      </div>
     </main>
   )
 }
