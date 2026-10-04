@@ -3,7 +3,7 @@ import json
 import google.generativeai as genai
 from flask import Blueprint, request, jsonify
 from utils.auth_middleware import token_required
-from services.scraper import scrape_job_posting
+from services.scraper_service import scrape_job_posting
 
 cover_letter_bp = Blueprint('cover_letter', __name__)
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))

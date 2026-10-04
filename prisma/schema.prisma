@@ -1,6 +1,6 @@
 generator client {
-  provider  = "prisma-client-js"
-  output    = "../node_modules/.prisma/client"
+  provider  = "prisma-client-py"
+  interface = "sync"
 }
 
 datasource db {
@@ -8,72 +8,54 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
+model cover_letters {
+  id          String   @id
+  userId      String
+  targetRole  String
+  companyName String?
+  content     String
+  createdAt   DateTime @default(now())
+  users       users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model resumes {
+  id            String   @id
+  userId        String
+  title         String   @default("Untitled CV")
+  originalText  String
+  optimizedJson Json
+  jobTitle      String?
+  jobUrl        String?
+  pdfUrl        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime
+  users         users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model transactions {
+  id           String            @id
+  userId       String
+  paddleTxId   String?           @unique
+  amount       Float
+  currency     String            @default("USD")
+  status       TransactionStatus @default(PENDING)
+  creditsAdded Int               @default(0)
+  createdAt    DateTime          @default(now())
+  users        users             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model users {
+  id            String          @id
+  email         String          @unique
   passwordHash  String?
   name          String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  
-  // Credits & Tier
-  credits       Int            @default(1) // 1 free trial credit on signup
-  plan          PlanType       @default(FREE)
-  
-  // Relationships
-  resumes       Resume[]
-  coverLetters  CoverLetter[]
-  transactions  Transaction[]
-
-  @@map("users")
-}
-
-model Resume {
-  id             String   @id @default(uuid())
-  userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  title          String   @default("Untitled CV")
-  originalText   String   @db.Text
-  optimizedJson  Json     // Stores structured output from Gemini AI
-  jobTitle       String?
-  jobUrl         String?
-  pdfUrl         String?
-  
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  @@map("resumes")
-}
-
-model CoverLetter {
-  id             String   @id @default(uuid())
-  userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  targetRole     String
-  companyName    String?
-  content        String   @db.Text
-  
-  createdAt      DateTime @default(now())
-
-  @@map("cover_letters")
-}
-
-model Transaction {
-  id             String            @id @default(uuid())
-  userId         String
-  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  paddleTxId     String?           @unique
-  amount         Float
-  currency       String            @default("USD")
-  status         TransactionStatus @default(PENDING)
-  creditsAdded   Int               @default(0)
-  
-  createdAt      DateTime          @default(now())
-
-  @@map("transactions")
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime
+  credits       Int             @default(1)
+  plan          PlanType        @default(FREE)
+  cover_letters cover_letters[]
+  resumes       resumes[]
+  transactions  transactions[]
 }
 
 enum PlanType {
