@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 
 interface User {
@@ -11,9 +11,12 @@ interface User {
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
   const [jobUrl, setJobUrl] = useState('')
-  const [uploadedFileName, setUploadedFileName] = useState('Kedir_Alemayehu_CV.pdf')
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [isOptimizing, setIsOptimizing] = useState(false)
   const [stepIndex, setStepIndex] = useState(0)
+  const [fileError, setFileError] = useState('')
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const steps = [
     'Reading your resume...',
@@ -38,8 +41,25 @@ export default function Dashboard() {
     }
   }, [])
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileError('')
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      // Max 10MB validation
+      if (file.size > 10 * 1024 * 1024) {
+        setFileError('File size exceeds 10MB limit.')
+        return
+      }
+      setUploadedFile(file)
+    }
+  }
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click()
+  }
+
   const handleLaunch = () => {
-    if (!jobUrl) return
+    if (!jobUrl || !uploadedFile) return
     setIsOptimizing(true)
     setStepIndex(0)
 
@@ -54,15 +74,18 @@ export default function Dashboard() {
     }, 1200)
   }
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setUploadedFileName(e.target.files[0].name)
-    }
-  }
-
   return (
     <main className="min-h-screen bg-[#fafbfc] text-[#143a52] px-4 py-4 max-w-md mx-auto flex flex-col font-sans">
-      {/* Top Header */}
+      {/* Hidden File Input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        className="hidden"
+        accept=".pdf,.docx,.doc,image/jpeg,image/png"
+      />
+
+      {/* Header */}
       <header className="flex items-center justify-between py-2 mb-4">
         <Link href="/" className="flex items-center gap-2">
           <div className="bg-[#134e6f] p-1.5 rounded-xl text-white">
@@ -97,7 +120,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Date & Salutation */}
+      {/* Date & Dynamic Greeting */}
       <div className="mb-4">
         <p className="text-xs text-gray-400 font-medium mb-1">
           {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
@@ -107,11 +130,11 @@ export default function Dashboard() {
         </h1>
       </div>
 
-      {/* Guest Warning Banner (Only visible if not logged in) */}
+      {/* Guest Warning Banner (Only for guests) */}
       {!user && (
         <div className="bg-[#fff9db] border border-amber-200 rounded-2xl p-4 mb-4 flex items-center justify-between shadow-xs">
           <div className="flex items-start gap-2 max-w-[200px]">
-            <span className="text-amber-600 text-sm mt-0.5">⚠️️</span>
+            <span className="text-amber-600 text-sm mt-0.5">⚠</span>
             <div className="text-xs text-amber-900 leading-snug">
               <span className="font-bold block">Guest account -</span>
               Create an account to save your resumes and job offers permanently.
@@ -126,31 +149,69 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Base CV Upload Card */}
-      <div className="bg-white border border-blue-100 rounded-2xl p-3.5 mb-3 flex items-center justify-between shadow-2xs">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-10 border border-gray-200 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400">
-            📄
-          </div>
-          <div>
-            <span className="text-[10px] font-bold text-gray-400 tracking-wider block uppercase">
-              YOUR BASE CV
-            </span>
-            <p className="text-xs font-bold text-[#0d2838] truncate max-w-[180px]">
-              {user ? user.firstName : 'Base Resume'}
-            </p>
-            <p className="text-[11px] text-gray-400 truncate max-w-[180px]">
-              {uploadedFileName}
-            </p>
-          </div>
+      {/* File Size Error Alert */}
+      {fileError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl p-3 mb-3 font-medium">
+          {fileError}
         </div>
-        <label className="p-2 text-gray-400 hover:text-gray-600 cursor-pointer">
-          <input type="file" onChange={handleFileUpload} className="hidden" accept=".pdf,.docx,.doc" />
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-          </svg>
-        </label>
-      </div>
+      )}
+
+      {/* Functional Base CV Upload Card */}
+      {uploadedFile ? (
+        <div className="bg-white border border-blue-100 rounded-2xl p-3.5 mb-3 flex items-center justify-between shadow-2xs">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-10 border border-gray-200 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 font-semibold text-xs">
+              📄
+            </div>
+            <div>
+              <span className="text-[10px] font-bold text-gray-400 tracking-wider block uppercase">
+                YOUR BASE CV
+              </span>
+              <p className="text-xs font-bold text-[#0d2838] truncate max-w-[180px]">
+                {user ? user.firstName : 'Uploaded CV'}
+              </p>
+              <p className="text-[11px] text-gray-400 truncate max-w-[180px]">
+                {uploadedFile.name}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={triggerFileInput}
+            title="Upload a different resume"
+            className="p-2 text-gray-400 hover:text-[#134e6f] transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+          </button>
+        </div>
+      ) : (
+        /* Empty Upload Dropzone */
+        <div
+          onClick={triggerFileInput}
+          className="border-2 border-dashed border-blue-200 bg-white rounded-2xl p-6 mb-3 text-center flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 transition-colors shadow-2xs"
+        >
+          <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+            </svg>
+          </div>
+          <p className="font-serif font-bold text-sm text-[#0d2838] mb-1">
+            Drag and drop your resume here
+          </p>
+          <span className="text-gray-400 text-xs mb-2">or</span>
+          <button
+            type="button"
+            className="bg-white border border-gray-200 text-gray-700 text-xs font-medium px-4 py-1.5 rounded-full shadow-2xs hover:bg-gray-50 transition-colors mb-2"
+          >
+            Browse
+          </button>
+          <p className="text-[10px] text-gray-400">
+            PDF, DOCX or image (JPG/PNG), max 10 MB
+          </p>
+        </div>
+      )}
 
       {/* Job Offer Input & Launch Row */}
       <div className="space-y-3 mb-6">
@@ -173,7 +234,7 @@ export default function Dashboard() {
           </div>
           <button
             onClick={handleLaunch}
-            disabled={!jobUrl || isOptimizing}
+            disabled={!jobUrl || !uploadedFile || isOptimizing}
             className="flex-1 bg-[#134e6f] hover:bg-[#0f3d57] disabled:opacity-50 text-white font-medium text-xs py-2.5 rounded-full transition-colors flex items-center justify-center gap-1.5 shadow-xs"
           >
             <span>✨</span>
@@ -182,7 +243,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* My Optimized Resumes / Progress Section */}
+      {/* Optimization Progress Stream */}
       <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-2xs flex-1 flex flex-col">
         <div className="flex items-center gap-1.5 text-xs font-bold text-[#0d2838] mb-4">
           <span>✨</span>
@@ -224,7 +285,7 @@ export default function Dashboard() {
               No optimized resumes yet
             </p>
             <p className="text-[11px] text-gray-400 max-w-xs leading-normal">
-              Paste a job offer link above and click &quot;Launch&quot;
+              Upload your base CV, paste a job offer link above, and click &quot;Launch&quot;
             </p>
           </div>
         )}
