@@ -6,6 +6,10 @@ import Link from 'next/link'
 interface User {
   firstName: string
   emailBadge: string
+  fullName?: string
+  email?: string
+  phone?: string
+  location?: string
 }
 
 interface OptimizedResult {
@@ -29,8 +33,13 @@ export default function Dashboard() {
   const [stepIndex, setStepIndex] = useState(0)
   const [fileError, setFileError] = useState('')
   const [optimizedResults, setOptimizedResults] = useState<OptimizedResult[]>([])
+  
+  // Download Modal State
+  const [showDownloadModal, setShowDownloadModal] = useState(false)
+  const [selectedResult, setSelectedResult] = useState<OptimizedResult | null>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const pdfTemplateRef = useRef<HTMLDivElement>(null)
 
   const steps = [
     'Reading your resume...',
@@ -49,7 +58,20 @@ export default function Dashboard() {
         const badge = savedEmail ? savedEmail.trim().substring(0, 2).toUpperCase() : 'CV'
         setUser({
           firstName: savedName || 'User',
+          fullName: savedName ? `${savedName} ALEMAYEHU` : 'KEDIR ABDELA',
+          email: savedEmail || 'user@example.com',
+          phone: '0908706534',
+          location: 'Addis Ababa',
           emailBadge: badge
+        })
+      } else {
+        setUser({
+          firstName: 'Kedir',
+          fullName: 'KEDIR ABDELA',
+          email: 'nmtullah86@gmail.com',
+          phone: '0908706534',
+          location: 'Los Angeles',
+          emailBadge: 'KA'
         })
       }
     }
@@ -81,7 +103,6 @@ export default function Dashboard() {
         if (prev >= steps.length - 1) {
           clearInterval(interval)
           
-          // Complete Optimization & Append Result
           const now = new Date()
           const formattedDate = now.toLocaleDateString('en-US', {
             month: 'short',
@@ -97,7 +118,7 @@ export default function Dashboard() {
             id: Date.now().toString(),
             company: 'The Home Depot',
             source: 'LinkedIn',
-            jobTitle: 'The Home Depot',
+            jobTitle: 'Digital Marketing Specialist',
             dateStr: formattedDate,
             jobUrl: jobUrl,
             atsBefore: 48,
@@ -119,8 +140,38 @@ export default function Dashboard() {
     setOptimizedResults((prev) => prev.filter((item) => item.id !== id))
   }
 
+  const openDownloadModal = (res: OptimizedResult) => {
+    setSelectedResult(res)
+    setShowDownloadModal(true)
+  }
+
+  const triggerPDFDownload = async (withWatermark: boolean) => {
+    if (typeof window !== 'undefined' && pdfTemplateRef.current) {
+      const html2pdf = (await import('html2pdf.js')).default
+      const element = pdfTemplateRef.current
+
+      // Toggle watermark visibility dynamically
+      const watermarkEl = element.querySelector('#pdf-watermark') as HTMLElement
+      if (watermarkEl) {
+        watermarkEl.style.display = withWatermark ? 'block' : 'none'
+      }
+
+      const opt = {
+        margin:       0.3,
+        filename:     `${selectedResult?.source || 'LinkedIn'} - ${user?.fullName || 'Resume'} - ${selectedResult?.jobTitle || 'Optimized'}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      }
+
+      html2pdf().set(opt).from(element).save().then(() => {
+        setShowDownloadModal(false)
+      })
+    }
+  }
+
   return (
-    <main className="min-h-screen bg-[#fafbfc] text-[#143a52] px-4 py-4 max-w-md mx-auto flex flex-col font-sans">
+    <main className="min-h-screen bg-[#fafbfc] text-[#143a52] px-4 py-4 max-w-md mx-auto flex flex-col font-sans relative">
       {/* Hidden File Input */}
       <input
         type="file"
@@ -171,7 +222,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Dynamic Titles */}
+      {/* Title */}
       {!uploadedFile ? (
         <div className="mb-4">
           <h1 className="font-serif font-extrabold text-2xl text-[#0d2838] mb-1">
@@ -192,32 +243,14 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Guest Banner */}
-      {!user && (
-        <div className="bg-[#fff9db] border border-amber-200 rounded-2xl p-4 mb-4 flex items-center justify-between shadow-xs">
-          <div className="flex items-start gap-2 max-w-[200px]">
-            <span className="text-amber-600 text-sm mt-0.5">⚠</span>
-            <div className="text-xs text-amber-900 leading-snug">
-              <span className="font-bold block">Guest account -</span>
-              Create an account to save your resumes and job offers permanently.
-            </div>
-          </div>
-          <Link
-            href="/register"
-            className="bg-white border border-gray-200 text-[#0d2838] font-semibold text-xs px-3 py-2 rounded-full shadow-2xs hover:bg-gray-50"
-          >
-            Create an account
-          </Link>
-        </div>
-      )}
-
+      {/* Error Alert */}
       {fileError && (
         <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl p-3 mb-3 font-medium">
           {fileError}
         </div>
       )}
 
-      {/* File Upload / Link Inputs */}
+      {/* Main Upload / Control Box */}
       {!uploadedFile ? (
         <div
           onClick={triggerFileInput}
@@ -311,7 +344,6 @@ export default function Dashboard() {
         </div>
 
         {isOptimizing ? (
-          /* Live Progress State */
           <div className="bg-[#fafbfc] border border-gray-100 rounded-2xl p-5 my-auto text-left space-y-3">
             <h3 className="font-serif font-bold text-base text-[#0d2838] mb-4">
               We&apos;re working on it.
@@ -338,11 +370,9 @@ export default function Dashboard() {
             })}
           </div>
         ) : optimizedResults.length > 0 ? (
-          /* Stage 4: Optimized Result Cards */
           <div className="space-y-4">
             {optimizedResults.map((res) => (
               <div key={res.id} className="border border-gray-100 rounded-2xl p-4 bg-white shadow-2xs space-y-3">
-                {/* Header Tag */}
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-orange-600 text-white font-extrabold text-[9px] flex items-center justify-center p-1 text-center leading-tight uppercase">
                     Home Depot
@@ -350,10 +380,9 @@ export default function Dashboard() {
                   <span className="font-bold text-xs text-[#0d2838]">{res.source}</span>
                 </div>
 
-                {/* Job Info */}
                 <div>
                   <h4 className="font-serif font-bold text-sm text-[#0d2838]">
-                    {res.jobTitle}
+                    {res.company}
                   </h4>
                   <p className="text-[10px] text-gray-400 font-medium">
                     {res.dateStr}
@@ -368,9 +397,12 @@ export default function Dashboard() {
                   </a>
                 </div>
 
-                {/* Main Action Buttons */}
                 <div className="space-y-2 pt-1">
-                  <button className="w-full bg-[#1e5878] hover:bg-[#174863] text-white font-medium text-xs py-2.5 rounded-full flex items-center justify-center gap-1.5 shadow-xs">
+                  {/* DOWNLOAD BUTTON TRIGGERS MODAL */}
+                  <button
+                    onClick={() => openDownloadModal(res)}
+                    className="w-full bg-[#1e5878] hover:bg-[#174863] text-white font-medium text-xs py-2.5 rounded-full flex items-center justify-center gap-1.5 shadow-xs"
+                  >
                     <span>↓</span>
                     <span>Download</span>
                   </button>
@@ -391,16 +423,13 @@ export default function Dashboard() {
                   </button>
                 </div>
 
-                {/* Score Gauges Block */}
                 <div className="bg-[#ebf3f7] rounded-2xl p-4 mt-3 space-y-3">
                   <div className="grid grid-cols-2 text-center text-[10px] font-extrabold text-gray-400 tracking-wider">
                     <span>ATS</span>
                     <span>MATCHING</span>
                   </div>
 
-                  {/* Circular Score Metrics */}
                   <div className="grid grid-cols-4 gap-1 text-center items-center">
-                    {/* ATS Before */}
                     <div>
                       <div className="w-10 h-10 rounded-full border-4 border-gray-300 flex items-center justify-center mx-auto text-xs font-bold text-gray-700">
                         {res.atsBefore}%
@@ -408,7 +437,6 @@ export default function Dashboard() {
                       <span className="text-[10px] text-gray-400 mt-1 block">Before</span>
                     </div>
 
-                    {/* ATS After */}
                     <div>
                       <div className="w-10 h-10 rounded-full border-4 border-[#134e6f] flex items-center justify-center mx-auto text-xs font-bold text-[#134e6f]">
                         {res.atsAfter}%
@@ -416,7 +444,6 @@ export default function Dashboard() {
                       <span className="text-[10px] text-gray-400 mt-1 block">After</span>
                     </div>
 
-                    {/* Matching Before */}
                     <div>
                       <div className="w-10 h-10 rounded-full border-4 border-red-400 flex items-center justify-center mx-auto text-xs font-bold text-gray-700">
                         {res.matchingBefore}%
@@ -424,7 +451,6 @@ export default function Dashboard() {
                       <span className="text-[10px] text-gray-400 mt-1 block">Before</span>
                     </div>
 
-                    {/* Matching After */}
                     <div>
                       <div className="w-10 h-10 rounded-full border-4 border-orange-400 flex items-center justify-center mx-auto text-xs font-bold text-gray-700">
                         {res.matchingAfter}%
@@ -433,7 +459,6 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  {/* Badges Row */}
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     <div className="bg-[#1e5878] text-white text-center text-xs font-bold py-1 rounded-full">
                       +{res.atsAfter - res.atsBefore}%
@@ -444,7 +469,6 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* Detailed Analysis Button */}
                 <button className="w-full bg-white border border-gray-200 text-[#0d2838] font-medium text-xs py-2 rounded-full hover:bg-gray-50 flex items-center justify-center gap-1.5">
                   <span>📊</span>
                   <span>Detailed analysis</span>
@@ -453,7 +477,6 @@ export default function Dashboard() {
             ))}
           </div>
         ) : (
-          /* Default Empty State */
           <div className="my-auto py-8 text-center flex flex-col items-center">
             <div className="w-10 h-10 border-2 border-gray-300 rounded-lg flex items-center justify-center mb-3 text-gray-300">
               📄
@@ -466,6 +489,128 @@ export default function Dashboard() {
             </p>
           </div>
         )}
+      </div>
+
+      {/* CONGRATULATIONS / DOWNLOAD MODAL (Matching Screenshot) */}
+      {showDownloadModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="bg-[#134e6f] text-white p-5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-amber-300 text-lg">✨</span>
+                <h3 className="font-serif font-bold text-xl tracking-tight">Congratulations!</h3>
+              </div>
+              <button
+                onClick={() => setShowDownloadModal(false)}
+                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-5">
+              <p className="text-xs text-gray-600 leading-relaxed font-medium">
+                Your resume tailored for <strong className="text-[#0d2838] font-bold">{selectedResult?.company}</strong> at <strong className="text-[#0d2838] font-bold">{selectedResult?.source}</strong> is ready.
+              </p>
+
+              <div className="bg-[#f0f7fa] border border-blue-100 rounded-2xl p-3.5 flex items-start gap-2.5">
+                <span className="text-[#134e6f] text-sm mt-0.5">🛡</span>
+                <p className="text-[11px] text-[#134e6f] leading-snug font-medium">
+                  A resume tailored to the job posting increases your chances 3× compared to a generic resume. Every application deserves a custom-made resume.
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3 pt-1">
+                <button
+                  onClick={() => triggerPDFDownload(false)}
+                  className="w-full bg-[#134e6f] hover:bg-[#0f3d57] text-white font-bold text-xs py-3 rounded-full flex items-center justify-center gap-2 shadow-md transition-all"
+                >
+                  <span>✦</span>
+                  <span>Download without watermark</span>
+                </button>
+
+                <button
+                  onClick={() => triggerPDFDownload(false)}
+                  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs py-3 rounded-full flex items-center justify-center gap-2 shadow-md transition-all"
+                >
+                  <span>👑</span>
+                  <span>Go Premium</span>
+                </button>
+
+                <button
+                  onClick={() => triggerPDFDownload(true)}
+                  className="w-full text-center text-xs text-gray-400 hover:text-gray-600 font-medium underline block pt-1"
+                >
+                  Download with watermark
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* HIDDEN PDF TEMPLATE FOR GENERATION (Matches output structure) */}
+      <div className="hidden">
+        <div ref={pdfTemplateRef} className="p-8 bg-white text-gray-900 font-sans max-w-[800px] text-xs leading-relaxed space-y-4">
+          <div>
+            <h1 className="text-xl font-bold uppercase tracking-wide text-[#0d2838]">
+              {user?.fullName || 'KEDIR ABDELA'}
+            </h1>
+            <p className="font-semibold text-gray-700 text-sm">
+              {selectedResult?.jobTitle || 'Digital Marketing Specialist'} (5 yrs exp)
+            </p>
+            <p className="text-gray-500 text-[11px] mt-0.5">
+              {user?.phone} | {user?.email} | {user?.location} | linkedin.com/in/kedirmohammed
+            </p>
+          </div>
+
+          <hr className="border-gray-200" />
+
+          <div>
+            <h2 className="font-bold text-xs text-[#0d2838] uppercase tracking-wider mb-1">Professional Summary</h2>
+            <p className="text-gray-700">
+              Results-driven Digital Marketing Specialist with 5+ years of experience designing data-driven campaigns across Google, Meta, and LinkedIn. Proven track record in SEO, paid advertising, and content strategy, with measurable impact on traffic growth and audience engagement.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="font-bold text-xs text-[#0d2838] uppercase tracking-wider mb-1">Key Skills</h2>
+            <p className="text-gray-700"><strong>Digital Marketing:</strong> SEO, Social Media Marketing, Paid Advertising, Email Marketing, Campaign Analysis.</p>
+            <p className="text-gray-700"><strong>Tools & Analytics:</strong> Google Analytics (Certified), Google Ads Search, HubSpot, Performance Dashboards.</p>
+          </div>
+
+          <div>
+            <h2 className="font-bold text-xs text-[#0d2838] uppercase tracking-wider mb-1">Experience</h2>
+            <div className="space-y-2">
+              <div>
+                <p className="font-bold text-gray-800">Digital Marketing Specialist | BrightWave Media</p>
+                <p className="text-gray-600">Led end-to-end digital marketing campaigns across major platforms, driving measurable growth in traffic (+45%) and brand visibility.</p>
+              </div>
+              <div>
+                <p className="font-bold text-gray-800">Marketing Coordinator | NovaTech Solutions | 2019-2022</p>
+                <p className="text-gray-600">Supported social media operations and boosted engagement by 30% through optimized content scheduling.</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="font-bold text-xs text-[#0d2838] uppercase tracking-wider mb-1">Certifications & Education</h2>
+            <ul className="list-disc list-inside text-gray-700 space-y-0.5">
+              <li>Bachelor of Business Administration | New York University</li>
+              <li>Google Analytics Certification (2023)</li>
+              <li>Google Ads Search Certification (2023)</li>
+              <li>HubSpot Content Marketing Certification (2022)</li>
+            </ul>
+          </div>
+
+          {/* Optional Watermark footer */}
+          <div id="pdf-watermark" className="pt-6 border-t border-gray-100 text-right text-[10px] text-gray-400 font-bold tracking-widest hidden">
+            CVforge.co
+          </div>
+        </div>
       </div>
     </main>
   )
