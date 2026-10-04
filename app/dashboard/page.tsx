@@ -24,9 +24,9 @@ export default function Dashboard() {
             <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
           </div>
 
-          {/* Create Account Link -> Registration Page */}
+          {/* Create Account Button -> /register */}
           <Link
-            href="/auth/register"
+            href="/register"
             className="bg-[#134e6f] text-white hover:bg-[#0f3d57] text-xs font-medium px-3.5 py-1.5 rounded-full transition-colors"
           >
             Create an account
@@ -34,7 +34,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Main Section */}
+      {/* Main Content Area */}
       <section className="px-5 py-8 max-w-xl mx-auto">
         <h1 className="font-serif font-bold text-2xl sm:text-3xl text-[#0d2838] mb-2">
           Optimize your resume for free
@@ -43,7 +43,7 @@ export default function Dashboard() {
           Drop your resume and paste the job offer link to receive your optimized resume.
         </p>
 
-        {/* Upload Zone */}
+        {/* Drag and Drop Zone */}
         <div className="border-2 border-dashed border-blue-200 bg-blue-50/20 rounded-2xl p-8 text-center mb-8">
           <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm border border-gray-100 text-gray-600">
             &uarr;
@@ -60,7 +60,7 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Optimized Resumes Container */}
+        {/* Optimizations */}
         <div className="bg-white border border-gray-100 rounded-2xl p-6 text-center shadow-sm">
           <h2 className="font-serif font-bold text-sm sm:text-base text-[#0d2838] mb-4 flex items-center justify-center gap-2">
             <span>&#10024;</span> My optimized resumes
