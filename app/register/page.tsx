@@ -3,7 +3,6 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
 
 export default function Register() {
   const router = useRouter()
@@ -28,13 +27,16 @@ export default function Register() {
     }))
   }
 
-  const handleOAuthLogin = (provider: 'google' | 'apple') => {
+  const handleOAuthDemo = (providerName: string) => {
     if (!formData.acceptTerms) {
       setError('Please accept the Terms of Service and Privacy Policy to continue.')
       return
     }
     setError('')
-    signIn(provider, { callbackUrl: '/dashboard' })
+    setSuccess(`Signing in with ${providerName}... Redirecting to dashboard.`)
+    setTimeout(() => {
+      router.push('/dashboard')
+    }, 1000)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,14 +58,7 @@ export default function Register() {
         body: JSON.stringify(formData)
       })
 
-      // Safely parse JSON or handle raw text response
-      const contentType = res.headers.get('content-type')
-      let data
-      if (contentType && contentType.includes('application/json')) {
-        data = await res.json()
-      } else {
-        throw new Error('A server error occurred. Please try again.')
-      }
+      const data = await res.json().catch(() => ({}))
 
       if (!res.ok) {
         throw new Error(data.error || 'Failed to create account.')
@@ -72,7 +67,7 @@ export default function Register() {
       setSuccess('Account created successfully! Redirecting...')
       setTimeout(() => {
         router.push('/dashboard')
-      }, 1200)
+      }, 1000)
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.')
     } finally {
@@ -122,7 +117,7 @@ export default function Register() {
           </div>
         )}
 
-        {/* Required Terms */}
+        {/* Terms Box */}
         <div className="bg-[#fffdf0] border border-amber-200 rounded-xl p-3.5 mb-6 flex items-start gap-3">
           <input
             type="checkbox"
@@ -140,11 +135,11 @@ export default function Register() {
           </label>
         </div>
 
-        {/* Working Google & Apple OAuth Buttons */}
+        {/* OAuth Buttons (Demo Mode) */}
         <div className="space-y-3 mb-6">
           <button
             type="button"
-            onClick={() => handleOAuthLogin('google')}
+            onClick={() => handleOAuthDemo('Google')}
             className="w-full border border-gray-300 rounded-full py-2.5 px-4 flex items-center justify-center gap-3 font-medium text-xs text-gray-700 hover:bg-gray-50 transition-colors"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -158,7 +153,7 @@ export default function Register() {
 
           <button
             type="button"
-            onClick={() => handleOAuthLogin('apple')}
+            onClick={() => handleOAuthDemo('Apple')}
             className="w-full bg-black text-white rounded-full py-2.5 px-4 flex items-center justify-center gap-3 font-medium text-xs hover:bg-gray-900 transition-colors"
           >
             <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -177,7 +172,7 @@ export default function Register() {
           <div className="flex-grow border-t border-gray-200"></div>
         </div>
 
-        {/* Email Registration Form */}
+        {/* Email Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
