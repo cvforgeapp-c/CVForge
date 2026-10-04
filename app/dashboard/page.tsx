@@ -8,6 +8,19 @@ interface User {
   emailBadge: string
 }
 
+interface OptimizedResult {
+  id: string
+  company: string
+  source: string
+  jobTitle: string
+  dateStr: string
+  jobUrl: string
+  atsBefore: number
+  atsAfter: number
+  matchingBefore: number
+  matchingAfter: number
+}
+
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
   const [jobUrl, setJobUrl] = useState('')
@@ -15,6 +28,7 @@ export default function Dashboard() {
   const [isOptimizing, setIsOptimizing] = useState(false)
   const [stepIndex, setStepIndex] = useState(0)
   const [fileError, setFileError] = useState('')
+  const [optimizedResults, setOptimizedResults] = useState<OptimizedResult[]>([])
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -66,11 +80,43 @@ export default function Dashboard() {
       setStepIndex((prev) => {
         if (prev >= steps.length - 1) {
           clearInterval(interval)
+          
+          // Complete Optimization & Append Result
+          const now = new Date()
+          const formattedDate = now.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+          }) + ' at ' + now.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+          })
+
+          const newResult: OptimizedResult = {
+            id: Date.now().toString(),
+            company: 'The Home Depot',
+            source: 'LinkedIn',
+            jobTitle: 'The Home Depot',
+            dateStr: formattedDate,
+            jobUrl: jobUrl,
+            atsBefore: 48,
+            atsAfter: 72,
+            matchingBefore: 42,
+            matchingAfter: 60
+          }
+
+          setOptimizedResults((prevResults) => [newResult, ...prevResults])
+          setIsOptimizing(false)
           return prev
         }
         return prev + 1
       })
     }, 1200)
+  }
+
+  const handleDelete = (id: string) => {
+    setOptimizedResults((prev) => prev.filter((item) => item.id !== id))
   }
 
   return (
@@ -98,7 +144,6 @@ export default function Dashboard() {
         </Link>
 
         <div className="flex items-center gap-2">
-          {/* Credit Indicators */}
           {user && (
             <div className="bg-amber-50 text-amber-700 font-bold text-xs px-2.5 py-1 rounded-full flex items-center gap-1 border border-amber-200">
               <span>0</span>
@@ -110,7 +155,6 @@ export default function Dashboard() {
             <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
           </div>
 
-          {/* User Email Badge / Account Button */}
           {user ? (
             <div className="w-8 h-8 rounded-full bg-[#134e6f] text-white font-extrabold text-xs flex items-center justify-center shadow-sm">
               {user.emailBadge}
@@ -127,9 +171,8 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Dynamic Titles Depending on Upload State */}
+      {/* Dynamic Titles */}
       {!uploadedFile ? (
-        /* STAGE 1: BEFORE UPLOAD */
         <div className="mb-4">
           <h1 className="font-serif font-extrabold text-2xl text-[#0d2838] mb-1">
             Optimize your resume for free
@@ -139,7 +182,6 @@ export default function Dashboard() {
           </p>
         </div>
       ) : (
-        /* STAGE 2 & 3: AFTER UPLOAD */
         <div className="mb-4">
           <p className="text-xs text-gray-400 font-medium mb-1">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
@@ -150,7 +192,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Guest Warning Banner (Visible if not logged in) */}
+      {/* Guest Banner */}
       {!user && (
         <div className="bg-[#fff9db] border border-amber-200 rounded-2xl p-4 mb-4 flex items-center justify-between shadow-xs">
           <div className="flex items-start gap-2 max-w-[200px]">
@@ -169,16 +211,14 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Error Alert */}
       {fileError && (
         <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl p-3 mb-3 font-medium">
           {fileError}
         </div>
       )}
 
-      {/* MAIN UPLOAD SECTION */}
+      {/* File Upload / Link Inputs */}
       {!uploadedFile ? (
-        /* Large Dropzone Box (Stage 1) */
         <div
           onClick={triggerFileInput}
           className="border-2 border-dashed border-blue-200 bg-white rounded-2xl p-8 mb-6 text-center flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 transition-colors shadow-2xs"
@@ -203,7 +243,6 @@ export default function Dashboard() {
           </p>
         </div>
       ) : (
-        /* Compact Base CV Card + Link Input + Launch Button (Stage 2 & 3) */
         <>
           <div className="bg-white border border-blue-100 rounded-2xl p-3.5 mb-3 flex items-center justify-between shadow-2xs">
             <div className="flex items-center gap-3">
@@ -212,7 +251,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <span className="text-[10px] font-bold text-gray-400 tracking-wider block uppercase">
-                  YOUR BASE CV
+                  VOTRE CV DE BASE
                 </span>
                 <p className="text-xs font-bold text-[#0d2838] truncate max-w-[180px]">
                   {user ? user.firstName : 'Base Resume'}
@@ -254,25 +293,25 @@ export default function Dashboard() {
               <button
                 onClick={handleLaunch}
                 disabled={!jobUrl || isOptimizing}
-                className="flex-1 bg-[#134e6f] hover:bg-[#0f3d57] disabled:opacity-50 text-white font-medium text-xs py-2.5 rounded-full transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                className="flex-1 bg-[#83a7bd] hover:bg-[#6c92aa] disabled:opacity-50 text-white font-medium text-xs py-2.5 rounded-full transition-colors flex items-center justify-center gap-1.5 shadow-xs"
               >
                 <span>✨</span>
-                <span>{isOptimizing ? 'Optimizing...' : 'Launch'}</span>
+                <span>{isOptimizing ? 'Optimizing...' : 'Launch the optimization'}</span>
               </button>
             </div>
           </div>
         </>
       )}
 
-      {/* MY OPTIMIZED RESUMES SECTION */}
+      {/* MY OPTIMIZED RESUMES CARD */}
       <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-2xs flex-1 flex flex-col">
-        <div className="flex items-center gap-1.5 text-xs font-bold text-[#0d2838] mb-4">
+        <div className="flex items-center gap-1.5 text-sm font-serif font-bold text-[#0d2838] mb-4">
           <span>✨</span>
           <span>My optimized resumes</span>
         </div>
 
         {isOptimizing ? (
-          /* Live Progress Box (Stage 3) */
+          /* Live Progress State */
           <div className="bg-[#fafbfc] border border-gray-100 rounded-2xl p-5 my-auto text-left space-y-3">
             <h3 className="font-serif font-bold text-base text-[#0d2838] mb-4">
               We&apos;re working on it.
@@ -298,8 +337,123 @@ export default function Dashboard() {
               )
             })}
           </div>
+        ) : optimizedResults.length > 0 ? (
+          /* Stage 4: Optimized Result Cards */
+          <div className="space-y-4">
+            {optimizedResults.map((res) => (
+              <div key={res.id} className="border border-gray-100 rounded-2xl p-4 bg-white shadow-2xs space-y-3">
+                {/* Header Tag */}
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-orange-600 text-white font-extrabold text-[9px] flex items-center justify-center p-1 text-center leading-tight uppercase">
+                    Home Depot
+                  </div>
+                  <span className="font-bold text-xs text-[#0d2838]">{res.source}</span>
+                </div>
+
+                {/* Job Info */}
+                <div>
+                  <h4 className="font-serif font-bold text-sm text-[#0d2838]">
+                    {res.jobTitle}
+                  </h4>
+                  <p className="text-[10px] text-gray-400 font-medium">
+                    {res.dateStr}
+                  </p>
+                  <a
+                    href={res.jobUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-[#134e6f] hover:underline inline-flex items-center gap-1 font-medium mt-1"
+                  >
+                    View job posting ↗
+                  </a>
+                </div>
+
+                {/* Main Action Buttons */}
+                <div className="space-y-2 pt-1">
+                  <button className="w-full bg-[#1e5878] hover:bg-[#174863] text-white font-medium text-xs py-2.5 rounded-full flex items-center justify-center gap-1.5 shadow-xs">
+                    <span>↓</span>
+                    <span>Download</span>
+                  </button>
+                  <button className="w-full bg-white border border-gray-200 text-[#0d2838] font-medium text-xs py-2 rounded-full hover:bg-gray-50 flex items-center justify-center gap-1.5">
+                    <span>✎</span>
+                    <span>Edit</span>
+                  </button>
+                  <button className="w-full bg-white border border-gray-200 text-[#0d2838] font-medium text-xs py-2 rounded-full hover:bg-gray-50 flex items-center justify-center gap-1.5">
+                    <span>☆</span>
+                    <span>Rate</span>
+                  </button>
+                  <button
+                    onClick={() => handleDelete(res.id)}
+                    className="w-full bg-[#ef4444] hover:bg-[#dc2626] text-white font-medium text-xs py-2.5 rounded-full flex items-center justify-center gap-1.5 shadow-xs"
+                  >
+                    <span>🗑</span>
+                    <span>Delete</span>
+                  </button>
+                </div>
+
+                {/* Score Gauges Block */}
+                <div className="bg-[#ebf3f7] rounded-2xl p-4 mt-3 space-y-3">
+                  <div className="grid grid-cols-2 text-center text-[10px] font-extrabold text-gray-400 tracking-wider">
+                    <span>ATS</span>
+                    <span>MATCHING</span>
+                  </div>
+
+                  {/* Circular Score Metrics */}
+                  <div className="grid grid-cols-4 gap-1 text-center items-center">
+                    {/* ATS Before */}
+                    <div>
+                      <div className="w-10 h-10 rounded-full border-4 border-gray-300 flex items-center justify-center mx-auto text-xs font-bold text-gray-700">
+                        {res.atsBefore}%
+                      </div>
+                      <span className="text-[10px] text-gray-400 mt-1 block">Before</span>
+                    </div>
+
+                    {/* ATS After */}
+                    <div>
+                      <div className="w-10 h-10 rounded-full border-4 border-[#134e6f] flex items-center justify-center mx-auto text-xs font-bold text-[#134e6f]">
+                        {res.atsAfter}%
+                      </div>
+                      <span className="text-[10px] text-gray-400 mt-1 block">After</span>
+                    </div>
+
+                    {/* Matching Before */}
+                    <div>
+                      <div className="w-10 h-10 rounded-full border-4 border-red-400 flex items-center justify-center mx-auto text-xs font-bold text-gray-700">
+                        {res.matchingBefore}%
+                      </div>
+                      <span className="text-[10px] text-gray-400 mt-1 block">Before</span>
+                    </div>
+
+                    {/* Matching After */}
+                    <div>
+                      <div className="w-10 h-10 rounded-full border-4 border-orange-400 flex items-center justify-center mx-auto text-xs font-bold text-gray-700">
+                        {res.matchingAfter}%
+                      </div>
+                      <span className="text-[10px] text-gray-400 mt-1 block">After</span>
+                    </div>
+                  </div>
+
+                  {/* Badges Row */}
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <div className="bg-[#1e5878] text-white text-center text-xs font-bold py-1 rounded-full">
+                      +{res.atsAfter - res.atsBefore}%
+                    </div>
+                    <div className="bg-[#22c55e] text-white text-center text-xs font-bold py-1 rounded-full">
+                      +{res.matchingAfter - res.matchingBefore}%
+                    </div>
+                  </div>
+                </div>
+
+                {/* Detailed Analysis Button */}
+                <button className="w-full bg-white border border-gray-200 text-[#0d2838] font-medium text-xs py-2 rounded-full hover:bg-gray-50 flex items-center justify-center gap-1.5">
+                  <span>📊</span>
+                  <span>Detailed analysis</span>
+                </button>
+              </div>
+            ))}
+          </div>
         ) : (
-          /* Default Empty List Box */
+          /* Default Empty State */
           <div className="my-auto py-8 text-center flex flex-col items-center">
             <div className="w-10 h-10 border-2 border-gray-300 rounded-lg flex items-center justify-center mb-3 text-gray-300">
               📄
@@ -308,7 +462,7 @@ export default function Dashboard() {
               No optimized resumes yet
             </p>
             <p className="text-[11px] text-gray-400 max-w-xs leading-normal">
-              Paste a job offer link above and click &quot;Launch&quot; to create an optimized resume.
+              Paste a job offer link above and click &quot;Launch the optimization&quot; to create an optimized resume.
             </p>
           </div>
         )}
