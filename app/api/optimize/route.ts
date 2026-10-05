@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import pdfParse from 'pdf-parse'
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,37 +14,46 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Extract text from uploaded file buffer
-    let rawText = ''
-    let fileName = file ? file.name : 'Uploaded Resume'
+    let extractedText = ''
 
     if (file) {
       const arrayBuffer = await file.arrayBuffer()
       const buffer = Buffer.from(arrayBuffer)
-      // Basic text extraction from buffer
-      rawText = buffer.toString('utf-8').replace(/[^\x20-\x7E\n]/g, ' ')
+
+      try {
+        // Use pdf-parse to extract actual readable text
+        const parsedPdf = await pdfParse(buffer)
+        extractedText = parsedPdf.text
+      } catch (parseErr) {
+        console.error('PDF parsing error:', parseErr)
+        // Fallback cleanup if parsing fails
+        extractedText = buffer
+          .toString('utf-8')
+          .replace(/[^\x20-\x7E\n]/g, '')
+      }
     }
 
-    // Parse clean lines from extracted text
-    const cleanLines = rawText
+    // Split extracted text into clean, non-empty lines
+    const cleanLines = extractedText
       .split('\n')
       .map((line) => line.trim())
       .filter((line) => line.length > 2)
 
-    // Extract candidate name or fallback
-    const fullName = cleanLines[0] && cleanLines[0].length < 40 ? cleanLines[0] : 'Optimized Candidate'
+    const fullName =
+      cleanLines[0] && cleanLines[0].length < 40
+        ? cleanLines[0]
+        : 'Candidate Name'
 
-    // Extract domain name for target company
     let targetCompany = 'Target Company'
     try {
       const parsedUrl = new URL(jobUrl)
       const hostParts = parsedUrl.hostname.replace('www.', '').split('.')
       if (hostParts[0]) {
-        targetCompany = hostParts[0].charAt(0).toUpperCase() + hostParts[0].slice(1)
+        targetCompany =
+          hostParts[0].charAt(0).toUpperCase() + hostParts[0].slice(1)
       }
     } catch {}
 
-    // Return robust structure matching frontend expectations exactly
     return NextResponse.json({
       success: true,
       data: {
@@ -57,28 +67,35 @@ export async function POST(req: NextRequest) {
         resumeData: {
           fullName: fullName,
           titleWithExp: 'Professional Candidate',
-          contactLine: cleanLines.slice(1, 3).join(' | ') || 'Contact info from uploaded resume',
-          summary: cleanLines.slice(3, 6).join(' ') || 'Tailored professional summary aligned with job description.',
+          contactLine:
+            cleanLines.slice(1, 3).join(' | ') ||
+            'Contact info extracted from resume',
+          summary:
+            cleanLines.slice(3, 7).join(' ') ||
+            'Tailored summary aligned with job description.',
           skills: [
             {
               category: 'Core Competencies',
-              list: cleanLines.slice(6, 12).join(', ') || 'Extracted skills and tailored domain expertise.'
+              list:
+                cleanLines.slice(7, 12).join(', ') ||
+                'Extracted skills and qualifications.'
             }
           ],
           experience: [
             {
-              role: 'Key Role',
+              role: 'Relevant Experience',
               company: targetCompany,
               period: 'Recent',
-              bulletPoints: cleanLines.slice(12, 16).length > 0
-                ? cleanLines.slice(12, 16)
-                : ['Optimized achievement aligned with job requirements.', 'Increased team efficiency and key metrics.']
+              bulletPoints:
+                cleanLines.slice(12, 17).length > 0
+                  ? cleanLines.slice(12, 17)
+                  : ['Accomplished key task and optimized core performance.']
             }
           ],
           educationAndCerts: [
             {
               degreeOrCert: 'Relevant Education / Certifications',
-              institution: 'Higher Education'
+              institution: 'Extracted Institution'
             }
           ],
           languages: 'English: Native / Professional',
