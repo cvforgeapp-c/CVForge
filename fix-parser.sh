@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+mkdir -p app/api/optimize
+cat << 'ROUTE' > app/api/optimize/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 
 function isPdfSyntaxLine(line: string): boolean {
@@ -154,3 +157,8 @@ export async function POST(req: NextRequest) {
     )
   }
 }
+ROUTE
+git add .
+git commit -m "Fix text array filter bug and guarantee populated CV data response"
+git push origin main
+echo "✅ Code updated and deployed to Vercel!"
