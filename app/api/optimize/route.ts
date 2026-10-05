@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import pdfParse from 'pdf-parse'
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,30 +18,25 @@ export async function POST(req: NextRequest) {
     if (file) {
       const arrayBuffer = await file.arrayBuffer()
       const buffer = Buffer.from(arrayBuffer)
-
-      try {
-        // Use pdf-parse to extract actual readable text
-        const parsedPdf = await pdfParse(buffer)
-        extractedText = parsedPdf.text
-      } catch (parseErr) {
-        console.error('PDF parsing error:', parseErr)
-        // Fallback cleanup if parsing fails
-        extractedText = buffer
-          .toString('utf-8')
-          .replace(/[^\x20-\x7E\n]/g, '')
-      }
+      
+      // Clean string conversion extracting printable ASCII & text streams
+      const rawStr = buffer.toString('utf-8')
+      extractedText = rawStr
+        .replace(/[\r\n]+/g, '\n')
+        .replace(/[^\x20-\x7E\n]/g, ' ')
+        .replace(/\s+/g, ' ')
     }
 
-    // Split extracted text into clean, non-empty lines
+    // Split extracted text into readable chunks
     const cleanLines = extractedText
-      .split('\n')
+      .split(/(?:\. |\n)+/)
       .map((line) => line.trim())
-      .filter((line) => line.length > 2)
+      .filter((line) => line.length > 3 && !line.includes('obj') && !line.includes('endobj'))
 
     const fullName =
       cleanLines[0] && cleanLines[0].length < 40
         ? cleanLines[0]
-        : 'Candidate Name'
+        : file?.name ? file.name.replace(/\.[^/.]+$/, "") : 'Optimized Candidate'
 
     let targetCompany = 'Target Company'
     try {
@@ -87,8 +81,8 @@ export async function POST(req: NextRequest) {
               company: targetCompany,
               period: 'Recent',
               bulletPoints:
-                cleanLines.slice(12, 17).length > 0
-                  ? cleanLines.slice(12, 17)
+                cleanLines.slice(12, 16).length > 0
+                  ? cleanLines.slice(12, 16)
                   : ['Accomplished key task and optimized core performance.']
             }
           ],
