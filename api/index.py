@@ -1,10 +1,13 @@
 import sys
 import os
 
-# Guarantee project root directory is in system path regardless of execution directory
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "."))
+# Ensure project root directory is added to sys.path
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
+
+# Proceed with Flask imports and app creation...
+
 
 from flask import Flask, jsonify
 from flask_cors import CORS
