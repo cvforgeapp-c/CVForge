@@ -118,188 +118,103 @@ export default function Dashboard() {
   }
 
   const handleLaunch = async () => {
-  if (!jobUrl || !uploadedFile) return
+    if (!jobUrl || !uploadedFile) return
 
-  setIsOptimizing(true)
-  setStepIndex(0)
+    setIsOptimizing(true)
+    setStepIndex(0)
 
-  const interval = setInterval(() => {
-    setStepIndex((prev) =>
-      prev < steps.length - 1 ? prev + 1 : prev
-    )
-  }, 1200)
-
-  try {
-    const formData = new FormData()
-    formData.append('file', uploadedFile)
-    formData.append('jobUrl', jobUrl)
-
-    const response = await fetch('/api/optimize', {
-      method: 'POST',
-      body: formData
-    })
-
-    const resData = await response.json()
-
-    clearInterval(interval)
-
-    if (!response.ok || !resData.success || !resData.data) {
-      throw new Error(
-        resData.error || 'Resume optimization failed.'
+    const interval = setInterval(() => {
+      setStepIndex((prev) =>
+        prev < steps.length - 1 ? prev + 1 : prev
       )
-    }
+    }, 1200)
 
-    const aiData = resData.data
+    try {
+      const formData = new FormData()
+      formData.append('file', uploadedFile)
+      formData.append('jobUrl', jobUrl)
 
-    /*
-     * IMPORTANT:
-     * No resume content is created here.
-     *
-     * Every resume word must come from:
-     * 1. The uploaded CV
-     * 2. The linked job posting
-     *
-     * The API is responsible for extraction + AI optimization.
-     */
-
-    if (!aiData.resumeData) {
-      throw new Error(
-        'No optimized resume data was returned from the AI.'
-      )
-    }
-
-    const sourceResume = aiData.resumeData
-
-    const now = new Date()
-
-    const formattedDate =
-      now.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      }) +
-      ' at ' +
-      now.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
+      const response = await fetch('/api/optimize', {
+        method: 'POST',
+        body: formData
       })
 
-    /*
-     * DYNAMIC RESUME DATA
-     *
-     * No fabricated/default resume text.
-     * Empty fields remain empty and are omitted by
-     * the PDF generator.
-     */
+      const resData = await response.json()
 
-    const formattedResumeData: OptimizedResumeData = {
-      fullName: sourceResume.fullName ?? '',
+      clearInterval(interval)
 
-      titleWithExp:
-        sourceResume.titleWithExp ??
-        '',
+      if (!response.ok || !resData.success || !resData.data) {
+        throw new Error(
+          resData.error || 'Resume optimization failed.'
+        )
+      }
 
-      contactLine:
-        sourceResume.contactLine ??
-        '',
+      const aiData = resData.data
 
-      summary:
-        sourceResume.summary ??
-        '',
+      if (!aiData.resumeData) {
+        throw new Error(
+          'No optimized resume data was returned from the AI.'
+        )
+      }
 
-      skills:
-        Array.isArray(sourceResume.skills)
-          ? sourceResume.skills
-          : [],
+      const sourceResume = aiData.resumeData
+      const now = new Date()
 
-      experience:
-        Array.isArray(sourceResume.experience)
-          ? sourceResume.experience
-          : [],
+      const formattedDate =
+        now.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        }) +
+        ' at ' +
+        now.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        })
 
-      educationAndCerts:
-        Array.isArray(sourceResume.educationAndCerts)
-          ? sourceResume.educationAndCerts
-          : [],
+      const formattedResumeData: OptimizedResumeData = {
+        fullName: sourceResume.fullName ?? '',
+        titleWithExp: sourceResume.titleWithExp ?? '',
+        contactLine: sourceResume.contactLine ?? '',
+        summary: sourceResume.summary ?? '',
+        skills: Array.isArray(sourceResume.skills) ? sourceResume.skills : [],
+        experience: Array.isArray(sourceResume.experience) ? sourceResume.experience : [],
+        educationAndCerts: Array.isArray(sourceResume.educationAndCerts) ? sourceResume.educationAndCerts : [],
+        languages: sourceResume.languages ?? '',
+        interests: sourceResume.interests ?? ''
+      }
 
-      languages:
-        sourceResume.languages ?? '',
+      const newResult: OptimizedResult = {
+        id: crypto.randomUUID(),
+        company: typeof aiData.company === 'string' ? aiData.company : '',
+        source: typeof aiData.source === 'string' ? aiData.source : '',
+        jobTitle: typeof aiData.jobTitle === 'string' ? aiData.jobTitle : '',
+        dateStr: formattedDate,
+        jobUrl,
+        atsBefore: typeof aiData.atsScoreBefore === 'number' ? aiData.atsScoreBefore : 0,
+        atsAfter: typeof aiData.atsScoreAfter === 'number' ? aiData.atsScoreAfter : 0,
+        matchingBefore: typeof aiData.matchingBefore === 'number' ? aiData.matchingBefore : 0,
+        matchingAfter: typeof aiData.matchingAfter === 'number' ? aiData.matchingAfter : 0,
+        resumeData: formattedResumeData
+      }
 
-      interests:
-        sourceResume.interests ?? ''
+      setOptimizedResults((prevResults) => [
+        newResult,
+        ...prevResults
+      ])
+
+    } catch (err) {
+      clearInterval(interval)
+      console.error('Optimization error:', err)
+      alert(
+        err instanceof Error
+          ? err.message
+          : 'Unable to optimize your resume.'
+      )
+    } finally {
+      setIsOptimizing(false)
     }
-
-    /*
-     * JOB INFORMATION ALSO COMES FROM THE API.
-     *
-     * No fake company/job/source values.
-     */
-
-    const newResult: OptimizedResult = {
-      id: crypto.randomUUID(),
-
-      company:
-        typeof aiData.company === 'string'
-          ? aiData.company
-          : '',
-
-      source:
-        typeof aiData.source === 'string'
-          ? aiData.source
-          : '',
-
-      jobTitle:
-        typeof aiData.jobTitle === 'string'
-          ? aiData.jobTitle
-          : '',
-
-      dateStr: formattedDate,
-
-      jobUrl,
-
-      atsBefore:
-        typeof aiData.atsScoreBefore === 'number'
-          ? aiData.atsScoreBefore
-          : 0,
-
-      atsAfter:
-        typeof aiData.atsScoreAfter === 'number'
-          ? aiData.atsScoreAfter
-          : 0,
-
-      matchingBefore:
-        typeof aiData.matchingBefore === 'number'
-          ? aiData.matchingBefore
-          : 0,
-
-      matchingAfter:
-        typeof aiData.matchingAfter === 'number'
-          ? aiData.matchingAfter
-          : 0,
-
-      resumeData: formattedResumeData
-    }
-
-    setOptimizedResults((prevResults) => [
-      newResult,
-      ...prevResults
-    ])
-
-  } catch (err) {
-    clearInterval(interval)
-
-    console.error('Optimization error:', err)
-
-    alert(
-      err instanceof Error
-        ? err.message
-        : 'Unable to optimize your resume.'
-    )
-
-  } finally {
-    setIsOptimizing(false)
-  }
   }
 
   const handleDelete = (id: string) => {
@@ -769,318 +684,199 @@ export default function Dashboard() {
       )}
 
       {/* DYNAMIC PDF TEMPLATE */}
-<div className="fixed left-[-10000px] top-0 pointer-events-none">
-  {selectedResult?.resumeData && (
-    <div
-      ref={pdfTemplateRef}
-      className="cv-pdf-document"
-      style={{
-        width: '7.4in',
-        minHeight: '10.1in',
-        backgroundColor: '#ffffff',
-        color: '#111111',
-        fontFamily: '"Times New Roman", Times, serif',
-        fontSize: '10.5pt',
-        lineHeight: '1.25',
-        position: 'relative',
-        boxSizing: 'border-box',
-        padding: '0.05in 0.02in'
-      }}
-    >
-
-      {/* WATERMARK */}
-
-      <div
-        id="pdf-watermark"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 0,
-          display: 'none',
-          alignItems: 'center',
-          justifyContent: 'center',
-          pointerEvents: 'none',
-          overflow: 'hidden'
-        }}
-      >
-        <div
-          style={{
-            transform: 'rotate(-45deg)',
-            fontFamily: 'Arial, Helvetica, sans-serif',
-            fontSize: '62pt',
-            fontWeight: 800,
-            color: '#c7c7c7',
-            opacity: 0.28,
-            letterSpacing: '2px',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          CVforge.co
-        </div>
-      </div>
-
-
-      {/* HEADER */}
-
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 2,
-          textAlign: 'center',
-          paddingBottom: '0.12in',
-          borderBottom: '1px solid #e5e7eb'
-        }}
-      >
-
-        {/* Only render name if extracted */}
-
-        {selectedResult.resumeData.fullName && (
+      <div className="fixed left-[-10000px] top-0 pointer-events-none">
+        {selectedResult?.resumeData && (
           <div
+            ref={pdfTemplateRef}
+            className="cv-pdf-document"
             style={{
-              fontFamily: 'Arial, Helvetica, sans-serif',
-              fontSize: '21pt',
-              lineHeight: '1.05',
-              fontWeight: 800,
-              color: '#173f63',
-              letterSpacing: '0.2px',
-              marginBottom: '3px',
-              textTransform: 'uppercase'
-            }}
-          >
-            {selectedResult.resumeData.fullName}
-          </div>
-        )}
-
-
-        {/* Only render title if extracted */}
-
-        {selectedResult.resumeData.titleWithExp && (
-          <div
-            style={{
-              fontFamily: 'Arial, Helvetica, sans-serif',
-              fontSize: '11.5pt',
-              lineHeight: '1.2',
-              fontWeight: 700,
-              color: '#3f7ea6',
-              marginBottom: '5px'
-            }}
-          >
-            {selectedResult.resumeData.titleWithExp}
-          </div>
-        )}
-
-
-        {/* Only render contacts if extracted */}
-
-        {selectedResult.resumeData.contactLine && (
-          <div
-            style={{
+              width: '7.4in',
+              minHeight: '10.1in',
+              backgroundColor: '#ffffff',
+              color: '#111111',
               fontFamily: '"Times New Roman", Times, serif',
-              fontSize: '9.5pt',
+              fontSize: '10.5pt',
               lineHeight: '1.25',
-              color: '#222222',
-              maxWidth: '6.9in',
-              margin: '0 auto',
-              whiteSpace: 'pre-line'
+              position: 'relative',
+              boxSizing: 'border-box',
+              padding: '0.05in 0.02in'
             }}
           >
-            {selectedResult.resumeData.contactLine}
-          </div>
-        )}
+            {/* WATERMARK */}
+            <div
+              id="pdf-watermark"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: 0,
+                display: 'none',
+                alignItems: 'center',
+                justifyContent: 'center',
+                pointerEvents: 'none',
+                overflow: 'hidden'
+              }}
+            >
+              <div
+                style={{
+                  transform: 'rotate(-45deg)',
+                  fontFamily: 'Arial, Helvetica, sans-serif',
+                  fontSize: '62pt',
+                  fontWeight: 800,
+                  color: '#c7c7c7',
+                  opacity: 0.28,
+                  letterSpacing: '2px',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                CVforge.co
+              </div>
+            </div>
 
-      </div>
-
-
-      {/* BODY */}
-
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 2,
-          paddingTop: '0.10in'
-        }}
-      >
-
-        {/* PROFESSIONAL SUMMARY */}
-
-        {selectedResult.resumeData.summary?.trim() && (
-          <div
-            className="pdf-section"
-            style={{
-              marginBottom: '0.13in',
-              breakInside: 'avoid',
-              pageBreakInside: 'avoid'
-            }}
-          >
-
+            {/* HEADER */}
             <div
               style={{
-                fontFamily: 'Arial, Helvetica, sans-serif',
+                position: 'relative',
+                zIndex: 2,
                 textAlign: 'center',
-                fontSize: '11.5pt',
-                fontWeight: 800,
-                color: '#3f7ea6',
-                textTransform: 'uppercase',
-                marginBottom: '5px'
+                paddingBottom: '0.12in',
+                borderBottom: '1px solid #e5e7eb'
               }}
             >
-              PROFESSIONAL SUMMARY
+              {selectedResult.resumeData.fullName && (
+                <div
+                  style={{
+                    fontFamily: 'Arial, Helvetica, sans-serif',
+                    fontSize: '21pt',
+                    lineHeight: '1.05',
+                    fontWeight: 800,
+                    color: '#173f63',
+                    letterSpacing: '0.2px',
+                    marginBottom: '3px',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  {selectedResult.resumeData.fullName}
+                </div>
+              )}
+
+              {selectedResult.resumeData.titleWithExp && (
+                <div
+                  style={{
+                    fontFamily: 'Arial, Helvetica, sans-serif',
+                    fontSize: '11.5pt',
+                    lineHeight: '1.2',
+                    fontWeight: 700,
+                    color: '#3f7ea6',
+                    marginBottom: '5px'
+                  }}
+                >
+                  {selectedResult.resumeData.titleWithExp}
+                </div>
+              )}
+
+              {selectedResult.resumeData.contactLine && (
+                <div
+                  style={{
+                    fontFamily: '"Times New Roman", Times, serif',
+                    fontSize: '9.5pt',
+                    lineHeight: '1.25',
+                    color: '#222222',
+                    maxWidth: '6.9in',
+                    margin: '0 auto',
+                    whiteSpace: 'pre-line'
+                  }}
+                >
+                  {selectedResult.resumeData.contactLine}
+                </div>
+              )}
             </div>
 
+            {/* BODY */}
             <div
               style={{
-                fontSize: '10.2pt',
-                lineHeight: '1.25',
-                color: '#222222'
+                position: 'relative',
+                zIndex: 2,
+                paddingTop: '0.10in'
               }}
             >
-              {selectedResult.resumeData.summary}
-            </div>
-
-          </div>
-        )}
-
-
-        {/* KEY SKILLS */}
-
-        {selectedResult.resumeData.skills?.length > 0 && (
-          <div
-            className="pdf-section"
-            style={{
-              marginBottom: '0.14in'
-            }}
-          >
-
-            <div
-              style={{
-                fontFamily: 'Arial, Helvetica, sans-serif',
-                textAlign: 'center',
-                fontSize: '11.5pt',
-                fontWeight: 800,
-                color: '#3f7ea6',
-                textTransform: 'uppercase',
-                marginBottom: '5px'
-              }}
-            >
-              KEY SKILLS
-            </div>
-
-            {selectedResult.resumeData.skills.map(
-              (skillGroup, idx) => {
-
-                if (
-                  !skillGroup?.category?.trim() &&
-                  !skillGroup?.list?.trim()
-                ) {
-                  return null
-                }
-
-                return (
+              {/* PROFESSIONAL SUMMARY */}
+              {selectedResult.resumeData.summary?.trim() && (
+                <div
+                  className="pdf-section"
+                  style={{
+                    marginBottom: '0.13in',
+                    breakInside: 'avoid',
+                    pageBreakInside: 'avoid'
+                  }}
+                >
                   <div
-                    key={idx}
+                    style={{
+                      fontFamily: 'Arial, Helvetica, sans-serif',
+                      textAlign: 'center',
+                      fontSize: '11.5pt',
+                      fontWeight: 800,
+                      color: '#3f7ea6',
+                      textTransform: 'uppercase',
+                      marginBottom: '5px'
+                    }}
+                  >
+                    PROFESSIONAL SUMMARY
+                  </div>
+
+                  <div
                     style={{
                       fontSize: '10.2pt',
-                      lineHeight: '1.22',
-                      marginBottom: '3px',
-                      breakInside: 'avoid',
-                      pageBreakInside: 'avoid'
+                      lineHeight: '1.25',
+                      color: '#222222'
                     }}
                   >
-
-                    {skillGroup.category?.trim() && (
-                      <span
-                        style={{
-                          fontWeight: 700,
-                          textDecoration: 'underline',
-                          color: '#111111'
-                        }}
-                      >
-                        {skillGroup.category}
-                      </span>
-                    )}
-
-                    {skillGroup.category?.trim() &&
-                      skillGroup.list?.trim() && (
-                        <span> </span>
-                      )}
-
-                    {skillGroup.list?.trim() && (
-                      <span style={{ color: '#222222' }}>
-                        {skillGroup.list}
-                      </span>
-                    )}
-
+                    {selectedResult.resumeData.summary}
                   </div>
-                )
-              }
-            )}
+                </div>
+              )}
 
-          </div>
-        )}
-
-
-        {/* WORK EXPERIENCE */}
-
-        {selectedResult.resumeData.experience?.length > 0 && (
-          <div
-            className="pdf-section"
-            style={{
-              marginBottom: '0.14in'
-            }}
-          >
-
-            <div
-              style={{
-                fontFamily: 'Arial, Helvetica, sans-serif',
-                textAlign: 'center',
-                fontSize: '11.5pt',
-                fontWeight: 800,
-                color: '#3f7ea6',
-                textTransform: 'uppercase',
-                marginBottom: '6px'
-              }}
-            >
-              WORK EXPERIENCE
-            </div>
-
-            {selectedResult.resumeData.experience.map(
-              (exp, idx) => {
-
-                if (
-                  !exp?.role?.trim() &&
-                  !exp?.company?.trim() &&
-                  !exp?.period?.trim() &&
-                  !exp?.bulletPoints?.length
-                ) {
-                  return null
-                }
-
-                return (
+              {/* KEY SKILLS */}
+              {selectedResult.resumeData.skills?.length > 0 && (
+                <div
+                  className="pdf-section"
+                  style={{
+                    marginBottom: '0.14in'
+                  }}
+                >
                   <div
-                    key={idx}
-                    className="pdf-experience-item"
                     style={{
-                      marginBottom: '0.11in',
-                      breakInside: 'avoid',
-                      pageBreakInside: 'avoid'
+                      fontFamily: 'Arial, Helvetica, sans-serif',
+                      textAlign: 'center',
+                      fontSize: '11.5pt',
+                      fontWeight: 800,
+                      color: '#3f7ea6',
+                      textTransform: 'uppercase',
+                      marginBottom: '5px'
                     }}
                   >
+                    KEY SKILLS
+                  </div>
 
-                    {/* ROLE / COMPANY / PERIOD */}
+                  {selectedResult.resumeData.skills.map((skillGroup, idx) => {
+                    if (
+                      !skillGroup?.category?.trim() &&
+                      !skillGroup?.list?.trim()
+                    ) {
+                      return null
+                    }
 
-                    {(exp.role?.trim() ||
-                      exp.company?.trim() ||
-                      exp.period?.trim()) && (
-
+                    return (
                       <div
+                        key={idx}
                         style={{
-                          fontSize: '10.4pt',
-                          lineHeight: '1.2',
-                          marginBottom: '3px'
+                          fontSize: '10.2pt',
+                          lineHeight: '1.22',
+                          marginBottom: '3px',
+                          breakInside: 'avoid',
+                          pageBreakInside: 'avoid'
                         }}
                       >
-
-                        {exp.role?.trim() && (
+                        {skillGroup.category?.trim() && (
                           <span
                             style={{
                               fontWeight: 700,
@@ -1088,253 +884,284 @@ export default function Dashboard() {
                               color: '#111111'
                             }}
                           >
-                            {exp.role}
+                            {skillGroup.category}
                           </span>
                         )}
 
-                        {exp.company?.trim() && (
-                          <>
-                            <span> | </span>
-
-                            <span
-                              style={{
-                                color: '#333333'
-                              }}
-                            >
-                              {exp.company}
-                            </span>
-                          </>
+                        {skillGroup.category?.trim() && skillGroup.list?.trim() && (
+                          <span> </span>
                         )}
 
-                        {exp.period?.trim() && (
-                          <>
-                            <span> | </span>
-
-                            <span
-                              style={{
-                                color: '#333333'
-                              }}
-                            >
-                              {exp.period}
-                            </span>
-                          </>
+                        {skillGroup.list?.trim() && (
+                          <span style={{ color: '#222222' }}>
+                            {skillGroup.list}
+                          </span>
                         )}
-
                       </div>
-                    )}
+                    )
+                  })}
+                </div>
+              )}
 
-
-                    {/* BULLETS */}
-
-                    {exp.bulletPoints?.length > 0 && (
-                      <ul
-                        style={{
-                          margin: '2px 0 0 0',
-                          paddingLeft: '18px',
-                          fontSize: '10.1pt',
-                          lineHeight: '1.22',
-                          color: '#222222'
-                        }}
-                      >
-
-                        {exp.bulletPoints.map(
-                          (bullet, bIdx) => {
-
-                            if (!bullet?.trim()) {
-                              return null
-                            }
-
-                            return (
-                              <li
-                                key={bIdx}
-                                style={{
-                                  paddingLeft: '2px',
-                                  marginBottom: '2px',
-                                  breakInside: 'avoid',
-                                  pageBreakInside: 'avoid'
-                                }}
-                              >
-                                {bullet}
-                              </li>
-                            )
-                          }
-                        )}
-
-                      </ul>
-                    )}
-
-                  </div>
-                )
-              }
-            )}
-
-          </div>
-        )}
-
-
-        {/* EDUCATION & CERTIFICATIONS */}
-
-        {selectedResult.resumeData.educationAndCerts?.length > 0 && (
-          <div
-            className="pdf-section"
-            style={{
-              marginBottom: '0.14in'
-            }}
-          >
-
-            <div
-              style={{
-                fontFamily: 'Arial, Helvetica, sans-serif',
-                textAlign: 'center',
-                fontSize: '11.5pt',
-                fontWeight: 800,
-                color: '#3f7ea6',
-                textTransform: 'uppercase',
-                marginBottom: '6px'
-              }}
-            >
-              EDUCATION & CERTIFICATIONS
-            </div>
-
-            {selectedResult.resumeData.educationAndCerts.map(
-              (edu, idx) => {
-
-                if (
-                  !edu?.degreeOrCert?.trim() &&
-                  !edu?.institution?.trim() &&
-                  !edu?.year?.trim()
-                ) {
-                  return null
-                }
-
-                return (
+              {/* WORK EXPERIENCE */}
+              {selectedResult.resumeData.experience?.length > 0 && (
+                <div
+                  className="pdf-section"
+                  style={{
+                    marginBottom: '0.14in'
+                  }}
+                >
                   <div
-                    key={idx}
-                    className="pdf-education-item"
                     style={{
-                      fontSize: '10.2pt',
-                      lineHeight: '1.22',
-                      marginBottom: '3px',
-                      breakInside: 'avoid',
-                      pageBreakInside: 'avoid'
+                      fontFamily: 'Arial, Helvetica, sans-serif',
+                      textAlign: 'center',
+                      fontSize: '11.5pt',
+                      fontWeight: 800,
+                      color: '#3f7ea6',
+                      textTransform: 'uppercase',
+                      marginBottom: '6px'
                     }}
                   >
+                    WORK EXPERIENCE
+                  </div>
 
-                    {edu.degreeOrCert?.trim() && (
-                      <span
+                  {selectedResult.resumeData.experience.map((exp, idx) => {
+                    if (
+                      !exp?.role?.trim() &&
+                      !exp?.company?.trim() &&
+                      !exp?.period?.trim() &&
+                      !exp?.bulletPoints?.length
+                    ) {
+                      return null
+                    }
+
+                    return (
+                      <div
+                        key={idx}
+                        className="pdf-experience-item"
                         style={{
-                          fontWeight: 700,
-                          color: '#111111'
+                          marginBottom: '0.11in',
+                          breakInside: 'avoid',
+                          pageBreakInside: 'avoid'
                         }}
                       >
-                        {edu.degreeOrCert}
-                      </span>
-                    )}
+                        {(exp.role?.trim() || exp.company?.trim() || exp.period?.trim()) && (
+                          <div
+                            style={{
+                              fontSize: '10.4pt',
+                              lineHeight: '1.2',
+                              marginBottom: '3px'
+                            }}
+                          >
+                            {exp.role?.trim() && (
+                              <span
+                                style={{
+                                  fontWeight: 700,
+                                  textDecoration: 'underline',
+                                  color: '#111111'
+                                }}
+                              >
+                                {exp.role}
+                              </span>
+                            )}
 
-                    {edu.institution?.trim() && (
-                      <>
-                        <span> | </span>
-                        <span>{edu.institution}</span>
-                      </>
-                    )}
+                            {exp.company?.trim() && (
+                              <>
+                                <span> | </span>
+                                <span style={{ color: '#333333' }}>
+                                  {exp.company}
+                                </span>
+                              </>
+                            )}
 
-                    {edu.year?.trim() && (
-                      <>
-                        <span> | </span>
-                        <span>{edu.year}</span>
-                      </>
-                    )}
+                            {exp.period?.trim() && (
+                              <>
+                                <span> | </span>
+                                <span style={{ color: '#333333' }}>
+                                  {exp.period}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        )}
 
+                        {exp.bulletPoints?.length > 0 && (
+                          <ul
+                            style={{
+                              margin: '2px 0 0 0',
+                              paddingLeft: '18px',
+                              fontSize: '10.1pt',
+                              lineHeight: '1.22',
+                              color: '#222222'
+                            }}
+                          >
+                            {exp.bulletPoints.map((bullet, bIdx) => {
+                              if (!bullet?.trim()) return null
+                              return (
+                                <li
+                                  key={bIdx}
+                                  style={{
+                                    paddingLeft: '2px',
+                                    marginBottom: '2px',
+                                    breakInside: 'avoid',
+                                    pageBreakInside: 'avoid'
+                                  }}
+                                >
+                                  {bullet}
+                                </li>
+                              )
+                            })}
+                          </ul>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* EDUCATION & CERTIFICATIONS */}
+              {selectedResult.resumeData.educationAndCerts?.length > 0 && (
+                <div
+                  className="pdf-section"
+                  style={{
+                    marginBottom: '0.14in'
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: 'Arial, Helvetica, sans-serif',
+                      textAlign: 'center',
+                      fontSize: '11.5pt',
+                      fontWeight: 800,
+                      color: '#3f7ea6',
+                      textTransform: 'uppercase',
+                      marginBottom: '6px'
+                    }}
+                  >
+                    EDUCATION & CERTIFICATIONS
                   </div>
-                )
-              }
-            )}
 
+                  {selectedResult.resumeData.educationAndCerts.map((edu, idx) => {
+                    if (
+                      !edu?.degreeOrCert?.trim() &&
+                      !edu?.institution?.trim() &&
+                      !edu?.year?.trim()
+                    ) {
+                      return null
+                    }
+
+                    return (
+                      <div
+                        key={idx}
+                        className="pdf-education-item"
+                        style={{
+                          fontSize: '10.2pt',
+                          lineHeight: '1.22',
+                          marginBottom: '3px',
+                          breakInside: 'avoid',
+                          pageBreakInside: 'avoid'
+                        }}
+                      >
+                        {edu.degreeOrCert?.trim() && (
+                          <span style={{ fontWeight: 700, color: '#111111' }}>
+                            {edu.degreeOrCert}
+                          </span>
+                        )}
+
+                        {edu.institution?.trim() && (
+                          <>
+                            <span> | </span>
+                            <span>{edu.institution}</span>
+                          </>
+                        )}
+
+                        {edu.year?.trim() && (
+                          <>
+                            <span> | </span>
+                            <span>{edu.year}</span>
+                          </>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* LANGUAGES */}
+              {selectedResult.resumeData.languages?.trim() && (
+                <div
+                  className="pdf-section"
+                  style={{
+                    marginBottom: '0.13in',
+                    breakInside: 'avoid',
+                    pageBreakInside: 'avoid'
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: 'Arial, Helvetica, sans-serif',
+                      textAlign: 'center',
+                      fontSize: '11.5pt',
+                      fontWeight: 800,
+                      color: '#3f7ea6',
+                      textTransform: 'uppercase',
+                      marginBottom: '5px'
+                    }}
+                  >
+                    LANGUAGES
+                  </div>
+
+                  <div
+                    style={{
+                      fontSize: '10.2pt',
+                      lineHeight: '1.25',
+                      color: '#222222'
+                    }}
+                  >
+                    {selectedResult.resumeData.languages}
+                  </div>
+                </div>
+              )}
+
+              {/* INTERESTS & PROJECTS */}
+              {selectedResult.resumeData.interests?.trim() && (
+                <div
+                  className="pdf-section"
+                  style={{
+                    marginBottom: '0.08in',
+                    breakInside: 'avoid',
+                    pageBreakInside: 'avoid'
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: 'Arial, Helvetica, sans-serif',
+                      textAlign: 'center',
+                      fontSize: '11.5pt',
+                      fontWeight: 800,
+                      color: '#3f7ea6',
+                      textTransform: 'uppercase',
+                      marginBottom: '5px'
+                    }}
+                  >
+                    INTERESTS & PROJECTS
+                  </div>
+
+                  <div
+                    style={{
+                      fontSize: '10.2pt',
+                      lineHeight: '1.25',
+                      color: '#222222'
+                    }}
+                  >
+                    {selectedResult.resumeData.interests}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
-
-
-        {/* LANGUAGES */}
-
-        {selectedResult.resumeData.languages?.trim() && (
-          <div
-            className="pdf-section"
-            style={{
-              marginBottom: '0.13in',
-              breakInside: 'avoid',
-              pageBreakInside: 'avoid'
-            }}
-          >
-
-            <div
-              style={{
-                fontFamily: 'Arial, Helvetica, sans-serif',
-                textAlign: 'center',
-                fontSize: '11.5pt',
-                fontWeight: 800,
-                color: '#3f7ea6',
-                textTransform: 'uppercase',
-                marginBottom: '5px'
-              }}
-            >
-              LANGUAGES
-            </div>
-
-            <div
-              style={{
-                fontSize: '10.2pt',
-                lineHeight: '1.25',
-                color: '#222222'
-              }}
-            >
-              {selectedResult.resumeData.languages}
-            </div>
-
-          </div>
-        )}
-
-
-        {/* INTERESTS & PROJECTS */}
-
-        {selectedResult.resumeData.interests?.trim() && (
-          <div
-            className="pdf-section"
-            style={{
-              marginBottom: '0.08in',
-              breakInside: 'avoid',
-              pageBreakInside: 'avoid'
-            }}
-          >
-
-            <div
-              style={{
-                fontFamily: 'Arial, Helvetica, sans-serif',
-                textAlign: 'center',
-                fontSize: '11.5pt',
-                fontWeight: 800,
-                color: '#3f7ea6',
-                textTransform: 'uppercase',
-                marginBottom: '5px'
-              }}
-            >
-              INTERESTS & PROJECTS
-            </div>
-
-            <div
-              style={{
-                fontSize: '10.2pt',
-                lineHeight: '1.25',
-                color: '#222222'
-              }}
-            >
-              {selectedResult.resumeData.interests}
-            </div>
-
-          </div>
-        )}
-
       </div>
-
-    </div>
-  )}
-</div>
+    </main>
+  )
+}
