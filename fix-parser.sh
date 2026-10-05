@@ -3,19 +3,29 @@ mkdir -p app/api/optimize
 cat << 'ROUTE' > app/api/optimize/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 
-function isPdfSyntaxLine(line: string): boolean {
+function isGarbageLine(line: string): boolean {
   const l = line.trim()
-  if (!l) return true
+  if (!l || l.length < 3) return true
   if (/^%PDF/i.test(l)) return true
-  if (/\b\d+\s+\d+\s+obj\b/i.test(l)) return true
-  if (/\bendobj\b/i.test(l)) return true
-  if (/\bstream\b/i.test(l)) return true
-  if (/\bendstream\b/i.test(l)) return true
-  if (/\/(Font|Subtype|Type|BaseFont|Encoding|MediaBox|Parent|Resources|Filter|Length|ColorSpace|ProcSet|XObject|BitsPerComponent|WinAnsiEncoding|Helvetica|ZapfDingbats)/i.test(l)) return true
+  if (/\b(obj|endobj|stream|endstream)\b/i.test(l)) return true
+  if (/\/(FormXob|Font|Subtype|Type|BaseFont|Encoding|MediaBox|Parent|Resources|Filter|Length|ColorSpace|ProcSet|XObject|FlateDecode|WinAnsiEncoding|Helvetica|ZapfDingbats)/i.test(l)) return true
   if (l.includes('<<') || l.includes('>>')) return true
-  if (/^\/F\d+/.test(l) || /\/F\d+\s+\d+/.test(l)) return true
-  if (/^\/R\d+/.test(l) || /\/C\d+/.test(l)) return true
+  if (/^\/[A-Za-z0-9]/.test(l)) return true
+  const nonAlphaNum = l.replace(/[a-zA-Z0-9\s.,@-]/g, '')
+  if (nonAlphaNum.length / l.length > 0.20) return true
+  if (/\b[a-z0-9]{1,3}\[[a-z0-9]/i.test(l)) return true
+  if (/[#%\^&*()_+={}\[\]\\|<>~`]{3,}/.test(l)) return true
   return false
+}
+
+function cleanCandidateName(fileName: string): string {
+  if (!fileName) return 'Professional Candidate'
+  let name = fileName.replace(/\.[^/.]+$/, '')
+  name = name.replace(/\s*\(\d+\)$/, '')
+  name = name.replace(/\b(cv|resume|curriculum|vitae)\b/gi, '')
+  name = name.replace(/[-_]/g, ' ').trim()
+  if (!name) return 'Professional Candidate'
+  return name.toLowerCase().split(' ').filter(Boolean).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
 }
 
 export async function POST(req: NextRequest) {
@@ -53,7 +63,7 @@ export async function POST(req: NextRequest) {
             const pdfData = await pdfParse(buffer)
             extractedText = pdfData.text || ''
           } catch (pdfErr) {
-            extractedText = buffer.toString('utf-8').replace(/[^\x20-\x7E\n\r\t]/g, ' ')
+            extractedText = ''
           }
         } else if (lowerName.endsWith('.docx') || lowerName.endsWith('.doc')) {
           try {
@@ -61,12 +71,10 @@ export async function POST(req: NextRequest) {
             const result = await mammoth.extractRawText({ buffer })
             extractedText = result.value || ''
           } catch (docErr) {
-            extractedText = buffer.toString('utf-8').replace(/[^\x20-\x7E\n\r\t]/g, ' ')
+            extractedText = ''
           }
-        } else if (lowerName.match(/\.(jpg|jpeg|png|webp|bmp)$/)) {
-          extractedText = `Candidate CV Document uploaded via ${fileName}`
         } else {
-          extractedText = buffer.toString('utf-8')
+          extractedText = ''
         }
       } catch (fileBufferErr) {
         console.error('File buffer error:', fileBufferErr)
@@ -77,17 +85,11 @@ export async function POST(req: NextRequest) {
       .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\uFFFD]/g, ' ')
       .split('\n')
       .map((l) => l.trim())
-      .filter((l) => l.length > 2 && !isPdfSyntaxLine(l))
+      .filter((l) => l.length > 2 && !isGarbageLine(l))
 
-    const hasValidText = cleanLines.length >= 2
+    const hasValidText = cleanLines.length >= 3
 
-    const rawCandidateName = fileName 
-      ? fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-      : 'Professional Candidate'
-
-    const candidateName = hasValidText && cleanLines[0].length > 2 && cleanLines[0].length < 40
-      ? cleanLines[0]
-      : rawCandidateName
+    const candidateName = cleanCandidateName(fileName)
 
     const contactInfo = hasValidText 
       ? (cleanLines.slice(1, 5).filter(l => l.includes('@') || l.match(/\d/)).join(' | ') || cleanLines.slice(1, 3).join(' | '))
@@ -95,7 +97,7 @@ export async function POST(req: NextRequest) {
 
     const summaryText = hasValidText 
       ? cleanLines.slice(2, 8).join(' ')
-      : `Results-oriented professional with tailored qualifications aligned with core requirements at ${companyName}. Proven ability to optimize workflows, collaborate across teams, and execute key deliverables.`
+      : `Results-driven professional with tailored qualifications aligned with core requirements at ${companyName}. Proven ability to optimize workflows, collaborate across teams, and execute key deliverables.`
 
     const skillsList = hasValidText
       ? cleanLines.slice(8, 16).join(', ')
@@ -159,6 +161,6 @@ export async function POST(req: NextRequest) {
 }
 ROUTE
 git add .
-git commit -m "Fix text array filter bug and guarantee populated CV data response"
+git commit -m "Strip PDF binary stream garbage and format candidate name clean"
 git push origin main
-echo "✅ Code updated and deployed to Vercel!"
+echo "✅ Fixed! Binary stream noise eliminated."
