@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Execution timeout guard wrapper
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error('Timeout')), ms)
-    )
-  ])
+// Filter out PDF internal syntax markers and metadata lines
+function isPdfSyntaxLine(line: string): boolean {
+  const l = line.trim()
+  if (!l) return true
+  if (/^%PDF/i.test(l)) return true
+  if (/\b\d+\s+\d+\s+obj\b/i.test(l)) return true
+  if (/\bendobj\b/i.test(l)) return true
+  if (/\bstream\b/i.test(l)) return true
+  if (/\bendstream\b/i.test(l)) return true
+  if (/\/(Font|Subtype|Type|BaseFont|Encoding|MediaBox|Parent|Resources|Filter|Length|ColorSpace|ProcSet|XObject|BitsPerComponent|WinAnsiEncoding|Helvetica|ZapfDingbats)/i.test(l)) return true
+  if (l.includes('<<') || l.includes('>>')) return true
+  if (/^\/F\d+/.test(l) || /\/F\d+\s+\d+/.test(l)) return true
+  if (/^\/R\d+/.test(l) || /\/C\d+/.test(l)) return true
+  return false
 }
 
 export async function POST(req: NextRequest) {
@@ -26,7 +32,6 @@ export async function POST(req: NextRequest) {
     let extractedCvText = ''
     const fileName = file ? file.name : ''
 
-    // --- STEP 1: PARSE FILE SAFELY WITHOUT WASM TIMEOUTS ---
     if (file) {
       try {
         const arrayBuffer = await file.arrayBuffer()
@@ -35,30 +40,39 @@ export async function POST(req: NextRequest) {
 
         if (lowerName.endsWith('.pdf')) {
           try {
-            const pdfParse = (await import('pdf-parse')).default
-            const pdfData = await withTimeout(pdfParse(buffer), 3000)
+            // Require core module directly to prevent Vercel test-file initialization crash
+            // @ts-ignore
+            const pdfParse = require('pdf-parse/lib/pdf-parse.js')
+            const pdfData = await pdfParse(buffer)
             extractedCvText = pdfData.text || ''
           } catch (e) {
-            extractedCvText = buffer.toString('utf-8').replace(/[^\x20-\x7E\n]/g, ' ')
+            console.error('PDF core parser error:', e)
           }
         } else if (lowerName.endsWith('.docx') || lowerName.endsWith('.doc')) {
           try {
-            const mammoth = await import('mammoth')
-            const result = await withTimeout(mammoth.extractRawText({ buffer }), 3000)
+            const mammoth = require('mammoth')
+            const result = await mammoth.extractRawText({ buffer })
             extractedCvText = result.value || ''
           } catch (e) {
-            extractedCvText = ''
+            console.error('DOCX parser error:', e)
           }
         } else {
-          // Plain text & raw string conversion (prevents image OCR Wasm freeze on serverless)
-          extractedCvText = buffer.toString('utf-8').replace(/[^\x20-\x7E\n]/g, ' ')
+          extractedCvText = buffer.toString('utf-8')
         }
       } catch (err) {
         console.error('File buffer error:', err)
       }
     }
 
-    // --- STEP 2: PARSE COMPANY NAME FROM URL ---
+    // --- SANITIZE AND REMOVE ALL PDF MARKUP ---
+    const cleanLines = extractedCvText
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l.length > 2 && !isPdfSyntaxLine(l))
+
+    const hasValidText = cleanLines.length > 2
+
+    // Extract target company from Job URL
     let companyName = 'Target Company'
     try {
       const parsedUrl = new URL(jobUrl)
@@ -70,14 +84,7 @@ export async function POST(req: NextRequest) {
       console.warn('URL parse error:', e)
     }
 
-    // --- STEP 3: SANITIZE CV TEXT LINES ---
-    const cleanLines = extractedCvText
-      .split('\n')
-      .map((l) => l.trim())
-      .filter((l) => l.length > 2 && !l.includes('JFIF') && !l.includes('PNG'))
-
-    const hasValidText = cleanLines.length > 3
-
+    // Extracted candidate info
     const parsedName = hasValidText && cleanLines[0].length < 40
       ? cleanLines[0]
       : fileName ? fileName.replace(/\.[^/.]+$/, "") : 'Candidate Name'
@@ -98,7 +105,6 @@ export async function POST(req: NextRequest) {
       ? cleanLines.slice(15, 20)
       : [`Accomplished key milestones aligned with ${companyName} requirements.`]
 
-    // --- STEP 4: GUARANTEED FAST RESPONSE ---
     return NextResponse.json({
       success: true,
       data: {
