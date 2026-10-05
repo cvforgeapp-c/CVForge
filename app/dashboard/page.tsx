@@ -91,20 +91,11 @@ export default function Dashboard() {
         const badge = savedEmail ? savedEmail.trim().substring(0, 2).toUpperCase() : 'CV'
         setUser({
           firstName: savedName || 'User',
-          fullName: savedName ? `${savedName} ALEMAYEHU` : 'KEDIR ABDELA',
-          email: savedEmail || 'nmtullah86@gmail.com',
-          phone: '0908706534',
-          location: 'Los Angeles',
+          fullName: savedName,
+          email: savedEmail || '',
+          phone: '',
+          location: '',
           emailBadge: badge
-        })
-      } else {
-        setUser({
-          firstName: 'Kedir',
-          fullName: 'KEDIR ABDELA',
-          email: 'nmtullah86@gmail.com',
-          phone: '0908706534',
-          location: 'Los Angeles',
-          emailBadge: 'KA'
         })
       }
     }
@@ -136,20 +127,20 @@ export default function Dashboard() {
     }, 1200)
 
     try {
+      // Create FormData to send actual CV file along with job URL
+      const formData = new FormData()
+      formData.append('file', uploadedFile)
+      formData.append('jobUrl', jobUrl)
+
       const response = await fetch('/api/optimize', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jobUrl,
-          baseCvName: uploadedFile.name,
-          user
-        })
+        body: formData
       })
 
       const resData = await response.json()
       clearInterval(interval)
 
-      if (resData.success) {
+      if (resData.success && resData.data) {
         const aiData = resData.data
         const now = new Date()
         const formattedDate = now.toLocaleDateString('en-US', {
@@ -162,57 +153,29 @@ export default function Dashboard() {
           hour12: true
         })
 
+        // Dynamically populate resume data from API response
         const formattedResumeData: OptimizedResumeData = {
-          fullName: user?.fullName || "KEDIR ABDELA",
-          titleWithExp: "Digital Marketing Specialist (5 yrs exp)",
-          contactLine: `${user?.phone || '0908706534'} | ${user?.email || 'nmtullah86@gmail.com'} | Los Angeles\nlinkedin.com/in/kedirmohammed | Availability: 1 month`,
-          summary: `Results-driven Digital Marketing Specialist with 5+ years of experience designing data-driven campaigns across Google, Meta, and LinkedIn. Proven track record in SEO, paid advertising, and content strategy, with measurable impact on traffic growth and audience engagement. Adept at managing budgets, analyzing performance metrics, and collaborating cross-functionally to deliver retail-focused marketing outcomes.`,
-          skills: [
-            { category: "Digital Marketing", list: "SEO, Social Media Marketing (Google, Instagram, Facebook, LinkedIn), Paid Advertising (Google Ads), Content Marketing, Email Marketing, Campaign Performance Analysis, Customer Acquisition, Budget Management, Data-Driven Strategy" },
-            { category: "Tools & Analytics", list: "Google Analytics (Certified 2023), Google Ads Search (Certified 2023), HubSpot Content Marketing (Certified 2022), Microsoft Office Suite, Performance Reporting & Dashboards, Customer Research Tools" },
-            { category: "Soft Skills", list: "Project Management, Cross-functional Collaboration, Strong Written & Verbal Communication, Analytical Thinking, Adaptability, Results Orientation, Attention to Detail, Multi-tasking in Fast-paced Environments" }
-          ],
-          experience: [
-            {
-              role: "Digital Marketing Specialist",
-              company: "BrightWave Media",
-              period: "2022 – Present",
-              bulletPoints: [
-                "Developed and managed multi-channel campaigns across Google, Instagram, Facebook, and LinkedIn, aligning creative assets with performance goals.",
-                "Increased website traffic by 45% through targeted SEO strategies and content marketing initiatives.",
-                "Managed monthly advertising budgets and conducted campaign performance analysis; collaborated with designers and content writers to produce high-impact marketing materials."
-              ]
-            },
-            {
-              role: "Marketing Coordinator",
-              company: "NovaTech Solutions",
-              period: "2019 – 2022",
-              bulletPoints: [
-                "Improved social media engagement by 30% within one year through optimized content scheduling and audience targeting.",
-                "Created weekly performance reports using Google Analytics; assisted with email marketing campaigns and customer research initiatives."
-              ]
-            }
-          ],
-          educationAndCerts: [
-            { degreeOrCert: "Bachelor of Business Administration", institution: "New York University" },
-            { degreeOrCert: "Google Analytics Certification", institution: "Google", year: "2023" },
-            { degreeOrCert: "Google Ads Search Certification", institution: "Google", year: "2023" },
-            { degreeOrCert: "HubSpot Content Marketing Certification", institution: "HubSpot Academy", year: "2022" }
-          ],
-          languages: "English: Native | Spanish: Professional Working Proficiency | French: Basic",
-          interests: "Technology & AI, Photography, Traveling, Reading, Entrepreneurship"
+          fullName: aiData.resumeData?.fullName || user?.fullName || "Candidate Name",
+          titleWithExp: aiData.resumeData?.titleWithExp || aiData.jobTitle || "Professional",
+          contactLine: aiData.resumeData?.contactLine || `${user?.phone || ''} | ${user?.email || ''}`,
+          summary: aiData.resumeData?.summary || "Professional summary...",
+          skills: aiData.resumeData?.skills || [],
+          experience: aiData.resumeData?.experience || [],
+          educationAndCerts: aiData.resumeData?.educationAndCerts || [],
+          languages: aiData.resumeData?.languages || "",
+          interests: aiData.resumeData?.interests || ""
         }
 
         const newResult: OptimizedResult = {
           id: Date.now().toString(),
-          company: aiData.company || "The Home Depot",
+          company: aiData.company || "Target Company",
           source: aiData.source || "LinkedIn",
-          jobTitle: aiData.jobTitle || "Digital Marketing Specialist",
+          jobTitle: aiData.jobTitle || "Job Position",
           dateStr: formattedDate,
           jobUrl: jobUrl,
-          atsBefore: aiData.atsScoreBefore || 48,
+          atsBefore: aiData.atsScoreBefore || 45,
           atsAfter: aiData.atsScoreAfter || 88,
-          matchingBefore: aiData.matchingBefore || 42,
+          matchingBefore: aiData.matchingBefore || 40,
           matchingAfter: aiData.matchingAfter || 85,
           resumeData: formattedResumeData
         }
@@ -349,7 +312,7 @@ export default function Dashboard() {
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
           <h1 className="font-serif font-extrabold text-2xl text-[#0d2838]">
-            {user ? `Hello ${user.firstName}, ready to apply?` : 'Hello there, ready to apply?'}
+            {user?.firstName ? `Hello ${user.firstName}, ready to apply?` : 'Hello there, ready to apply?'}
           </h1>
         </div>
       )}
@@ -396,9 +359,6 @@ export default function Dashboard() {
                   BASE RESUME
                 </span>
                 <p className="text-xs font-bold text-[#0d2838] truncate max-w-[180px]">
-                  {user ? user.firstName : 'Base Resume'}
-                </p>
-                <p className="text-[11px] text-gray-400 truncate max-w-[180px]">
                   {uploadedFile.name}
                 </p>
               </div>
@@ -695,7 +655,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* PDF TEMPLATE WITH COLORFUL HEADER BANNER (NAME, TITLE, ADDRESS) */}
+      {/* DYNAMIC PDF TEMPLATE */}
       <div className="hidden">
         {selectedResult?.resumeData && (
           <div
@@ -730,71 +690,79 @@ export default function Dashboard() {
             <div className="p-8 relative z-10 space-y-5">
               
               {/* Professional Summary */}
-              <div>
-                <h2 className="text-xs font-bold text-[#134e6f] uppercase tracking-wider border-b-2 border-[#134e6f] pb-1 mb-2">
-                  Professional Summary
-                </h2>
-                <p className="text-gray-700 text-[10.5px] leading-relaxed">
-                  {selectedResult.resumeData.summary}
-                </p>
-              </div>
+              {selectedResult.resumeData.summary && (
+                <div>
+                  <h2 className="text-xs font-bold text-[#134e6f] uppercase tracking-wider border-b-2 border-[#134e6f] pb-1 mb-2">
+                    Professional Summary
+                  </h2>
+                  <p className="text-gray-700 text-[10.5px] leading-relaxed">
+                    {selectedResult.resumeData.summary}
+                  </p>
+                </div>
+              )}
 
               {/* Key Skills */}
-              <div>
-                <h2 className="text-xs font-bold text-[#134e6f] uppercase tracking-wider border-b-2 border-[#134e6f] pb-1 mb-2">
-                  Key Skills
-                </h2>
-                <div className="space-y-1.5">
-                  {selectedResult.resumeData.skills.map((skillGroup, idx) => (
-                    <p key={idx} className="text-[10.5px]">
-                      <strong className="text-gray-900 font-bold">{skillGroup.category}:</strong>{' '}
-                      <span className="text-gray-700">{skillGroup.list}</span>
-                    </p>
-                  ))}
+              {selectedResult.resumeData.skills?.length > 0 && (
+                <div>
+                  <h2 className="text-xs font-bold text-[#134e6f] uppercase tracking-wider border-b-2 border-[#134e6f] pb-1 mb-2">
+                    Key Skills
+                  </h2>
+                  <div className="space-y-1.5">
+                    {selectedResult.resumeData.skills.map((skillGroup, idx) => (
+                      <p key={idx} className="text-[10.5px]">
+                        <strong className="text-gray-900 font-bold">{skillGroup.category}:</strong>{' '}
+                        <span className="text-gray-700">{skillGroup.list}</span>
+                      </p>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Work Experience */}
-              <div>
-                <h2 className="text-xs font-bold text-[#134e6f] uppercase tracking-wider border-b-2 border-[#134e6f] pb-1 mb-2">
-                  Work Experience
-                </h2>
-                <div className="space-y-3">
-                  {selectedResult.resumeData.experience.map((exp, idx) => (
-                    <div key={idx} className="space-y-1">
-                      <div className="flex justify-between items-baseline">
-                        <p className="font-bold text-gray-900 text-[11px]">
-                          {exp.role} <span className="text-[#134e6f]">| {exp.company}</span>
-                        </p>
-                        {exp.period && (
-                          <span className="text-[10px] font-bold text-gray-500">{exp.period}</span>
-                        )}
+              {selectedResult.resumeData.experience?.length > 0 && (
+                <div>
+                  <h2 className="text-xs font-bold text-[#134e6f] uppercase tracking-wider border-b-2 border-[#134e6f] pb-1 mb-2">
+                    Work Experience
+                  </h2>
+                  <div className="space-y-3">
+                    {selectedResult.resumeData.experience.map((exp, idx) => (
+                      <div key={idx} className="space-y-1">
+                        <div className="flex justify-between items-baseline">
+                          <p className="font-bold text-gray-900 text-[11px]">
+                            {exp.role} <span className="text-[#134e6f]">{exp.company ? `| ${exp.company}` : ''}</span>
+                          </p>
+                          {exp.period && (
+                            <span className="text-[10px] font-bold text-gray-500">{exp.period}</span>
+                          )}
+                        </div>
+                        <ul className="list-disc list-inside text-gray-700 text-[10.5px] space-y-1 pl-1">
+                          {exp.bulletPoints.map((bullet, bIdx) => (
+                            <li key={bIdx} className="leading-snug">{bullet}</li>
+                          ))}
+                        </ul>
                       </div>
-                      <ul className="list-disc list-inside text-gray-700 text-[10.5px] space-y-1 pl-1">
-                        {exp.bulletPoints.map((bullet, bIdx) => (
-                          <li key={bIdx} className="leading-snug">{bullet}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Education & Certifications */}
-              <div>
-                <h2 className="text-xs font-bold text-[#134e6f] uppercase tracking-wider border-b-2 border-[#134e6f] pb-1 mb-2">
-                  Education & Certifications
-                </h2>
-                <div className="space-y-1">
-                  {selectedResult.resumeData.educationAndCerts.map((edu, idx) => (
-                    <p key={idx} className="text-[10.5px] text-gray-700">
-                      <strong className="text-gray-900">{edu.degreeOrCert}</strong>
-                      {edu.institution && ` | ${edu.institution}`}
-                      {edu.year && ` (${edu.year})`}
-                    </p>
-                  ))}
+              {selectedResult.resumeData.educationAndCerts?.length > 0 && (
+                <div>
+                  <h2 className="text-xs font-bold text-[#134e6f] uppercase tracking-wider border-b-2 border-[#134e6f] pb-1 mb-2">
+                    Education & Certifications
+                  </h2>
+                  <div className="space-y-1">
+                    {selectedResult.resumeData.educationAndCerts.map((edu, idx) => (
+                      <p key={idx} className="text-[10.5px] text-gray-700">
+                        <strong className="text-gray-900">{edu.degreeOrCert}</strong>
+                        {edu.institution && ` | ${edu.institution}`}
+                        {edu.year && ` (${edu.year})`}
+                      </p>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Languages */}
               {selectedResult.resumeData.languages && (
