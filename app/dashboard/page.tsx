@@ -12,6 +12,16 @@ interface User {
   location?: string
 }
 
+interface OptimizedResumeData {
+  fullName: string
+  titleWithExp: string
+  contactLine: string
+  summary: string
+  skills: { category: string; list: string }[]
+  experience: { role: string; company: string; period?: string; description: string }[]
+  educationAndCerts: string[]
+}
+
 interface OptimizedResult {
   id: string
   company: string
@@ -23,6 +33,7 @@ interface OptimizedResult {
   atsAfter: number
   matchingBefore: number
   matchingAfter: number
+  resumeData: OptimizedResumeData
 }
 
 export default function Dashboard() {
@@ -34,9 +45,12 @@ export default function Dashboard() {
   const [fileError, setFileError] = useState('')
   const [optimizedResults, setOptimizedResults] = useState<OptimizedResult[]>([])
   
-  // Download Modal State
+  // Download Modal & Paywall State
   const [showDownloadModal, setShowDownloadModal] = useState(false)
+  const [showPaywallModal, setShowPaywallModal] = useState(false)
   const [selectedResult, setSelectedResult] = useState<OptimizedResult | null>(null)
+  const [isDownloading, setIsDownloading] = useState(false)
+  const [downloadProgress, setDownloadProgress] = useState(0)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const pdfTemplateRef = useRef<HTMLDivElement>(null)
@@ -45,8 +59,8 @@ export default function Dashboard() {
     'Reading your resume...',
     'Analyzing the job offer...',
     'Detecting ATS keywords...',
-    'Rewriting your experiences...',
-    'Calculating the score...'
+    'Rewriting your experiences with AI...',
+    'Calculating the ATS score...'
   ]
 
   useEffect(() => {
@@ -59,9 +73,9 @@ export default function Dashboard() {
         setUser({
           firstName: savedName || 'User',
           fullName: savedName ? `${savedName} ALEMAYEHU` : 'KEDIR ABDELA',
-          email: savedEmail || 'user@example.com',
+          email: savedEmail || 'nmtullah86@gmail.com',
           phone: '0908706534',
-          location: 'Addis Ababa',
+          location: 'Los Angeles',
           emailBadge: badge
         })
       } else {
@@ -93,47 +107,63 @@ export default function Dashboard() {
     fileInputRef.current?.click()
   }
 
-  const handleLaunch = () => {
+  const handleLaunch = async () => {
     if (!jobUrl || !uploadedFile) return
     setIsOptimizing(true)
     setStepIndex(0)
 
     const interval = setInterval(() => {
-      setStepIndex((prev) => {
-        if (prev >= steps.length - 1) {
-          clearInterval(interval)
-          
-          const now = new Date()
-          const formattedDate = now.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-          }) + ' at ' + now.toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true
-          })
-
-          const newResult: OptimizedResult = {
-            id: Date.now().toString(),
-            company: 'The Home Depot',
-            source: 'LinkedIn',
-            jobTitle: 'Digital Marketing Specialist',
-            dateStr: formattedDate,
-            jobUrl: jobUrl,
-            atsBefore: 48,
-            atsAfter: 72,
-            matchingBefore: 42,
-            matchingAfter: 60
-          }
-
-          setOptimizedResults((prevResults) => [newResult, ...prevResults])
-          setIsOptimizing(false)
-          return prev
-        }
-        return prev + 1
-      })
+      setStepIndex((prev) => (prev < steps.length - 1 ? prev + 1 : prev))
     }, 1200)
+
+    try {
+      const response = await fetch('/api/optimize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jobUrl,
+          baseCvName: uploadedFile.name,
+          user
+        })
+      })
+
+      const resData = await response.json()
+      clearInterval(interval)
+
+      if (resData.success) {
+        const aiData = resData.data
+        const now = new Date()
+        const formattedDate = now.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        }) + ' at ' + now.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        })
+
+        const newResult: OptimizedResult = {
+          id: Date.now().toString(),
+          company: aiData.company,
+          source: aiData.source,
+          jobTitle: aiData.jobTitle,
+          dateStr: formattedDate,
+          jobUrl: jobUrl,
+          atsBefore: aiData.atsScoreBefore,
+          atsAfter: aiData.atsScoreAfter,
+          matchingBefore: aiData.matchingBefore,
+          matchingAfter: aiData.matchingAfter,
+          resumeData: aiData.optimizedResume
+        }
+
+        setOptimizedResults((prevResults) => [newResult, ...prevResults])
+      }
+    } catch (err) {
+      console.error('Optimization error:', err)
+    } finally {
+      setIsOptimizing(false)
+    }
   }
 
   const handleDelete = (id: string) => {
@@ -143,36 +173,57 @@ export default function Dashboard() {
   const openDownloadModal = (res: OptimizedResult) => {
     setSelectedResult(res)
     setShowDownloadModal(true)
+    setShowPaywallModal(false)
+    setIsDownloading(false)
+    setDownloadProgress(0)
+  }
+
+  const handlePremiumAction = () => {
+    setShowDownloadModal(false)
+    setShowPaywallModal(true)
   }
 
   const triggerPDFDownload = async (withWatermark: boolean) => {
+    if (isDownloading) return
+    setIsDownloading(true)
+    setDownloadProgress(10)
+
+    const progressInterval = setInterval(() => {
+      setDownloadProgress((prev) => (prev >= 90 ? 90 : prev + 20))
+    }, 200)
+
     if (typeof window !== 'undefined' && pdfTemplateRef.current) {
       const html2pdf = (await import('html2pdf.js')).default
       const element = pdfTemplateRef.current
 
-      // Toggle watermark visibility dynamically
       const watermarkEl = element.querySelector('#pdf-watermark') as HTMLElement
       if (watermarkEl) {
         watermarkEl.style.display = withWatermark ? 'block' : 'none'
       }
 
       const opt = {
-        margin:       0.3,
-        filename:     `${selectedResult?.source || 'LinkedIn'} - ${user?.fullName || 'Resume'} - ${selectedResult?.jobTitle || 'Optimized'}.pdf`,
+        margin:       [0.4, 0.4, 0.4, 0.4],
+        filename:     `${selectedResult?.source || 'LinkedIn'} - ${selectedResult?.resumeData.fullName || 'Resume'} - ${selectedResult?.jobTitle || 'Optimized'}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
+        html2canvas:  { scale: 2, useCORS: true },
         jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
       }
 
-      html2pdf().set(opt).from(element).save().then(() => {
-        setShowDownloadModal(false)
-      })
+      setTimeout(() => {
+        html2pdf().set(opt).from(element).save().then(() => {
+          setDownloadProgress(100)
+          setTimeout(() => {
+            setIsDownloading(false)
+            setShowDownloadModal(false)
+            setDownloadProgress(0)
+          }, 300)
+        })
+      }, 1000)
     }
   }
 
   return (
     <main className="min-h-screen bg-[#fafbfc] text-[#143a52] px-4 py-4 max-w-md mx-auto flex flex-col font-sans relative">
-      {/* Hidden File Input */}
       <input
         type="file"
         ref={fileInputRef}
@@ -181,7 +232,7 @@ export default function Dashboard() {
         accept=".pdf,.docx,.doc,image/jpeg,image/png"
       />
 
-      {/* Top Header */}
+      {/* Header Navigation */}
       <header className="flex items-center justify-between py-2 mb-4">
         <Link href="/" className="flex items-center gap-2">
           <div className="bg-[#134e6f] p-1.5 rounded-xl text-white">
@@ -250,7 +301,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Main Upload / Control Box */}
+      {/* Upload Box */}
       {!uploadedFile ? (
         <div
           onClick={triggerFileInput}
@@ -336,7 +387,7 @@ export default function Dashboard() {
         </>
       )}
 
-      {/* MY OPTIMIZED RESUMES CARD */}
+      {/* Optimizations List */}
       <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-2xs flex-1 flex flex-col">
         <div className="flex items-center gap-1.5 text-sm font-serif font-bold text-[#0d2838] mb-4">
           <span>✨</span>
@@ -375,7 +426,7 @@ export default function Dashboard() {
               <div key={res.id} className="border border-gray-100 rounded-2xl p-4 bg-white shadow-2xs space-y-3">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-orange-600 text-white font-extrabold text-[9px] flex items-center justify-center p-1 text-center leading-tight uppercase">
-                    Home Depot
+                    {res.company.substring(0, 8)}
                   </div>
                   <span className="font-bold text-xs text-[#0d2838]">{res.source}</span>
                 </div>
@@ -398,7 +449,6 @@ export default function Dashboard() {
                 </div>
 
                 <div className="space-y-2 pt-1">
-                  {/* DOWNLOAD BUTTON TRIGGERS MODAL */}
                   <button
                     onClick={() => openDownloadModal(res)}
                     className="w-full bg-[#1e5878] hover:bg-[#174863] text-white font-medium text-xs py-2.5 rounded-full flex items-center justify-center gap-1.5 shadow-xs"
@@ -468,11 +518,6 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-
-                <button className="w-full bg-white border border-gray-200 text-[#0d2838] font-medium text-xs py-2 rounded-full hover:bg-gray-50 flex items-center justify-center gap-1.5">
-                  <span>📊</span>
-                  <span>Detailed analysis</span>
-                </button>
               </div>
             ))}
           </div>
@@ -491,25 +536,24 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* CONGRATULATIONS / DOWNLOAD MODAL (Matching Screenshot) */}
+      {/* Download Popup */}
       {showDownloadModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            {/* Modal Header */}
             <div className="bg-[#134e6f] text-white p-5 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-amber-300 text-lg">✨</span>
                 <h3 className="font-serif font-bold text-xl tracking-tight">Congratulations!</h3>
               </div>
               <button
-                onClick={() => setShowDownloadModal(false)}
-                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-sm"
+                onClick={() => !isDownloading && setShowDownloadModal(false)}
+                disabled={isDownloading}
+                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-sm disabled:opacity-30"
               >
                 ✕
               </button>
             </div>
 
-            {/* Modal Content */}
             <div className="p-6 space-y-5">
               <p className="text-xs text-gray-600 leading-relaxed font-medium">
                 Your resume tailored for <strong className="text-[#0d2838] font-bold">{selectedResult?.company}</strong> at <strong className="text-[#0d2838] font-bold">{selectedResult?.source}</strong> is ready.
@@ -518,99 +562,161 @@ export default function Dashboard() {
               <div className="bg-[#f0f7fa] border border-blue-100 rounded-2xl p-3.5 flex items-start gap-2.5">
                 <span className="text-[#134e6f] text-sm mt-0.5">🛡</span>
                 <p className="text-[11px] text-[#134e6f] leading-snug font-medium">
-                  A resume tailored to the job posting increases your chances 3× compared to a generic resume. Every application deserves a custom-made resume.
+                  A resume tailored to the job posting increases your chances 3× compared to a generic resume.
                 </p>
               </div>
 
-              {/* Action Buttons */}
-              <div className="space-y-3 pt-1">
-                <button
-                  onClick={() => triggerPDFDownload(false)}
-                  className="w-full bg-[#134e6f] hover:bg-[#0f3d57] text-white font-bold text-xs py-3 rounded-full flex items-center justify-center gap-2 shadow-md transition-all"
-                >
-                  <span>✦</span>
-                  <span>Download without watermark</span>
-                </button>
+              {isDownloading ? (
+                <div className="py-3 space-y-2">
+                  <div className="flex items-center justify-between text-xs font-semibold text-[#134e6f]">
+                    <span>Generating & downloading free PDF...</span>
+                    <span>{downloadProgress}%</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                    <div
+                      className="bg-[#134e6f] h-2.5 rounded-full transition-all duration-300 ease-out"
+                      style={{ width: `${downloadProgress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3 pt-1">
+                  <button
+                    onClick={handlePremiumAction}
+                    className="w-full bg-[#134e6f] hover:bg-[#0f3d57] text-white font-bold text-xs py-3 rounded-full flex items-center justify-center gap-2 shadow-md transition-all"
+                  >
+                    <span>✦</span>
+                    <span>Download without watermark</span>
+                    <span className="ml-auto text-[10px] bg-amber-400 text-gray-900 font-extrabold px-2 py-0.5 rounded-full uppercase">PRO</span>
+                  </button>
 
-                <button
-                  onClick={() => triggerPDFDownload(false)}
-                  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs py-3 rounded-full flex items-center justify-center gap-2 shadow-md transition-all"
-                >
-                  <span>👑</span>
-                  <span>Go Premium</span>
-                </button>
+                  <button
+                    onClick={handlePremiumAction}
+                    className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs py-3 rounded-full flex items-center justify-center gap-2 shadow-md transition-all"
+                  >
+                    <span>👑</span>
+                    <span>Go Premium</span>
+                  </button>
 
-                <button
-                  onClick={() => triggerPDFDownload(true)}
-                  className="w-full text-center text-xs text-gray-400 hover:text-gray-600 font-medium underline block pt-1"
-                >
-                  Download with watermark
-                </button>
-              </div>
+                  <button
+                    onClick={() => triggerPDFDownload(true)}
+                    className="w-full text-center text-xs text-emerald-600 hover:text-emerald-700 font-semibold underline block pt-1"
+                  >
+                    Download with watermark (Free)
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* HIDDEN PDF TEMPLATE FOR GENERATION (Matches output structure) */}
-      <div className="hidden">
-        <div ref={pdfTemplateRef} className="p-8 bg-white text-gray-900 font-sans max-w-[800px] text-xs leading-relaxed space-y-4">
-          <div>
-            <h1 className="text-xl font-bold uppercase tracking-wide text-[#0d2838]">
-              {user?.fullName || 'KEDIR ABDELA'}
-            </h1>
-            <p className="font-semibold text-gray-700 text-sm">
-              {selectedResult?.jobTitle || 'Digital Marketing Specialist'} (5 yrs exp)
-            </p>
-            <p className="text-gray-500 text-[11px] mt-0.5">
-              {user?.phone} | {user?.email} | {user?.location} | linkedin.com/in/kedirmohammed
-            </p>
-          </div>
-
-          <hr className="border-gray-200" />
-
-          <div>
-            <h2 className="font-bold text-xs text-[#0d2838] uppercase tracking-wider mb-1">Professional Summary</h2>
-            <p className="text-gray-700">
-              Results-driven Digital Marketing Specialist with 5+ years of experience designing data-driven campaigns across Google, Meta, and LinkedIn. Proven track record in SEO, paid advertising, and content strategy, with measurable impact on traffic growth and audience engagement.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="font-bold text-xs text-[#0d2838] uppercase tracking-wider mb-1">Key Skills</h2>
-            <p className="text-gray-700"><strong>Digital Marketing:</strong> SEO, Social Media Marketing, Paid Advertising, Email Marketing, Campaign Analysis.</p>
-            <p className="text-gray-700"><strong>Tools & Analytics:</strong> Google Analytics (Certified), Google Ads Search, HubSpot, Performance Dashboards.</p>
-          </div>
-
-          <div>
-            <h2 className="font-bold text-xs text-[#0d2838] uppercase tracking-wider mb-1">Experience</h2>
-            <div className="space-y-2">
-              <div>
-                <p className="font-bold text-gray-800">Digital Marketing Specialist | BrightWave Media</p>
-                <p className="text-gray-600">Led end-to-end digital marketing campaigns across major platforms, driving measurable growth in traffic (+45%) and brand visibility.</p>
-              </div>
-              <div>
-                <p className="font-bold text-gray-800">Marketing Coordinator | NovaTech Solutions | 2019-2022</p>
-                <p className="text-gray-600">Supported social media operations and boosted engagement by 30% through optimized content scheduling.</p>
-              </div>
+      {/* Subscription Paywall Modal */}
+      {showPaywallModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl p-6 text-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 font-bold text-2xl flex items-center justify-center mx-auto">
+              👑
             </div>
-          </div>
+            <h3 className="font-serif font-extrabold text-xl text-[#0d2838]">
+              Upgrade to Premium
+            </h3>
+            <p className="text-xs text-gray-500 leading-relaxed">
+              Downloading watermark-free PDFs requires an active Pro Subscription or Premium credits.
+            </p>
 
-          <div>
-            <h2 className="font-bold text-xs text-[#0d2838] uppercase tracking-wider mb-1">Certifications & Education</h2>
-            <ul className="list-disc list-inside text-gray-700 space-y-0.5">
-              <li>Bachelor of Business Administration | New York University</li>
-              <li>Google Analytics Certification (2023)</li>
-              <li>Google Ads Search Certification (2023)</li>
-              <li>HubSpot Content Marketing Certification (2022)</li>
-            </ul>
-          </div>
+            <button
+              onClick={() => alert('Redirecting to subscription checkout...')}
+              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs py-3 rounded-full shadow-md"
+            >
+              Unlock Premium - $9.99 / mo
+            </button>
 
-          {/* Optional Watermark footer */}
-          <div id="pdf-watermark" className="pt-6 border-t border-gray-100 text-right text-[10px] text-gray-400 font-bold tracking-widest hidden">
-            CVforge.co
+            <button
+              onClick={() => {
+                setShowPaywallModal(false)
+                setShowDownloadModal(true)
+              }}
+              className="text-xs text-gray-400 hover:text-gray-600 font-medium underline block mx-auto pt-1"
+            >
+              Back to free option with watermark
+            </button>
           </div>
         </div>
+      )}
+
+      {/* DYNAMIC DEDICATED ATS TEMPLATE DRIVEN BY AI DATA */}
+      <div className="hidden">
+        {selectedResult?.resumeData && (
+          <div
+            ref={pdfTemplateRef}
+            className="p-8 bg-white text-gray-900 font-sans max-w-[800px] text-[11px] leading-relaxed space-y-3.5"
+            style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}
+          >
+            <div>
+              <h1 className="text-xl font-bold uppercase tracking-tight text-black mb-0.5">
+                {selectedResult.resumeData.fullName}
+              </h1>
+              <p className="font-bold text-gray-900 text-xs mb-1">
+                {selectedResult.resumeData.titleWithExp}
+              </p>
+              <p className="text-gray-500 text-[10px]">
+                {selectedResult.resumeData.contactLine}
+              </p>
+            </div>
+
+            <div>
+              <h2 className="font-bold text-[11px] text-black uppercase tracking-wide mb-1">
+                PROFESSIONAL SUMMARY
+              </h2>
+              <p className="text-gray-800 leading-normal">
+                {selectedResult.resumeData.summary}
+              </p>
+            </div>
+
+            <div>
+              <h2 className="font-bold text-[11px] text-black uppercase tracking-wide mb-1">
+                KEY SKILLS
+              </h2>
+              {selectedResult.resumeData.skills.map((s, i) => (
+                <p key={i} className="text-gray-800">
+                  <strong>{s.category}:</strong> {s.list}
+                </p>
+              ))}
+            </div>
+
+            <div>
+              <h2 className="font-bold text-[11px] text-black uppercase tracking-wide mb-1">
+                EXPERIENCE
+              </h2>
+              <div className="space-y-2">
+                {selectedResult.resumeData.experience.map((exp, i) => (
+                  <div key={i}>
+                    <p className="font-bold text-black">
+                      {exp.role} | {exp.company} {exp.period ? `| ${exp.period}` : ''}
+                    </p>
+                    <p className="text-gray-800">{exp.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="font-bold text-[11px] text-black uppercase tracking-wide mb-1">
+                CERTIFICATIONS & EDUCATION
+              </h2>
+              <ul className="list-disc list-inside text-gray-800 space-y-0.5">
+                {selectedResult.resumeData.educationAndCerts.map((edu, i) => (
+                  <li key={i}>{edu}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div id="pdf-watermark" className="pt-6 border-t border-gray-100 text-right text-[10px] text-gray-400 font-bold tracking-widest hidden">
+              CVforge.co
+            </div>
+          </div>
+        )}
       </div>
     </main>
   )
