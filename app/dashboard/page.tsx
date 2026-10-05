@@ -165,7 +165,7 @@ export default function Dashboard() {
         const formattedResumeData: OptimizedResumeData = {
           fullName: user?.fullName || "KEDIR ABDELA",
           titleWithExp: "Digital Marketing Specialist (5 yrs exp)",
-          contactLine: `${user?.phone || '0908706534'} | ${user?.email || 'nmtullah86@gmail.com'} | Los Angeles | linkedin.com/in/kedirmohammed | Availability: 1 month`,
+          contactLine: `${user?.phone || '0908706534'} | ${user?.email || 'nmtullah86@gmail.com'} | Los Angeles\nlinkedin.com/in/kedirmohammed | Availability: 1 month`,
           summary: `Results-driven Digital Marketing Specialist with 5+ years of experience designing data-driven campaigns across Google, Meta, and LinkedIn. Proven track record in SEO, paid advertising, and content strategy, with measurable impact on traffic growth and audience engagement. Adept at managing budgets, analyzing performance metrics, and collaborating cross-functionally to deliver retail-focused marketing outcomes.`,
           skills: [
             { category: "Digital Marketing", list: "SEO, Social Media Marketing (Google, Instagram, Facebook, LinkedIn), Paid Advertising (Google Ads), Content Marketing, Email Marketing, Campaign Performance Analysis, Customer Acquisition, Budget Management, Data-Driven Strategy" },
@@ -262,7 +262,7 @@ export default function Dashboard() {
       }
 
       const opt = {
-        margin:       [0.3, 0.4, 0.3, 0.4],
+        margin:       0,
         filename:     `${selectedResult?.source || 'LinkedIn'} - ${selectedResult?.resumeData.fullName || 'Resume'} - ${selectedResult?.jobTitle || 'Optimized'}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true },
@@ -393,7 +393,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <span className="text-[10px] font-bold text-gray-400 tracking-wider block uppercase">
-                  VOTRE CV DE BASE
+                  BASE RESUME
                 </span>
                 <p className="text-xs font-bold text-[#0d2838] truncate max-w-[180px]">
                   {user ? user.firstName : 'Base Resume'}
@@ -483,7 +483,7 @@ export default function Dashboard() {
             {optimizedResults.map((res) => (
               <div key={res.id} className="border border-gray-100 rounded-2xl p-4 bg-white shadow-2xs space-y-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-orange-600 text-white font-extrabold text-[9px] flex items-center justify-center p-1 text-center leading-tight uppercase">
+                  <div className="w-8 h-8 rounded-lg bg-[#004B23] text-white font-extrabold text-[9px] flex items-center justify-center p-1 text-center leading-tight uppercase">
                     {res.company.substring(0, 8)}
                   </div>
                   <span className="font-bold text-xs text-[#0d2838]">{res.source}</span>
@@ -509,7 +509,7 @@ export default function Dashboard() {
                 <div className="space-y-2 pt-1">
                   <button
                     onClick={() => openDownloadModal(res)}
-                    className="w-full bg-[#1e5878] hover:bg-[#174863] text-white font-medium text-xs py-2.5 rounded-full flex items-center justify-center gap-1.5 shadow-xs"
+                    className="w-full bg-[#004B23] hover:bg-[#00381a] text-white font-medium text-xs py-2.5 rounded-full flex items-center justify-center gap-1.5 shadow-xs"
                   >
                     <span>↓</span>
                     <span>Download</span>
@@ -538,7 +538,7 @@ export default function Dashboard() {
                     </div>
 
                     <div>
-                      <div className="w-10 h-10 rounded-full border-4 border-[#134e6f] flex items-center justify-center mx-auto text-xs font-bold text-[#134e6f]">
+                      <div className="w-10 h-10 rounded-full border-4 border-[#004B23] flex items-center justify-center mx-auto text-xs font-bold text-[#004B23]">
                         {res.atsAfter}%
                       </div>
                       <span className="text-[10px] text-gray-400 mt-1 block">After</span>
@@ -560,7 +560,7 @@ export default function Dashboard() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 pt-1">
-                    <div className="bg-[#1e5878] text-white text-center text-xs font-bold py-1 rounded-full">
+                    <div className="bg-[#004B23] text-white text-center text-xs font-bold py-1 rounded-full">
                       +{res.atsAfter - res.atsBefore}%
                     </div>
                     <div className="bg-[#22c55e] text-white text-center text-xs font-bold py-1 rounded-full">
@@ -590,7 +590,7 @@ export default function Dashboard() {
       {showDownloadModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl">
-            <div className="bg-[#134e6f] text-white p-5 flex items-center justify-between">
+            <div className="bg-[#004B23] text-white p-5 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-amber-300 text-lg">✨</span>
                 <h3 className="font-serif font-bold text-xl tracking-tight">Congratulations!</h3>
@@ -610,21 +610,21 @@ export default function Dashboard() {
               </p>
 
               <div className="bg-[#f0f7fa] border border-blue-100 rounded-2xl p-3.5 flex items-start gap-2.5">
-                <span className="text-[#134e6f] text-sm mt-0.5">🛡</span>
-                <p className="text-[11px] text-[#134e6f] leading-snug font-medium">
+                <span className="text-[#004B23] text-sm mt-0.5">🛡</span>
+                <p className="text-[11px] text-[#004B23] leading-snug font-medium">
                   A resume tailored to the job posting increases your chances 3× compared to a generic resume.
                 </p>
               </div>
 
               {isDownloading ? (
                 <div className="py-3 space-y-2">
-                  <div className="flex items-center justify-between text-xs font-semibold text-[#134e6f]">
-                    <span>Generating & downloading free PDF...</span>
+                  <div className="flex items-center justify-between text-xs font-semibold text-[#004B23]">
+                    <span>Generating & downloading PDF...</span>
                     <span>{downloadProgress}%</span>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
                     <div
-                      className="bg-[#134e6f] h-2.5 rounded-full transition-all duration-300 ease-out"
+                      className="bg-[#004B23] h-2.5 rounded-full transition-all duration-300 ease-out"
                       style={{ width: `${downloadProgress}%` }}
                     ></div>
                   </div>
@@ -633,7 +633,7 @@ export default function Dashboard() {
                 <div className="space-y-3 pt-1">
                   <button
                     onClick={handlePremiumAction}
-                    className="w-full bg-[#134e6f] hover:bg-[#0f3d57] text-white font-bold text-xs py-3 rounded-full flex items-center justify-center gap-2 shadow-md transition-all"
+                    className="w-full bg-[#004B23] hover:bg-[#00381a] text-white font-bold text-xs py-3 rounded-full flex items-center justify-center gap-2 shadow-md transition-all"
                   >
                     <span>✦</span>
                     <span>Download without watermark</span>
@@ -695,126 +695,132 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* CLEAN, PRODUCTION ATS TEMPLATE CONTAINER */}
+      {/* PDF TEMPLATE WITH COLORFUL HEADER BANNER (NAME, TITLE, ADDRESS) */}
       <div className="hidden">
         {selectedResult?.resumeData && (
           <div
             ref={pdfTemplateRef}
-            className="p-8 bg-white text-gray-900 font-sans max-w-[800px] text-[11px] leading-relaxed relative overflow-hidden"
+            className="w-[8.5in] min-h-[11in] bg-white relative font-sans text-gray-800 text-[11px] leading-relaxed"
             style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}
           >
-            {/* Watermark Overlay */}
+            {/* Background Watermark */}
             <div
               id="pdf-watermark"
-              className="absolute inset-0 z-10 pointer-events-none hidden flex-col items-center justify-center"
+              className="absolute inset-0 z-0 pointer-events-none hidden flex-col items-center justify-center"
             >
-              <span className="text-gray-300 text-6xl font-extrabold tracking-widest opacity-25 -rotate-45 select-none">
+              <span className="text-gray-300 text-8xl font-extrabold tracking-widest opacity-25 -rotate-45 select-none">
                 CVforge.co
               </span>
             </div>
 
-            {/* Header Section */}
-            <div className="border-b border-gray-200 pb-3 mb-3">
-              <h1 className="text-2xl font-bold uppercase tracking-tight text-black mb-0.5">
+            {/* COLORFUL HEADER BANNER: NAME, TITLE, AND CONTACT DETAILS */}
+            <div className="bg-[#134e6f] text-white p-8 relative z-10">
+              <h1 className="text-3xl font-extrabold uppercase tracking-tight text-white mb-1">
                 {selectedResult.resumeData.fullName}
               </h1>
-              <p className="font-semibold text-gray-800 text-xs mb-1">
+              <p className="text-sm font-bold text-amber-300 uppercase tracking-wide mb-3">
                 {selectedResult.resumeData.titleWithExp}
               </p>
-              <p className="text-gray-600 text-[10px]">
+              <div className="text-[10.5px] text-blue-100 font-medium leading-normal whitespace-pre-line border-t border-blue-400/40 pt-2">
                 {selectedResult.resumeData.contactLine}
-              </p>
-            </div>
-
-            {/* Professional Summary */}
-            <div className="mb-3.5">
-              <h2 className="font-bold text-[11px] text-black uppercase tracking-wider mb-1 border-b border-gray-100 pb-0.5">
-                PROFESSIONAL SUMMARY
-              </h2>
-              <p className="text-gray-800 text-[10.5px] leading-snug">
-                {selectedResult.resumeData.summary}
-              </p>
-            </div>
-
-            {/* Key Skills */}
-            <div className="mb-3.5">
-              <h2 className="font-bold text-[11px] text-black uppercase tracking-wider mb-1 border-b border-gray-100 pb-0.5">
-                KEY SKILLS
-              </h2>
-              <div className="space-y-1">
-                {selectedResult.resumeData.skills.map((s, i) => (
-                  <p key={i} className="text-gray-800 text-[10.5px]">
-                    <strong className="text-black">{s.category}:</strong> {s.list}
-                  </p>
-                ))}
               </div>
             </div>
 
-            {/* Experience */}
-            <div className="mb-3.5">
-              <h2 className="font-bold text-[11px] text-black uppercase tracking-wider mb-1.5 border-b border-gray-100 pb-0.5">
-                WORK EXPERIENCE
-              </h2>
-              <div className="space-y-2.5">
-                {selectedResult.resumeData.experience.map((exp, i) => (
-                  <div key={i}>
-                    <div className="flex justify-between items-baseline mb-0.5">
-                      <p className="font-bold text-black text-[11px]">
-                        {exp.role} <span className="font-normal text-gray-600">| {exp.company}</span>
-                      </p>
-                      {exp.period && (
-                        <span className="text-[10px] font-semibold text-gray-500">{exp.period}</span>
-                      )}
-                    </div>
-                    <ul className="list-disc list-inside text-gray-800 text-[10.5px] space-y-0.5">
-                      {exp.bulletPoints.map((bp, bpIdx) => (
-                        <li key={bpIdx} className="leading-snug">{bp}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Education & Certifications */}
-            <div className="mb-3.5">
-              <h2 className="font-bold text-[11px] text-black uppercase tracking-wider mb-1 border-b border-gray-100 pb-0.5">
-                EDUCATION & CERTIFICATIONS
-              </h2>
-              <div className="space-y-1">
-                {selectedResult.resumeData.educationAndCerts.map((edu, i) => (
-                  <p key={i} className="text-gray-800 text-[10.5px]">
-                    <strong className="text-black">{edu.degreeOrCert}</strong>
-                    {edu.institution && ` | ${edu.institution}`}
-                    {edu.year && ` (${edu.year})`}
-                  </p>
-                ))}
-              </div>
-            </div>
-
-            {/* Languages */}
-            {selectedResult.resumeData.languages && (
-              <div className="mb-3">
-                <h2 className="font-bold text-[11px] text-black uppercase tracking-wider mb-1 border-b border-gray-100 pb-0.5">
-                  LANGUAGES
-                </h2>
-                <p className="text-gray-800 text-[10.5px]">
-                  {selectedResult.resumeData.languages}
-                </p>
-              </div>
-            )}
-
-            {/* Interests */}
-            {selectedResult.resumeData.interests && (
+            {/* MAIN CONTENT BODY */}
+            <div className="p-8 relative z-10 space-y-5">
+              
+              {/* Professional Summary */}
               <div>
-                <h2 className="font-bold text-[11px] text-black uppercase tracking-wider mb-1 border-b border-gray-100 pb-0.5">
-                  INTERESTS & PROJECTS
+                <h2 className="text-xs font-bold text-[#134e6f] uppercase tracking-wider border-b-2 border-[#134e6f] pb-1 mb-2">
+                  Professional Summary
                 </h2>
-                <p className="text-gray-800 text-[10.5px]">
-                  {selectedResult.resumeData.interests}
+                <p className="text-gray-700 text-[10.5px] leading-relaxed">
+                  {selectedResult.resumeData.summary}
                 </p>
               </div>
-            )}
+
+              {/* Key Skills */}
+              <div>
+                <h2 className="text-xs font-bold text-[#134e6f] uppercase tracking-wider border-b-2 border-[#134e6f] pb-1 mb-2">
+                  Key Skills
+                </h2>
+                <div className="space-y-1.5">
+                  {selectedResult.resumeData.skills.map((skillGroup, idx) => (
+                    <p key={idx} className="text-[10.5px]">
+                      <strong className="text-gray-900 font-bold">{skillGroup.category}:</strong>{' '}
+                      <span className="text-gray-700">{skillGroup.list}</span>
+                    </p>
+                  ))}
+                </div>
+              </div>
+
+              {/* Work Experience */}
+              <div>
+                <h2 className="text-xs font-bold text-[#134e6f] uppercase tracking-wider border-b-2 border-[#134e6f] pb-1 mb-2">
+                  Work Experience
+                </h2>
+                <div className="space-y-3">
+                  {selectedResult.resumeData.experience.map((exp, idx) => (
+                    <div key={idx} className="space-y-1">
+                      <div className="flex justify-between items-baseline">
+                        <p className="font-bold text-gray-900 text-[11px]">
+                          {exp.role} <span className="text-[#134e6f]">| {exp.company}</span>
+                        </p>
+                        {exp.period && (
+                          <span className="text-[10px] font-bold text-gray-500">{exp.period}</span>
+                        )}
+                      </div>
+                      <ul className="list-disc list-inside text-gray-700 text-[10.5px] space-y-1 pl-1">
+                        {exp.bulletPoints.map((bullet, bIdx) => (
+                          <li key={bIdx} className="leading-snug">{bullet}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Education & Certifications */}
+              <div>
+                <h2 className="text-xs font-bold text-[#134e6f] uppercase tracking-wider border-b-2 border-[#134e6f] pb-1 mb-2">
+                  Education & Certifications
+                </h2>
+                <div className="space-y-1">
+                  {selectedResult.resumeData.educationAndCerts.map((edu, idx) => (
+                    <p key={idx} className="text-[10.5px] text-gray-700">
+                      <strong className="text-gray-900">{edu.degreeOrCert}</strong>
+                      {edu.institution && ` | ${edu.institution}`}
+                      {edu.year && ` (${edu.year})`}
+                    </p>
+                  ))}
+                </div>
+              </div>
+
+              {/* Languages */}
+              {selectedResult.resumeData.languages && (
+                <div>
+                  <h2 className="text-xs font-bold text-[#134e6f] uppercase tracking-wider border-b-2 border-[#134e6f] pb-1 mb-1.5">
+                    Languages
+                  </h2>
+                  <p className="text-[10.5px] text-gray-700">
+                    {selectedResult.resumeData.languages}
+                  </p>
+                </div>
+              )}
+
+              {/* Interests & Projects */}
+              {selectedResult.resumeData.interests && (
+                <div>
+                  <h2 className="text-xs font-bold text-[#134e6f] uppercase tracking-wider border-b-2 border-[#134e6f] pb-1 mb-1.5">
+                    Interests & Projects
+                  </h2>
+                  <p className="text-[10.5px] text-gray-700">
+                    {selectedResult.resumeData.interests}
+                  </p>
+                </div>
+              )}
+
+            </div>
           </div>
         )}
       </div>
